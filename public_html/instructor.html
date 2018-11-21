@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Накатка часов</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container" style="padding-top: 2em;">
+        <div class="row">
+            <div class="col-sm">
+            </div>
+            <div class="col-sm" id="centralContainer">
+                <div class="accordion" id="leadsAccordion">
+                </div>
+            </div>
+            <div class="col-sm">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="amo.js" crossorigin="anonymous"></script>
+    <script>
+        $(function () {
+            let instructorId = getParameterByName('id');
+            loadHours(instructorId)
+                .then(function (hoursData) {
+                    let leadsId = Object.keys(hoursData);
+
+                    leadsId.forEach(function (leadId) {
+                        let leadData = hoursData[leadId];
+                        $('#leadsAccordion').append( getCardHTML(leadData.contact, leadId, leadData.hours || "") );
+                    })
+
+                });
+
+            $(document).on('submit', 'form', function (event) {
+                event.preventDefault();
+
+                let $form = $(this);
+                let $button = $form.find('button');
+                $button
+                    .removeClass('btn-danger btn-primary')
+                    .addClass('btn-primary')
+                    .attr('disabled', 'disabled')
+                    .text('Сохранение ...');
+
+                updateHoursData($form)
+                    .then(function () {
+                        $button.attr('disabled', false).text('Сохранить');
+                    })
+                    .catch(function () {
+                        $button
+                            .attr('disabled', false)
+                            .removeClass('btn-danger btn-primary')
+                            .addClass('btn-danger')
+                            .text('Сохранить повторно');
+                    });
+
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+  nginx:
+    image: nginx
+    ports:
+      - 8080:80
+    volumes:
+      - "./public_html:/var/www/public"
+      - "./etc/nginx/site.conf:/etc/nginx/conf.d/default.conf"
+    depends_on:
+      - php
+
+  php:
+    image: php:7.1-fpm
+    working_dir: "/var/www"
+    volumes:
+    - "./public_html:/var/www/public"
+    - "./etc/php/log-stdout.conf:/usr/local/etc/php-fpm.d/zz-log.conf"
+    - "./etc/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini"
+    environment:
+      - XDEBUG_CONFIG=remote_host=${HOST_IP}
