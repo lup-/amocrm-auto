@@ -137,7 +137,7 @@ function getContactsAndHoursFromLeads($leadsData) {
     foreach ($leadsData as $leadData) {
         $contactsAndHours[ $leadData['id'] ] = [
             'contact' => $leadData['main_contact']['name'],
-            'hours' => $leadData['cf'+HOURS_FIELD_ID],
+            'hours' => $leadData['cf'.HOURS_FIELD_ID],
         ];
     }
 
