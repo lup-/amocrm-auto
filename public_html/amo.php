@@ -236,7 +236,7 @@ switch ($requestType) {
     break;
     case 'getLead':
         $leadId = $_GET['leadId'];
-        $excludeFields = [542327];
+        $excludeFields = [542327, 559905];
 
         if ($leadId) {
             $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
