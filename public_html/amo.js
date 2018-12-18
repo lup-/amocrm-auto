@@ -47,6 +47,32 @@ function loadHours(instructorId) {
     return promise;
 }
 
+function loadLead(leadId) {
+    let promise = $.Deferred();
+
+    $.ajax({
+        url: "/amo.php",
+        data: {
+            type: 'getLead',
+            leadId: leadId
+        },
+        dataType: 'json',
+        success: function (result) {
+            promise.resolve(result);
+        },
+        error: function (result) {
+            if (result && result.status === 200) {
+                promise.resolve(result.responseText);
+            }
+            else {
+                promise.reject(result);
+            }
+        }
+    });
+
+    return promise;
+}
+
 function getParameterByName(name, url) {
     if (!url) url = window.location.href;
     name = name.replace(/[\[\]]/g, '\\$&');
@@ -88,6 +114,13 @@ function getCardHTML(name, leadId, hours) {
                     getFromHTML(leadId, hours) +
         "        </div>\n" +
         "    </div>\n" +
+        "</div>";
+}
+
+function getLeadFieldHTML(fieldName, fieldValue) {
+    return "<div class=\"list-group-item flex-column align-items-start\">\n" +
+        "    <h5 class=\"mb-1\">"+fieldName+"</h5>\n" +
+        "    <p class=\"mb-1\">"+fieldValue+"</p>\n" +
         "</div>";
 }
 

@@ -179,6 +179,23 @@ function setLeadHours($leadId, $hours, $cookieFileName) {
     return $response;
 }
 
+function loadApiLead($cookieFileName, $leadId) {
+    $leadsUrl = "https://mailjob.amocrm.ru/api/v2/leads?id=".$leadId;
+    $requestHandle = curl_init();
+    curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
+    curl_setopt($requestHandle, CURLOPT_URL, $leadsUrl);
+    curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
+
+    $response = curl_exec($requestHandle);
+    curl_close($requestHandle);
+
+    $asArray = true;
+    $parsedResponse = json_decode($response, $asArray);
+
+    return $parsedResponse;
+}
+
+
 $requestType = $_GET['type'];
 
 switch ($requestType) {
@@ -215,6 +232,30 @@ switch ($requestType) {
             authAmoApi($cookieFileName);
 
             setLeadHours($leadId, $hours, $cookieFileName);
+        }
+    break;
+    case 'getLead':
+        $leadId = $_GET['leadId'];
+        $excludeFields = [542327];
+
+        if ($leadId) {
+            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+            authAmoApi($cookieFileName);
+
+            $apiData = loadApiLead($cookieFileName, $leadId);
+            $apiLeadData = $apiData['_embedded']['items'][0];
+            $leadData = [
+                "Название" => $apiLeadData['name'],
+            ];
+
+            foreach ($apiLeadData['custom_fields'] as $fieldData) {
+                if (!in_array($fieldData['id'], $excludeFields)) {
+                    $leadData[$fieldData['name']] = $fieldData['values'][0]['value'];
+                }
+            }
+
+            header("Content-type: application/json; charset=utf-8");
+            echo json_encode($leadData);
         }
     break;
 }
