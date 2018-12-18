@@ -34,7 +34,7 @@
 
                     leadsId.forEach(function (leadId) {
                         let leadData = hoursData[leadId];
-                        $('#leadsAccordion').append( getCardHTML(leadData.contact, leadId, leadData.hours || "") );
+                        $('#leadsAccordion').append( getCardHTML(leadData.contact, leadId, leadData.hours || "", leadData.debt || 0) );
                     })
 
                 });

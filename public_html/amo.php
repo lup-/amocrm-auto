@@ -1,6 +1,7 @@
 <?php
 const INSTRUCTOR_FIELD_ID = "398075";
 const HOURS_FIELD_ID = "552963";
+const DEBT_FIELD_ID = "552815";
 
 function authAmoApi($cookieFileName) {
     $userName = 'mailjob@icloud.com';
@@ -132,12 +133,13 @@ function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
     return $parsedResponse;
 }
 
-function getContactsAndHoursFromLeads($leadsData) {
+function getContactsAndHoursAndDebtFromLeads($leadsData) {
     $contactsAndHours = [];
     foreach ($leadsData as $leadData) {
         $contactsAndHours[ $leadData['id'] ] = [
             'contact' => $leadData['main_contact']['name'],
             'hours' => $leadData['cf'.HOURS_FIELD_ID],
+            'debt' => $leadData['cf'.DEBT_FIELD_ID],
         ];
     }
 
@@ -217,7 +219,7 @@ switch ($requestType) {
 
             $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
             $leads = $leadsResponse['response']['items'];
-            $contactsAndHours = getContactsAndHoursFromLeads($leads);
+            $contactsAndHours = getContactsAndHoursAndDebtFromLeads($leads);
 
             header("Content-type: application/json; charset=utf-8");
             echo json_encode($contactsAndHours);

@@ -99,7 +99,7 @@ function getFromHTML(leadId, hours) {
         "</form>";
 }
 
-function getCardHTML(name, leadId, hours) {
+function getCardHTML(name, leadId, hours, debt) {
     return "<div class=\"card\">\n" +
         "    <div class=\"card-header\" id=\"heading-"+leadId+"\">\n" +
         "        <h5 class=\"mb-0\">\n" +
@@ -111,6 +111,7 @@ function getCardHTML(name, leadId, hours) {
         "\n" +
         "    <div id=\"collapse-"+leadId+"\" class=\"collapse\" aria-labelledby=\"heading-"+leadId+"\" data-parent=\"#leadsAccordion\">\n" +
         "        <div class=\"card-body\">\n" +
+        "           <p>Остаток: " + debt + "</p>\n" +
                     getFromHTML(leadId, hours) +
         "        </div>\n" +
         "    </div>\n" +
