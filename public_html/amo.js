@@ -99,7 +99,7 @@ function getFromHTML(leadId, hours) {
         "</form>";
 }
 
-function getCardHTML(name, leadId, hours, debt) {
+function getCardHTML(name, leadId, hours, neededHours, debt, phone) {
     return "<div class=\"card\">\n" +
         "    <div class=\"card-header\" id=\"heading-"+leadId+"\">\n" +
         "        <h5 class=\"mb-0\">\n" +
@@ -111,7 +111,9 @@ function getCardHTML(name, leadId, hours, debt) {
         "\n" +
         "    <div id=\"collapse-"+leadId+"\" class=\"collapse\" aria-labelledby=\"heading-"+leadId+"\" data-parent=\"#leadsAccordion\">\n" +
         "        <div class=\"card-body\">\n" +
-        "           <p>Остаток: " + debt + "</p>\n" +
+        "           <p>Остаток оплаты: " + debt + "</p>\n" +
+        "           <p>Нужное кол-во часов: " + neededHours + "</p>\n" +
+        "           <p>Телефон: <a href='tel:"+phone+"'>"+phone+"</a></p>\n" +
                     getFromHTML(leadId, hours) +
         "        </div>\n" +
         "    </div>\n" +
@@ -126,6 +128,30 @@ function getLeadFieldHTML(fieldName, fieldValue) {
 }
 
 function updateHoursData($form) {
+    let formData = $form.serialize();
+    let promise = $.Deferred();
+
+    $.ajax({
+        url: "/amo.php",
+        data: formData,
+        dataType: 'json',
+        success: function (result) {
+            promise.resolve(result);
+        },
+        error: function (result) {
+            if (result && result.status === 200) {
+                promise.resolve(result.responseText);
+            }
+            else {
+                promise.reject(result);
+            }
+        }
+    });
+
+    return promise;
+}
+
+function sendNote($form) {
     let formData = $form.serialize();
     let promise = $.Deferred();
 

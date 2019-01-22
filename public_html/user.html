@@ -13,6 +13,27 @@
             <div class="col-sm">
                 <div class="list-group" id="fieldsList">
                 </div>
+                <div class="list-group" id="actions">
+                    <div class="list-group-item flex-column align-items-start">
+                        <button class="btn btn-secondary btn-block" type="button" data-toggle="collapse" data-target="#noteCollapse" aria-expanded="false" aria-controls="noteCollapse">
+                            Отправить комментарий
+                        </button>
+                        <div class="collapse" id="noteCollapse">
+                            <div class="card card-body">
+                                <form id="noteForm">
+                                    <input type="hidden" name="type" value="addNote">
+                                    <input type="hidden" name="leadId" value="">
+                                    <div class="form-group">
+                                        <label for="noteText">Текст сообщения</label>
+                                        <textarea class="form-control" id="noteText" rows="3" name="text"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-block">Отправить</button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -23,8 +44,36 @@
     <script src="amo.js" crossorigin="anonymous"></script>
     <script>
         $(function () {
+            $(document).on('submit', '#noteForm', function (event) {
+                event.preventDefault();
+
+                let $form = $(this);
+                let $button = $form.find('button');
+                $button
+                    .removeClass('btn-danger btn-primary')
+                    .addClass('btn-primary')
+                    .attr('disabled', 'disabled')
+                    .text('Отправка ...');
+
+                sendNote($form)
+                    .then(function () {
+                        $form.find('textarea').val('');
+                        $button.attr('disabled', false).text('Успешно отправлено! Отправить еще раз');
+                    })
+                    .catch(function () {
+                        $button
+                            .attr('disabled', false)
+                            .removeClass('btn-danger btn-primary')
+                            .addClass('btn-danger')
+                            .text('Отправить повторно');
+                    });
+            });
+
             let leadId = getParameterByName('id');
-            let booleanFields = ["Документы приняты", "Медкомиссия"];
+            let booleanFields = [];
+
+            $('[name=leadId]').val(leadId);
+
             loadLead(leadId)
                 .then(function (leadFields) {
                     let fieldNames = Object.keys(leadFields);
