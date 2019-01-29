@@ -1,9 +1,9 @@
-function loadInstructors() {
+function loadApiData(data) {
     let promise = $.Deferred();
 
     $.ajax({
         url: "/amo.php",
-        data: {type: 'instructors'},
+        data: data,
         dataType: 'json',
         success: function (result) {
             promise.resolve(result);
@@ -19,58 +19,32 @@ function loadInstructors() {
     });
 
     return promise;
+}
+
+function loadInstructors() {
+    return loadApiData({type: 'instructors'});
 }
 
 function loadHours(instructorId) {
-    let promise = $.Deferred();
-
-    $.ajax({
-        url: "/amo.php",
-        data: {
-            type: 'getHours',
-            instructorId: instructorId
-        },
-        dataType: 'json',
-        success: function (result) {
-            promise.resolve(result);
-        },
-        error: function (result) {
-            if (result && result.status === 200) {
-                promise.resolve(result.responseText);
-            }
-            else {
-                promise.reject(result);
-            }
-        }
+    return loadApiData({
+        type: 'getHours',
+        instructorId: instructorId
     });
-
-    return promise;
 }
 
 function loadLead(leadId) {
-    let promise = $.Deferred();
-
-    $.ajax({
-        url: "/amo.php",
-        data: {
-            type: 'getLead',
-            leadId: leadId
-        },
-        dataType: 'json',
-        success: function (result) {
-            promise.resolve(result);
-        },
-        error: function (result) {
-            if (result && result.status === 200) {
-                promise.resolve(result.responseText);
-            }
-            else {
-                promise.reject(result);
-            }
-        }
+    return loadApiData({
+        type: 'getLead',
+        leadId: leadId
     });
+}
 
-    return promise;
+function loadVideoLinks() {
+    return loadApiData({type: 'getVideo'})
+}
+
+function loadTicketLinks() {
+    return loadApiData({type: 'getTickets'})
 }
 
 function getParameterByName(name, url) {
