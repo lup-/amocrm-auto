@@ -728,12 +728,16 @@ switch ($requestType) {
             $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
             authAmoInterface($cookieFileName);
 
+            $instructors = loadInstructorIds($cookieFileName);
             $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
             $leads = $leadsResponse['response']['items'];
             $contactsAndHours = getContactsAndDataFromLeads($leads);
 
             header("Content-type: application/json; charset=utf-8");
-            echo json_encode($contactsAndHours);
+            echo json_encode([
+                "instructor" => $instructors[$instructorId],
+                "leads"      => $contactsAndHours,
+            ]);
         }
     break;
     case 'updateHours':

@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Накатка часов</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="loader.css">
 </head>
 <body>
     <div class="container" style="padding-top: 2em;">
@@ -13,7 +14,10 @@
             <div class="col-sm">
             </div>
             <div class="col-sm" id="centralContainer">
-                <div class="accordion" id="leadsAccordion">
+                <span class="btn btn-primary btn-block" id="instructorName">...</span>
+                <p>Всего человек: <span id="totalCount">...</span></p>
+                <div class="accordion mt-3" id="leadsAccordion">
+                    <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;"><div style="width:100%;height:100%" class="lds-pacman"><div><div></div><div></div><div></div></div><div><div></div><div></div></div></div></div>
                 </div>
             </div>
             <div class="col-sm">
@@ -46,9 +50,16 @@
         $(function () {
             let instructorId = getParameterByName('id');
             loadHours(instructorId)
-                .then(function (unsortedLeadsData) {
+                .then(function (responseData) {
+                    let instructorName = responseData.instructor;
+                    let unsortedLeadsData = responseData.leads;
+                    let totalLeadsCount = Object.keys(unsortedLeadsData).length;
                     let sortedLeads = sortByGroups(unsortedLeadsData);
                     let groupNames = Object.keys(sortedLeads);
+
+                    $('#leadsAccordion').html("");
+                    $('#instructorName').html(instructorName);
+                    $('#totalCount').html(totalLeadsCount);
 
                     groupNames.forEach(function (groupName) {
                         let groupLeadsData = sortedLeads[groupName];
