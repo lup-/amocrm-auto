@@ -85,9 +85,9 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone) {
         "\n" +
         "    <div id=\"collapse-"+leadId+"\" class=\"collapse\" aria-labelledby=\"heading-"+leadId+"\" data-parent=\"#leadsAccordion\">\n" +
         "        <div class=\"card-body\">\n" +
-        "           <p>Остаток оплаты: " + debt + "</p>\n" +
-        "           <p>Нужное кол-во часов: " + neededHours + "</p>\n" +
-        "           <p>Телефон: <a href='tel:"+phone+"'>"+phone+"</a></p>\n" +
+        "           <p class='mb-0'>Остаток оплаты: " + debt + "</p>\n" +
+        "           <p class='mb-0'>Нужное кол-во часов: " + neededHours + "</p>\n" +
+        "           <p class=''>Телефон: <a href='tel:"+phone+"'>"+phone+"</a></p>\n" +
                     getFromHTML(leadId, hours) +
         "        </div>\n" +
         "    </div>\n" +
@@ -99,6 +99,27 @@ function getLeadFieldHTML(fieldName, fieldValue) {
         "    <h5 class=\"mb-1\">"+fieldName+"</h5>\n" +
         "    <p class=\"mb-1\">"+fieldValue+"</p>\n" +
         "</div>";
+}
+
+function getComplexFieldHTML(fieldName, fieldValue) {
+    let subFieldNames = Object.keys(fieldValue);
+    let titleFieldName = subFieldNames[0];
+    let titleFieldValue = fieldValue[titleFieldName];
+
+    return `<div class="list-group-item flex-column align-items-start">
+                <h5 class="mb-1">${fieldName}</h5>
+                <div class="dropdown">
+                    <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="dd${fieldName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      ${titleFieldValue}
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dd${fieldName}">
+                        ${ subFieldNames.reduce(function (accumulator, subFieldName) {
+                            let subFieldValue = fieldValue[subFieldName];
+                            return accumulator + `<span class="dropdown-item"><b>${subFieldName}</b>:<br>${subFieldValue}</span>`;
+                        }, "")}
+                    </div>
+                </div>
+            </div>`;
 }
 
 function updateHoursData($form) {

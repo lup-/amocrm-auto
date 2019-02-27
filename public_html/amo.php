@@ -7,6 +7,8 @@ const PHONE_FIELD_ID = "389479";
 const GROUP_FIELD_ID = "399063";
 const MAILJOB_USER_ID = "2475916";
 
+const HOUR_PRICE = 250;
+
 function authAmoApi($cookieFileName) {
     $userName = 'mailjob@icloud.com';
     $userHash = '142a2eebe3051c6b30a9d2cbe3c4cbdb';
@@ -169,8 +171,16 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
         "Коробка"         => getCustomFieldValue(389859, $apiLeadData),
         "Откат по часам"  => getCustomFieldValue(552963, $apiLeadData),
         "Остаток"         => getCustomFieldValue(552815, $apiLeadData),
-        "Медкомиссия"     => getCustomFieldValue(413345, $apiLeadData),
-        "Свидетельство"   => getCustomFieldValue(413337, $apiLeadData),
+        "Медкомиссия"   => [
+            "Серия, номер, лицензия" => getCustomFieldValue(413345, $apiLeadData),
+            "Кем выдано"             => getCustomFieldValue(413347, $apiLeadData),
+            "Когда выдано"           => getCustomFieldValue(542317, $apiLeadData),
+        ],
+        "Свидетельство" => [
+            "Серия, номер" => getCustomFieldValue(413337, $apiLeadData),
+            "Кем выдано"   => getCustomFieldValue(413343, $apiLeadData),
+            "Когда выдано" => getCustomFieldValue(542325, $apiLeadData),
+        ],
         "Экзамен в ГИБДД" => getCustomFieldValue(540659, $apiLeadData),
         "Примечание"      => getCustomFieldValue(540357, $apiLeadData),
     ];
@@ -709,6 +719,35 @@ function getGibddTickets() {
     ];
 }
 
+function getGroupsInfo($leads) {
+    $groups = [];
+
+    foreach ($leads as $leadData) {
+        $groupName = $leadData['cf' . GROUP_FIELD_ID];
+        $isGroupAdded = isset($groups[$groupName]);
+
+        if ($groupName && !$isGroupAdded) {
+            $groups[$groupName] = [
+                "name"   => $groupName,
+                "start"  => $leadData['cf541467'] ? date('d.m.Y', $leadData['cf541467']) : false,
+                "end"    => $leadData['cf541469'] ? date('d.m.Y', $leadData['cf541469']) : false,
+                "exam"   => $leadData['cf540659'] ? date('d.m.Y', $leadData['cf540659']) : false,
+                "people" => 0,
+                "hours"  => 0,
+                "salary" => 0,
+            ];
+        }
+
+        if ($groupName) {
+            $groups[$groupName]['people'] += 1;
+            $groups[$groupName]['totalHours'] += $leadData['cf' . HOURS_FIELD_ID];
+            $groups[$groupName]['salary'] += $leadData['cf' . HOURS_FIELD_ID] * HOUR_PRICE;
+        }
+    }
+
+    return $groups;
+}
+
 $requestType = $_GET['type'];
 
 switch ($requestType) {
@@ -732,11 +771,13 @@ switch ($requestType) {
             $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
             $leads = $leadsResponse['response']['items'];
             $contactsAndHours = getContactsAndDataFromLeads($leads);
+            $groups = getGroupsInfo($leads);
 
             header("Content-type: application/json; charset=utf-8");
             echo json_encode([
                 "instructor" => $instructors[$instructorId],
                 "leads"      => $contactsAndHours,
+                "groups"     => $groups,
             ]);
         }
     break;

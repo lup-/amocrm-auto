@@ -22,10 +22,10 @@
                     Билеты
                 </a>
 
-                <button class="btn btn-secondary btn-block mt-4" type="button" data-toggle="collapse" data-target="#noteCollapse" aria-expanded="false" aria-controls="noteCollapse">
+                <button class="btn btn-secondary btn-block mt-4 mb-4" type="button" data-toggle="collapse" data-target="#noteCollapse" aria-expanded="false" aria-controls="noteCollapse">
                     Отправить комментарий
                 </button>
-                <div class="collapse" id="noteCollapse">
+                <div class="collapse mb-4" id="noteCollapse">
                     <div class="card card-body">
                         <form id="noteForm">
                             <input type="hidden" name="type" value="addNote">
@@ -89,7 +89,12 @@
                             fieldValue = fieldValue === "1" ? "&#x2714;&nbsp;Да": "&#x2718;&nbsp;Нет";
                         }
 
-                        $('#fieldsList').append( getLeadFieldHTML(fieldName, fieldValue) );
+                        if (typeof (fieldValue) === "object") {
+                            $('#fieldsList').append( getComplexFieldHTML(fieldName, fieldValue) );
+                        }
+                        else {
+                            $('#fieldsList').append( getLeadFieldHTML(fieldName, fieldValue) );
+                        }
                     });
                 });
         });
