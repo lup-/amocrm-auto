@@ -1,8 +1,28 @@
-function loadApiData(data) {
+function zeroPad(number) {
+    return number < 10 ? '0'+number : number.toString();
+}
+function formatDate(date, formatType) {
+    let day = zeroPad(date.getDate());
+    let month = zeroPad(date.getMonth() + 1);
+    let year = date.getFullYear();
+
+    return formatType === 'system'
+        ? `${year}-${month}-${day}`
+        : `${day}.${month}.${year}`;
+}
+function dateFromFormat(formattedDate) {
+    let parts = formattedDate.split(".");
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function loadApiData(data, endpointUrl) {
     let promise = $.Deferred();
+    if (!endpointUrl) {
+        endpointUrl = '/amo.php';
+    }
 
     $.ajax({
-        url: "/amo.php",
+        url: endpointUrl,
         data: data,
         dataType: 'json',
         success: function (result) {
@@ -58,7 +78,7 @@ function getParameterByName(name, url) {
 }
 
 function getFromHTML(leadId, hours) {
-    return "<form>\n" +
+    return "<form class='hoursForm'>\n" +
         "    <input type=\"hidden\" name=\"type\" value=\"updateHours\">\n" +
         "    <input type=\"hidden\" name=\"leadId\" value=\""+leadId+"\">\n" +
         "    <div class=\"form-row align-items-center\">\n" +
@@ -122,6 +142,18 @@ function getComplexFieldHTML(fieldName, fieldValue) {
             </div>`;
 }
 
+function getTimeframeHTML(timeframe, studentName) {
+    let disabledClass = studentName ? '' : 'disabled';
+    if (!studentName) {
+        studentName = '-';
+    }
+
+    return `<li class="list-group-item d-flex flex-row-reverse justify-content-between align-items-center ${disabledClass}">
+    ${studentName}
+    <span class="badge badge-primary badge-pill">${timeframe}</span>
+  </li>`;
+}
+
 function updateHoursData($form) {
     let formData = $form.serialize();
     let promise = $.Deferred();
@@ -144,6 +176,38 @@ function updateHoursData($form) {
     });
 
     return promise;
+}
+
+function addStudentEvent($form) {
+    let formData = $form.serialize();
+    let promise = $.Deferred();
+
+    $.ajax({
+        url: "/calendar.php",
+        data: formData,
+        dataType: 'json',
+        success: function (result) {
+            promise.resolve(result);
+        },
+        error: function (result) {
+            if (result && result.status === 200) {
+                promise.resolve(result.responseText);
+            }
+            else {
+                promise.reject(result);
+            }
+        }
+    });
+
+    return promise;
+}
+
+function loadCalendarEvents(instructorId, date) {
+    return loadApiData({
+        action: 'list',
+        instructorId: instructorId,
+        date: formatDate(date, 'system')
+    }, '/calendar.php')
 }
 
 function sendNote($form) {

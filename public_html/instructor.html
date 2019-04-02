@@ -7,23 +7,90 @@
     <title>Накатка часов</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="loader.css">
+    <style>
+        #instructorName {font-size: 1rem;}
+        .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {border-color: transparent!important;background-color: transparent!important;}
+        .nav-tabs {border-bottom: none;}
+    </style>
 </head>
 <body>
-    <div class="container" style="padding-top: 2em;">
-        <div class="row">
-            <div class="col-sm">
-            </div>
-            <div class="col-sm" id="centralContainer">
-                <span class="btn btn-primary btn-block" id="instructorName">...</span>
+
+    <nav class="navbar navbar-dark bg-primary">
+        <span class="navbar-brand" id="instructorName">...</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1"
+                aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Показать меню"><span class="navbar-toggler-icon"></span></button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent1">
+            <ul class="navbar-nav mr-auto nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active show" id="groups-tab" data-toggle="tab" href="#groups" role="tab" aria-controls="groups" aria-selected="true">Группы и зарплата</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab" aria-controls="schedule" aria-selected="false">Расписание</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="student-tab" data-toggle="tab" href="#student" role="tab" aria-controls="student" aria-selected="false">Записать ученика</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="tab-content px-3 pt-4">
+        <div class="tab-pane fade show active" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+            <h2 class="text-center">Группы и зарплата</h2>
+
+            <div id="centralContainer">
                 <p class="mt-2 mb-0">Всего человек: <span id="totalCount">...</span></p>
                 <p class="mb-0">Всего ЗП: <span id="totalSalary">...</span></p>
                 <div class="accordion mt-3" id="leadsAccordion">
                     <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;"><div style="width:100%;height:100%" class="lds-pacman"><div><div></div><div></div><div></div></div><div><div></div><div></div></div></div></div>
                 </div>
             </div>
-            <div class="col-sm">
+        </div>
+
+        <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+            <h2 class="text-center">Расписание</h2>
+            <div class="d-flex flex-row align-items-center justify-content-center pb-4">
+                <button class="btn btn-back">&#8249;</button>
+                <h5 class="flex-fill m-0 text-center schedule-date"></h5>
+                <button class="btn btn-fwd">&#8250;</button>
+            </div>
+            <div class="schedule-list">
+
             </div>
         </div>
+
+        <div class="tab-pane fade" id="student" role="tabpanel" aria-labelledby="student-tab">
+            <h2 class="text-center">Записать ученика</h2>
+            <form class="studentForm">
+                <input type="hidden" name="instructorId">
+                <input type="hidden" name="action" value="add">
+                <div class="form-group">
+                    <label for="studentName">Имя ученика</label>
+                    <input type="text" class="form-control" id="studentName" name="studentName" placeholder="ФИО">
+                </div>
+                <div class="form-group">
+                    <label for="date">Дата</label>
+                    <input type="date" class="form-control" id="date" name="date">
+                </div>
+                <div class="form-group">
+                    <label for="time">Начало занятия</label>
+                    <select class="form-control" id="time" name="time">
+                        <option value="09:00:00">09:00</option>
+                        <option value="10:30:00">10:30</option>
+                        <option value="12:00:00">12:00</option>
+                        <option value="13:30:00">13:30</option>
+                        <option value="14:00:00">14:00</option>
+                        <option value="15:30:00">15:30</option>
+                        <option value="17:00:00">17:00</option>
+                        <option value="18:30:00">18:30</option>
+                        <option value="20:00:00">20:00</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Записать</button>
+            </form>
+        </div>
+
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
@@ -47,9 +114,7 @@
 
             return sortedLeads;
         }
-
-        $(function () {
-            let instructorId = getParameterByName('id');
+        function loadAndShowInstructorData(instructorId) {
             loadHours(instructorId)
                 .then(function (responseData) {
                     let instructorName = responseData.instructor;
@@ -106,8 +171,62 @@
 
 
                 });
+        }
+        function initStudentTab(instructorId) {
+            let today = new Date;
+            $('[name="instructorId"]').val(instructorId);
+            $('[name="date"]').val(formatDate(today, 'system'));
 
-            $(document).on('submit', 'form', function (event) {
+            $(document).on('submit', 'form.studentForm', function (event) {
+                event.preventDefault();
+
+                let $form = $(this);
+                let $button = $form.find('button');
+                $button
+                    .removeClass('btn-danger btn-primary')
+                    .addClass('btn-primary')
+                    .attr('disabled', 'disabled')
+                    .text('Запись ...');
+
+                addStudentEvent($form)
+                    .then(function () {
+                        $form[0].reset();
+                        $button.attr('disabled', false).text('Записать');
+
+                        let currentScheduleDate = dateFromFormat( $('.schedule-date').text() );
+                        loadAndShowSchedule(instructorId, currentScheduleDate);
+                    })
+                    .catch(function () {
+                        $button
+                            .attr('disabled', false)
+                            .removeClass('btn-danger btn-primary')
+                            .addClass('btn-danger')
+                            .text('Записать повторно');
+                    });
+
+            });
+        }
+        function loadAndShowSchedule(instructorId, date) {
+            return loadCalendarEvents(instructorId, date)
+                .then(function (eventsResponse) {
+                    let timeframes = Object.keys(eventsResponse);
+                    let timeframesHTML = timeframes.map(function (timeframe) {
+                        let events = eventsResponse[timeframe];
+                        let studentName = events.length > 0
+                            ? events[0].text
+                            : false;
+
+                        return getTimeframeHTML(timeframe, studentName);
+                    }).join("\n");
+
+                    let scheduleHTML = `<ul class="list-group">${timeframesHTML}</ul>`;
+                    $('.schedule-list').html(scheduleHTML);
+                });
+        }
+        function initGroupsTab(instructorId) {
+            loadAndShowInstructorData(instructorId);
+
+            $(document).on('submit', 'form.hoursForm', function (event) {
                 event.preventDefault();
 
                 let $form = $(this);
@@ -131,6 +250,40 @@
                     });
 
             });
+        }
+        function initScheduleTab(instructorId) {
+            let today = new Date;
+            $('.schedule-date').text(formatDate(today));
+            loadAndShowSchedule(instructorId, today);
+
+            $(document).on('click', '.btn-fwd', function () {
+                let tomorrow = dateFromFormat( $('.schedule-date').text() );
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                $('[name="date"]').val(formatDate(tomorrow, 'system'));
+                $('.schedule-date').text(formatDate(tomorrow));
+                $('.schedule-list').html("Загрузка...");
+                loadAndShowSchedule(instructorId, tomorrow);
+            });
+
+            $(document).on('click', '.btn-back', function () {
+                let yesterday = dateFromFormat( $('.schedule-date').text() );
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                $('[name="date"]').val(formatDate(yesterday, 'system'));
+                $('.schedule-date').text(formatDate(yesterday));
+                $('.schedule-list').html("Загрузка...");
+                loadAndShowSchedule(instructorId, yesterday);
+            });
+        }
+
+        $(function () {
+            let instructorId = getParameterByName('id');
+            initGroupsTab(instructorId);
+            initStudentTab(instructorId);
+            initScheduleTab(instructorId);
+
+
         });
     </script>
 </body>
