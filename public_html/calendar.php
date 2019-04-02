@@ -83,11 +83,11 @@ function getTimeframes($service, $calendarId, $timestamp) {
         "10:30" => [],
         "12:00" => [],
         "13:30" => [],
-        "14:00" => [],
-        "15:30" => [],
-        "17:00" => [],
-        "18:30" => [],
-        "20:00" => [],
+        "15:00" => [],
+        "16:30" => [],
+        "18:00" => [],
+        "19:30" => [],
+        "21:00" => [],
     ];
     $events = getEvents($service, $calendarId, $timestamp);
 
