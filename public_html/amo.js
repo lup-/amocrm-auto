@@ -109,9 +109,9 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
 
     return `<div class="card">
             <div class="card-header d-flex flex-row justify-content-between" id="heading-${leadId}">
-                <h6 class="mb-0 btn-link flex-fill" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
+                <a class="mb-0 btn-link flex-fill" href="#" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
                     ${name}
-                </h6>
+                </a>
                 ${eventDate
                     ? '<span class="date-text">'+dateText+'</span>'
                     : '<a href="#" class="btn btn-primary btn-calendar" data-name="'+name+'"><i class="far fa-calendar-plus"></i></a>'

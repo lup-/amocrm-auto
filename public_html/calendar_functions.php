@@ -91,6 +91,8 @@ function getAllEvents($service, $calendarId, $timestamp) {
 }
 function getTimeframes($service, $calendarId, $timestamp) {
     $timeframes = [
+        "06:00" => [],
+        "07:30" => [],
         "09:00" => [],
         "10:30" => [],
         "12:00" => [],
