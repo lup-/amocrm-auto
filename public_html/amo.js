@@ -93,25 +93,40 @@ function getFromHTML(leadId, hours) {
         "</form>";
 }
 
-function getCardHTML(name, leadId, hours, neededHours, debt, phone) {
-    return "<div class=\"card\">\n" +
-        "    <div class=\"card-header\" id=\"heading-"+leadId+"\">\n" +
-        "        <h5 class=\"mb-0\">\n" +
-        "            <button class=\"btn btn-link\" type=\"button\" data-toggle=\"collapse\" data-target=\"#collapse-"+leadId+"\" aria-expanded=\"true\" aria-controls=\"collapse-"+leadId+"\">\n" +
-        "                "+name+"\n" +
-        "            </button>\n" +
-        "        </h5>\n" +
-        "    </div>\n" +
-        "\n" +
-        "    <div id=\"collapse-"+leadId+"\" class=\"collapse\" aria-labelledby=\"heading-"+leadId+"\" data-parent=\"#leadsAccordion\">\n" +
-        "        <div class=\"card-body\">\n" +
-        "           <p class='mb-0'>Остаток оплаты: " + debt + "</p>\n" +
-        "           <p class='mb-0'>Нужное кол-во часов: " + neededHours + "</p>\n" +
-        "           <p class=''>Телефон: <a href='tel:"+phone+"'>"+phone+"</a></p>\n" +
-                    getFromHTML(leadId, hours) +
-        "        </div>\n" +
-        "    </div>\n" +
-        "</div>";
+function zeroPad(num) {
+    return num < 10 ? '0' + num : num;
+}
+
+function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
+    let dayNames = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+    let dateText = "";
+
+    if (eventDate) {
+        let date = new Date(eventDate);
+        let dayText = dayNames[date.getDay()];
+        dateText = `${dayText}, ${zeroPad(date.getDate())}.${zeroPad(date.getMonth() + 1)}<br> ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
+    }
+
+    return `<div class="card">
+            <div class="card-header d-flex flex-row justify-content-between" id="heading-${leadId}">
+                <h6 class="mb-0 btn-link flex-fill" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
+                    ${name}
+                </h6>
+                ${eventDate
+                    ? '<span class="date-text">'+dateText+'</span>'
+                    : '<a href="#" class="btn btn-primary btn-calendar" data-name="'+name+'"><i class="far fa-calendar-plus"></i></a>'
+                }
+            </div>
+
+            <div id="collapse-${leadId}" class="collapse" aria-labelledby="heading-${leadId}" data-parent="#leadsAccordion">
+                <div class="card-body">
+                   <p class="mb-0">Остаток оплаты: ${debt}</p>
+                   <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
+                   <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
+                    ${getFromHTML(leadId, hours)}
+                </div>
+            </div>
+        </div>`;
 }
 
 function getLeadFieldHTML(fieldName, fieldValue) {
@@ -150,7 +165,7 @@ function getTimeframeHTML(timeframe, studentName) {
 
     return `<li class="list-group-item d-flex flex-row-reverse justify-content-between align-items-center ${disabledClass}">
     ${studentName}
-    <span class="badge badge-primary badge-pill">${timeframe}</span>
+    <span class="badge badge-primary badge-pill mr-4">${timeframe}</span>
   </li>`;
 }
 

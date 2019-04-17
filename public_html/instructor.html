@@ -6,11 +6,13 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Накатка часов</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="loader.css">
     <style>
-        #instructorName {font-size: 1rem;}
+        #instructorName {font-size: 0.9rem;}
         .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {border-color: transparent!important;background-color: transparent!important;}
         .nav-tabs {border-bottom: none;}
+        .date-text {font-size: 0.8rem;text-align: right;min-width: 4rem;}
     </style>
 </head>
 <body>
@@ -55,7 +57,7 @@
                 <h5 class="flex-fill m-0 text-center schedule-date"></h5>
                 <button class="btn btn-fwd">&#8250;</button>
             </div>
-            <div class="schedule-list">
+            <div class="schedule-list mb-4">
 
             </div>
         </div>
@@ -138,21 +140,24 @@
                         let leadsId = Object.keys(groupLeadsData);
                         let groupData = groupsData[groupName];
 
-                        $('#leadsAccordion').append("<div class='h6 my-3'>"+
-                            "<div class='title-wrapper'>" +
-                            "  <div class=\"dropdown\">\n" +
-                            "    <button class=\"btn btn-primary dropdown-toggle\" type=\"button\" id=\"dd"+groupName+"\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">\n" +
-                            "      Группа " + groupName + "\n" +
-                            "    </button>\n" +
-                            "    <div class=\"dropdown-menu\" aria-labelledby=\"dd"+groupName+"\">\n" +
-                            "      <span class='dropdown-item'>ЗП: " + groupData.salary + "</span>" +
-                            "      <span class='dropdown-item'>Человек: " + groupData.people + "</span>" +
-                            "      <span class='dropdown-item'>Начало: " + (groupData.start || "-") + "</span>" +
-                            "      <span class='dropdown-item'>Конец: " + (groupData.end || "-") + "</span>" +
-                            "      <span class='dropdown-item'>Дата экзамена: " + (groupData.exam || "-") + "</span>" +
-                            "    </div>\n" +
-                            "  </div>" +
-                            "</div>");
+                        $('#leadsAccordion').append(`<div class='h6 my-3'>
+                            <div class='title-wrapper'>
+                              <div class="dropdown">
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Группа ${groupName}
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dd${groupName}">
+                                      <span class='dropdown-item'>ЗП: ${groupData.salary}</span>
+                                      <span class='dropdown-item'>Человек: ${groupData.people}</span>
+                                      <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
+                                      <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
+                                      <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
+                                    </div>
+                                    <span class=''>ЗП: ${groupData.salary}</span>
+                                </div>
+                              </div>
+                            </div>`);
 
                         leadsId.forEach(function (leadId) {
                             let leadData = groupLeadsData[leadId];
@@ -163,7 +168,8 @@
                                     leadData.hours || "",
                                     leadData.neededHours || "",
                                     leadData.debt || 0,
-                                    leadData.phone
+                                    leadData.phone,
+                                    leadData.schedule || false
                                 )
                             );
                         })
@@ -176,6 +182,12 @@
             let today = new Date;
             $('[name="instructorId"]').val(instructorId);
             $('[name="date"]').val(formatDate(today, 'system'));
+            updateTimeframeInput(instructorId, today);
+
+            $(document).on('change', '#date', function (event) {
+                let eventDate = new Date( $(this).val() );
+                updateTimeframeInput(instructorId, eventDate);
+            });
 
             $(document).on('submit', 'form.studentForm', function (event) {
                 event.preventDefault();
@@ -195,6 +207,7 @@
 
                         let currentScheduleDate = dateFromFormat( $('.schedule-date').text() );
                         loadAndShowSchedule(instructorId, currentScheduleDate);
+                        loadAndShowInstructorData(instructorId);
                     })
                     .catch(function () {
                         $button
@@ -223,8 +236,42 @@
                     $('.schedule-list').html(scheduleHTML);
                 });
         }
+
+        function getDateTimeframes(instructorId, date) {
+            return loadCalendarEvents(instructorId, date)
+                .then(function (eventsResponse) {
+                    let timeframes = Object.keys(eventsResponse);
+                    let availtimeframes = timeframes.reduce(function (timeframeAccumulator, timeframe) {
+                        if (eventsResponse[timeframe].length === 0) {
+                            timeframeAccumulator.push(timeframe);
+                        }
+                        return timeframeAccumulator;
+                    }, []);
+
+                    return availtimeframes;
+                });
+        }
+
+        function updateTimeframeInput(instructorId, eventDate) {
+            return getDateTimeframes(instructorId, eventDate)
+                .then(function (timeframes) {
+                    let optionsHTML = timeframes.map(function (timeframe) {
+                        return `<option value="${timeframe}:00">${timeframe}</option>`;
+                    }).join('\n');
+
+                    $('#time').html(optionsHTML);
+                });
+        }
+
         function initGroupsTab(instructorId) {
             loadAndShowInstructorData(instructorId);
+
+            $(document).on('click', '.btn-calendar', function (event) {
+                event.preventDefault();
+                let name = $(this).data('name');
+                $('#studentName').val(name);
+                $('#student-tab').tab('show');
+            });
 
             $(document).on('submit', 'form.hoursForm', function (event) {
                 event.preventDefault();

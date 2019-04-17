@@ -1,4 +1,7 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
+require_once  'calendar_functions.php';
+
 const INSTRUCTOR_FIELD_ID = "398075";
 const HOURS_FIELD_ID = "552963";
 const DEBT_FIELD_ID = "552815";
@@ -24,7 +27,6 @@ function authAmoApi($cookieFileName) {
     curl_exec($requestHandle);
     curl_close($requestHandle);
 }
-
 function authAmoInterface($cookieFileName) {
     $crmUrl = "https://mailjob.amocrm.ru/";
     $authUrl = "https://mailjob.amocrm.ru/oauth2/authorize";
@@ -62,7 +64,6 @@ function authAmoInterface($cookieFileName) {
 
     curl_close($requestHandle);
 }
-
 function loadApiLeads($cookieFileName) {
     $leadsUrl = "https://mailjob.amocrm.ru/api/v2/leads?filter[active]=1";
     $requestHandle = curl_init();
@@ -78,7 +79,6 @@ function loadApiLeads($cookieFileName) {
 
     return $parsedResponse;
 }
-
 function loadInstructorIds($cookieFileName) {
     $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
 
@@ -111,7 +111,6 @@ function loadInstructorIds($cookieFileName) {
 
     return $instructors;
 }
-
 function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
     $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
 
@@ -138,7 +137,6 @@ function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
 
     return $parsedResponse;
 }
-
 function getCustomFieldValue($fieldId, $leadData) {
     foreach ($leadData['custom_fields'] as $fieldData) {
         if ($fieldData['id'] == $fieldId) {
@@ -154,7 +152,6 @@ function getCustomFieldValue($fieldId, $leadData) {
 
     return "не задано";
 }
-
 function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
     $apiData = loadApiLead($cookieFileName, $leadId);
     $apiLeadData = $apiData['_embedded']['items'][0];
@@ -187,8 +184,7 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
 
     return $leadData;
 }
-
-function getContactsAndDataFromLeads($leadsData) {
+function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
     $contactsAndHours = [];
     foreach ($leadsData as $leadData) {
         $phone = $leadData['cf' . PHONE_FIELD_ID];
@@ -196,19 +192,30 @@ function getContactsAndDataFromLeads($leadsData) {
             $phone = $phone[0];
         }
 
+        $name = $leadData['main_contact']['name'];
+        /**
+         * @var $foundEvent Google_Service_Calendar_Event
+         */
+        $foundEvent = false;
+        foreach ($eventsData as $event) {
+            if ($name && $event->summary === $name) {
+                $foundEvent = $event;
+            }
+        }
+
         $contactsAndHours[ $leadData['id'] ] = [
-            'contact'     => $leadData['main_contact']['name'],
+            'contact'     => $name,
             'hours'       => $leadData['cf' . HOURS_FIELD_ID],
             'neededHours' => $leadData['cf' . NEEDED_HOURS_FIELD_ID],
             'debt'        => $leadData['cf' . DEBT_FIELD_ID],
             'phone'       => $phone,
             'group'       => $leadData['cf' . GROUP_FIELD_ID],
+            'schedule'    => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
         ];
     }
 
     return $contactsAndHours;
 }
-
 function setLeadHours($leadId, $hours, $cookieFileName) {
     $updateData = [
         "update" => [
@@ -243,7 +250,6 @@ function setLeadHours($leadId, $hours, $cookieFileName) {
 
     return $response;
 }
-
 /**
  * @param $leadId
  * @param $text
@@ -268,7 +274,6 @@ function setLeadHours($leadId, $hours, $cookieFileName) {
  * 102  SMS_IN              Входящее смс
  * 103  SMS_OUT             Исходящее смс
  */
-
 function addNoteToLead($leadId, $text, $cookieFileName) {
 
     $addData = [
@@ -296,7 +301,6 @@ function addNoteToLead($leadId, $text, $cookieFileName) {
 
     return $response;
 }
-
 function loadApiLead($cookieFileName, $leadId) {
     $leadsUrl = "https://mailjob.amocrm.ru/api/v2/leads?id=".$leadId;
     $requestHandle = curl_init();
@@ -312,7 +316,6 @@ function loadApiLead($cookieFileName, $leadId) {
 
     return $parsedResponse;
 }
-
 function loadApiContact($cookieFileName, $contactId) {
     $contactsUrl = "https://mailjob.amocrm.ru/api/v2/contacts?id=".$contactId;
     $requestHandle = curl_init();
@@ -328,7 +331,6 @@ function loadApiContact($cookieFileName, $contactId) {
 
     return $parsedResponse;
 }
-
 function getVideoLinks() {
     return [
         "1"                   => [
@@ -433,7 +435,6 @@ function getVideoLinks() {
         ],
     ];
 }
-
 function getGibddTickets() {
     return [
         "1"  => [
@@ -718,7 +719,6 @@ function getGibddTickets() {
         ],
     ];
 }
-
 function getGroupsInfo($leads) {
     $groups = [];
 
@@ -770,7 +770,14 @@ switch ($requestType) {
             $instructors = loadInstructorIds($cookieFileName);
             $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
             $leads = $leadsResponse['response']['items'];
-            $contactsAndHours = getContactsAndDataFromLeads($leads);
+
+            $client = getClient();
+            $service = new Google_Service_Calendar($client);
+            $calendarId = getInstructorCalendarId($instructorId);
+            $timestamp = (new DateTime())->getTimestamp();
+            $events = getAllEvents($service, $calendarId, $timestamp);
+
+            $contactsAndHours = getContactsDataScheduleFromLeadsAndEvents($leads, $events);
             $groups = getGroupsInfo($leads);
 
             header("Content-type: application/json; charset=utf-8");

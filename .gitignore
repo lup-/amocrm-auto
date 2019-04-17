@@ -7,3 +7,4 @@ deploy/uploadCookies.txt
 .env.old
 manifest.old.json
 token.json
+/token.json
