@@ -123,8 +123,11 @@ function getTimeframes($service, $calendarId, $timestamp) {
 
     return $timeframes;
 }
-function addEvent($service, $calendarId, $studentName, $date, $startTime) {
-    $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $date." ".$startTime, new DateTimeZone('Europe/Moscow'));
+function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
+    $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $date." ".$startTimeInput, new DateTimeZone('Europe/Moscow'));
+    if (!$startTime) {
+        $startTime = DateTime::createFromFormat('Y-m-d H:i', $date." ".$startTimeInput, new DateTimeZone('Europe/Moscow'));
+    }
     $oneAndHalfHourSpec = 'PT1H30M0S';
     $endTime = clone $startTime;
     $endTime->add(new DateInterval($oneAndHalfHourSpec));

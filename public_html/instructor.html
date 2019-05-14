@@ -54,7 +54,11 @@
             <h2 class="text-center">Расписание</h2>
             <div class="d-flex flex-row align-items-center justify-content-center pb-4">
                 <button class="btn btn-back">&#8249;</button>
-                <h5 class="flex-fill m-0 text-center schedule-date"></h5>
+                <h5 class="flex-fill m-0 text-center ">
+                    <label for="goto-date" class="schedule-date">
+                    </label>
+                    <input id="goto-date" type="date" class="form-control" style="display: none">
+                </h5>
                 <button class="btn btn-fwd">&#8250;</button>
             </div>
             <div class="schedule-list mb-4">
@@ -89,7 +93,9 @@
                         <option value="18:00:00">18:00</option>
                         <option value="19:30:00">19:30</option>
                         <option value="21:00:00">21:00</option>
+                        <option value="-1">Другое</option>
                     </select>
+                    <input class="form-control mt-2" type="time" id="time-detail" value="06:00" style="display: none">
                 </div>
                 <button type="submit" class="btn btn-primary">Записать</button>
             </form>
@@ -191,6 +197,17 @@
                 updateTimeframeInput(instructorId, eventDate);
             });
 
+            $(document).on('change', '#time', function (event) {
+                if ($(this).val() === "-1") {
+                    $('#time-detail').show().attr('name', 'time');
+                    $('#time').attr('name', false);
+                }
+                else {
+                    $('#time-detail').hide().attr('name', false);
+                    $('#time').attr('name', 'time');
+                }
+            });
+
             $(document).on('submit', 'form.studentForm', function (event) {
                 event.preventDefault();
 
@@ -260,6 +277,7 @@
                     let optionsHTML = timeframes.map(function (timeframe) {
                         return `<option value="${timeframe}:00">${timeframe}</option>`;
                     }).join('\n');
+                    optionsHTML += "<option value=\"-1\">Другое</option>";
 
                     $('#time').html(optionsHTML);
                 });
@@ -313,6 +331,21 @@
                 $('.schedule-date').text(formatDate(tomorrow));
                 $('.schedule-list').html("Загрузка...");
                 loadAndShowSchedule(instructorId, tomorrow);
+            });
+
+            $(document).on('change', '#goto-date', function (event) {
+                $('.schedule-date').show();
+                $('#goto-date').hide();
+
+                let goto = new Date(this.value);
+                $('[name="date"]').val(formatDate(goto, 'system'));
+                $('.schedule-date').text(formatDate(goto));
+                loadAndShowSchedule(instructorId, goto);
+            });
+
+            $(document).on('click', '.schedule-date', function () {
+                $('.schedule-date').hide();
+                $('#goto-date').show();
             });
 
             $(document).on('click', '.btn-back', function () {

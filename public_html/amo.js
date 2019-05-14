@@ -98,7 +98,7 @@ function zeroPad(num) {
 }
 
 function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
-    let dayNames = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+    let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
 
     if (eventDate) {
@@ -247,4 +247,42 @@ function sendNote($form) {
     });
 
     return promise;
+}
+
+function drawUserMenu() {
+    let userId = getParameterByName('id');
+    let isUserActive = location.href.indexOf('user.html') !== -1;
+    let isVideoActive = location.href.indexOf('video.html') !== -1;
+    let isTicketsActive = location.href.indexOf('tickets.html') !== -1;
+
+    let menuHTML = `<nav class="navbar navbar-dark bg-primary">
+        <span class="navbar-brand" id="title">Кабинет ученика</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1"
+                aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Показать меню"><span class="navbar-toggler-icon"></span></button>
+    
+        <div class="collapse navbar-collapse" id="navbarSupportedContent1">
+            <ul class="navbar-nav mr-auto nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    ${isUserActive
+                        ? '<a class="nav-link active show" aria-selected="true">Мои данные</a>'
+                        : '<a class="nav-link" href="user.html?id='+userId+'">Мои данные</a>'
+                    }
+                </li>
+                <li class="nav-item">
+                    ${isVideoActive
+                        ? '<a class="nav-link active show" aria-selected="true">Уроки</a>'
+                        : '<a class="nav-link" href="video.html?id='+userId+'">Уроки</a>'
+                    }
+                </li>
+                <li class="nav-item">
+                    ${isTicketsActive
+                        ? '<a class="nav-link active show" aria-selected="true">Билеты</a>'
+                        : '<a class="nav-link" href="tickets.html?id='+userId+'">Билеты</a>'
+                    }
+                </li>
+            </ul>
+        </div>
+    </nav>`;
+
+    $('body').prepend(menuHTML);
 }

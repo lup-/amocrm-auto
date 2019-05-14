@@ -7,21 +7,16 @@
     <title>Карточка заказа</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="loader.css">
+    <link rel="stylesheet" href="menu.css">
 </head>
 <body>
-    <div class="container" style="padding-top: 2em;">
+
+    <div class="container pt-4">
         <div class="row">
             <div class="col-sm">
                 <div class="list-group" id="fieldsList">
                     <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;"><div style="width:100%;height:100%" class="lds-pacman"><div><div></div><div></div><div></div></div><div><div></div><div></div></div></div></div>
                 </div>
-                <a href="video.html" class="btn btn-primary btn-block mt-3">
-                    Уроки
-                </a>
-                <a href="tickets.html" class="btn btn-primary btn-block mt-1">
-                    Билеты
-                </a>
-
                 <button class="btn btn-secondary btn-block mt-4 mb-4" type="button" data-toggle="collapse" data-target="#noteCollapse" aria-expanded="false" aria-controls="noteCollapse">
                     Отправить комментарий
                 </button>
@@ -79,6 +74,7 @@
 
             $('[name=leadId]').val(leadId);
 
+            drawUserMenu();
             loadLead(leadId)
                 .then(function (leadFields) {
                     $('#fieldsList').html("");
