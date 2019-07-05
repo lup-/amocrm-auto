@@ -8,3 +8,4 @@ deploy/uploadCookies.txt
 manifest.old.json
 token.json
 /token.json
+/.phpunit.result.cache

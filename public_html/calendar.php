@@ -1,10 +1,11 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+require_once  'google_functions.php';
 require_once  'calendar_functions.php';
 
 const EVENT_DESCRIPTION = 'Занятие с учеником в автошколе';
 
-$client = getClient();
+$client = getClient('../token.json');
 $service = new Google_Service_Calendar($client);
 
 $response = [];
