@@ -28,6 +28,14 @@ function listFiles($service) {
     return $files;
 }
 
+function getFilename($templateId, $service) {
+    /**
+     * @var Google_Service_Drive_DriveFile $file
+     */
+    $file = $service->files->get($templateId);
+    return $file->getName();
+}
+
 function downloadTemplate($templateId, $service) {
     $response = $service->files->get($templateId, ['alt' => 'media']);
     $content = $response->getBody()->getContents();

@@ -16,6 +16,28 @@ switch ($requestType) {
         header("Content-type: application/json; charset=utf-8");
         echo json_encode($instructors);
     break;
+    case 'getAllInstructorsData':
+        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+        authAmoInterface($cookieFileName);
+
+        $instructors = loadInstructorIds($cookieFileName);
+        $instructorsData = [];
+        foreach ($instructors as $id => $name) {
+            $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $id);
+            $leads = $leadsResponse['response']['items'];
+            $instructorsData[] = [
+                'id' => $id,
+                'name' => $name,
+                'groups' => getGroupsInfo($leads),
+                'students' => getStudents($leads),
+            ];
+        }
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode([
+            "instructors" => $instructorsData,
+        ]);
+    break;
     case 'getHours':
         $instructorId = $_GET['instructorId'];
 

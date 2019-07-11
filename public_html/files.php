@@ -12,41 +12,28 @@ $response = [];
 switch ($_REQUEST['action']) {
     case 'list':
         header("Content-type: application/json; charset=utf-8");
+        $response = [
+            'Железнодорожный' => [
+                ['id' => '1LMmz7ujo5oWrSOGV9ft205tDYZ-YNKGW', 'name' => 'Договор']
+            ]
+        ];
         echo json_encode($response);
     break;
     case 'makedoc':
         //$templateId = '1uDmyRhOUtjvl9194cI6antqCAE5AcpqA';
-        $templateId = '1LMmz7ujo5oWrSOGV9ft205tDYZ-YNKGW';
-        $leadId = '17973869';
+        $templateId = $_REQUEST['templateId'];
+        $leadId = $_REQUEST['leadId'];
         $cookieFileName = initAmoApi();
-        $leadPairs = [
-            'Сделка.ID'               => '',
-            'Контакт.Имя'             => 'Павлов Александр Сергеевич',
-            'Контакт.Телефон'         => '',
-            'Контакт.Телефон.Рабочий' => '',
-            'Сделка.Бюджет'           => '',
-            'Сделка.Бюджет.Прописью'  => '',
-            'Скидка'                  => '',
-            'Вид документа'           => '',
-            'Серия/номер паспорта'    => '',
-            'Кем выдан паспорт'       => '',
-            'Адрес по прописке'       => '',
-            'Номер членского билета'  => '',
-            'Сделка.Ответственный'    => '',
-            'Дата начала обучения'    => '',
-            'Дата окончания обучения' => '',
-            'Инструктор'              => '',
-            'Группа'                  => '',
-            'Коробка'                 => '',
-            'Дата'                    => '',
-            'Дата.Формат.Расширенный' => '',
-            'Год'                     => '',
-        ];
+        authAmoInterface($cookieFileName);
         $leadPairs = loadLeadReplacementPairs($cookieFileName, $leadId);
 
         $templateFile = downloadTemplate($templateId, $service);
         $replacedFile = replaceInDocxTemplate($templateFile, $leadPairs);
-        header("Content-disposition: attachment; filename=" . $replacedFile);
+        $downloadFileName = getFilename($templateId, $service);
+        $fileNameSuffix = $leadPairs['Контакт.Имя'].'_'.$leadPairs['Группа'];
+        $downloadFileName = str_replace('.', '_'.$fileNameSuffix.'.', $downloadFileName);
+
+        header("Content-disposition: attachment; filename=" . $downloadFileName);
         header("Content-type: application/vnd.openxmlformats-officedocument.wordprocessingml.document");
         readfile($replacedFile);
     break;

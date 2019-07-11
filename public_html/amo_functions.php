@@ -202,6 +202,7 @@ function loadLeadReplacementPairs($cookieFileName, $leadId) {
         'Контакт.Телефон.Рабочий' => '',
         'Сделка.Бюджет'           => $apiLeadData['sale'],
         'Сделка.Бюджет.Прописью'  => numberToText($apiLeadData['sale']),
+        'Сделка.Ответственный'    => '',
     ];
 
     foreach ($apiLeadData['custom_fields'] as $field) {
@@ -781,6 +782,23 @@ function getGroupsInfo($leads) {
     }
 
     return $groups;
+}
+
+function getStudents($leads) {
+    $students = [];
+
+    foreach ($leads as $leadData) {
+        $groupName = $leadData['cf' . GROUP_FIELD_ID];
+
+        if ($groupName) {
+            $students[$groupName][] = [
+                'id' => $leadData['id'],
+                'name' => $leadData['main_contact']['name'],
+            ];
+        }
+    }
+
+    return $students;
 }
 
 function declension($number, $types) {
