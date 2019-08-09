@@ -68,7 +68,7 @@ function authAmoInterface($cookieFileName) {
     curl_close($requestHandle);
 }
 function loadApiLeads($cookieFileName) {
-    $leadsUrl = "https://mailjob.amocrm.ru/api/v2/leads?filter[active]=1";
+    $leadsUrl = "https://mailjob.amocrm.ru/api/v2/leads?filter[active]=1&PAGE_SIZE[1]=1000";
     $requestHandle = curl_init();
     curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
     curl_setopt($requestHandle, CURLOPT_URL, $leadsUrl);
@@ -140,7 +140,20 @@ function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
 
     return $parsedResponse;
 }
+
+function loadGroups($cookieFileName) {
+    $apiResponse = loadApiLeads($cookieFileName);
+    $leads = $apiResponse['_embedded']['items'];
+    $groups = getGroupsInfo($leads);
+
+    return $groups;
+}
+
 function getCustomFieldValue($fieldId, $leadData) {
+    if (isset($leadData['cf' . $fieldId])) {
+        return $leadData['cf' . $fieldId];
+    }
+
     foreach ($leadData['custom_fields'] as $fieldData) {
         if ($fieldData['id'] == $fieldId) {
             $fieldValue = $fieldData['values'][0]['value'];
@@ -187,6 +200,34 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
 
     return $leadData;
 }
+function makeReplacementPairs($apiLeadData, $contactData) {
+    $replacementPairs = [
+        'Сделка.ID'               => $apiLeadData['id'],
+        'Контакт.Имя'             => $contactData['name'],
+        'Контакт.Телефон'         => '',
+        'Контакт.Телефон.Рабочий' => '',
+        'Сделка.Бюджет'           => $apiLeadData['sale'],
+        'Сделка.Бюджет.Прописью'  => is_numeric($apiLeadData['sale']) ? numberToText($apiLeadData['sale']) : '',
+        'Сделка.Ответственный'    => '',
+    ];
+
+    foreach ($apiLeadData['custom_fields'] as $field) {
+        $replacementPairs[ $field['name'] ] = $field['values'][0]['value'];
+    }
+
+    if ($contactData['custom_fields']) {
+        foreach ($contactData['custom_fields'] as $field) {
+            $replacementPairs[$field['name']] = $field['values'][0]['value'];
+
+            if ($field['name'] == 'Телефон') {
+                $replacementPairs['Контакт.Телефон'] = $field['values'][0] ? $field['values'][0]['value'] : '';
+                $replacementPairs['Контакт.Телефон.Рабочий'] = $field['values'][1] ? $field['values'][1]['value'] : '';
+            }
+        }
+    }
+
+    return $replacementPairs;
+}
 function loadLeadReplacementPairs($cookieFileName, $leadId) {
     $apiData = loadApiLead($cookieFileName, $leadId);
     $apiLeadData = $apiData['_embedded']['items'][0];
@@ -195,30 +236,7 @@ function loadLeadReplacementPairs($cookieFileName, $leadId) {
     $apiData = loadApiContact($cookieFileName, $contactId);
     $contactData = $apiData['_embedded']['items'][0];
 
-    $replacementPairs = [
-        'Сделка.ID' => $apiLeadData['id'],
-        'Контакт.Имя'             => $contactData['name'],
-        'Контакт.Телефон'         => '',
-        'Контакт.Телефон.Рабочий' => '',
-        'Сделка.Бюджет'           => $apiLeadData['sale'],
-        'Сделка.Бюджет.Прописью'  => numberToText($apiLeadData['sale']),
-        'Сделка.Ответственный'    => '',
-    ];
-
-    foreach ($apiLeadData['custom_fields'] as $field) {
-        $replacementPairs[ $field['name'] ] = $field['values'][0]['value'];
-    }
-
-    foreach ($contactData['custom_fields'] as $field) {
-        $replacementPairs[ $field['name'] ] = $field['values'][0]['value'];
-
-        if ($field['name'] == 'Телефон') {
-            $replacementPairs['Контакт.Телефон'] = $field['values'][0] ? $field['values'][0]['value'] : '';
-            $replacementPairs['Контакт.Телефон.Рабочий'] = $field['values'][1] ? $field['values'][1]['value'] : '';
-        }
-    }
-
-    return $replacementPairs;
+    return makeReplacementPairs($apiLeadData, $contactData);
 }
 function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
     $contactsAndHours = [];
@@ -755,29 +773,32 @@ function getGibddTickets() {
         ],
     ];
 }
+
 function getGroupsInfo($leads) {
     $groups = [];
 
     foreach ($leads as $leadData) {
-        $groupName = $leadData['cf' . GROUP_FIELD_ID];
+        $groupName = getCustomFieldValue(GROUP_FIELD_ID, $leadData);
         $isGroupAdded = isset($groups[$groupName]);
 
         if ($groupName && !$isGroupAdded) {
             $groups[$groupName] = [
                 "name"   => $groupName,
-                "start"  => $leadData['cf541467'] ? date('d.m.Y', $leadData['cf541467']) : false,
-                "end"    => $leadData['cf541469'] ? date('d.m.Y', $leadData['cf541469']) : false,
-                "exam"   => $leadData['cf540659'] ? date('d.m.Y', $leadData['cf540659']) : false,
+                "start"  => getCustomFieldValue(541467, $leadData) ? date('d.m.Y', getCustomFieldValue(541467, $leadData)) : false,
+                "end"    => getCustomFieldValue(541469, $leadData) ? date('d.m.Y', getCustomFieldValue(541469, $leadData)) : false,
+                "exam"   => getCustomFieldValue(540659, $leadData) ? date('d.m.Y', getCustomFieldValue(540659, $leadData)) : false,
                 "people" => 0,
-                "hours"  => 0,
+                "totalHours"  => 0,
                 "salary" => 0,
+                "leads" => [],
             ];
         }
 
         if ($groupName) {
             $groups[$groupName]['people'] += 1;
-            $groups[$groupName]['totalHours'] += $leadData['cf' . HOURS_FIELD_ID];
-            $groups[$groupName]['salary'] += $leadData['cf' . HOURS_FIELD_ID] * HOUR_PRICE;
+            $groups[$groupName]['totalHours'] += getCustomFieldValue(HOURS_FIELD_ID, $leadData);
+            $groups[$groupName]['salary'] += getCustomFieldValue(HOURS_FIELD_ID, $leadData) * HOUR_PRICE;
+            $groups[$groupName]['leads'][] = $leadData;
         }
     }
 

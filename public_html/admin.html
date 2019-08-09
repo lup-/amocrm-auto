@@ -102,16 +102,20 @@
                         {{currentCity ? currentCity : 'Выбор города'}}
                     </button>
                     <div class="dropdown-menu" aria-labelledby="cityMenuButton">
-                        <a class="dropdown-item" href="#" v-for="city in cities" v-on:click="updateCurrentCity(city)">{{city}}</a>
+                        <a class="dropdown-item" href="#" v-for="city in cities" @click="updateCurrentCity(city)">{{city}}</a>
                     </div>
                 </div>
 
                 <div class="dropdown mb-2" v-if="cityTemplates">
                     <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="templateMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        {{currentTemplate ? currentTemplate.name : 'Выбор шаблона'}}
+                        {{currentTemplate ? currentTemplate.title : 'Выбор шаблона'}}
                     </button>
                     <div class="dropdown-menu" aria-labelledby="templateMenuButton">
-                        <a class="dropdown-item" href="#" v-for="template in cityTemplates" v-on:click="updateCurrentTemplateId(template.id)">{{template.name}}</a>
+                        <span
+                        <a class="dropdown-item" href="#" v-for="template in cityTemplates" @click="updateCurrentTemplateId(template.id)" >
+                            <span v-if="template.type === 'personal'">{{template.title}}</span>
+                            <span v-else>{{template.title}} (на группу)</span>
+                        </a>
                     </div>
                 </div>
 
@@ -120,18 +124,22 @@
                         {{currentGroup ? 'Группа ' + currentGroup.name : 'Выбор группы'}}
                     </button>
                     <div class="dropdown-menu" aria-labelledby="docsGroupMenuButton">
-                        <a class="dropdown-item" href="#" v-for="group in groups" v-on:click="updateCurrentGroup(group.name)">Группа {{group.name}}</a>
+                        <a class="dropdown-item" href="#" v-for="group in groups" @click="updateCurrentGroup(group.name)">Группа {{group.name}}</a>
                     </div>
                 </div>
 
-                <ul class="list-group" v-if="currentGroup">
+                <ul class="list-group mt-4" v-if="currentGroup && isCurrentTemplatePersonal">
                     <li class="list-group-item d-flex align-items-center" v-for="student in currentGroup.students">
-                        <span class="w-75 mr-4">{{student.name}}</span>
-                        <button class="btn btn-primary" v-on:click="downloadSelectedDocument(student.id)">
+                        <span class="w-75 mr-4 flex-fill">{{student.name}}</span>
+                        <button class="btn btn-primary" @click="downloadSelectedDocument(student.id)">
                             <i class="fas fa-download"></i>
                         </button>
                     </li>
                 </ul>
+
+                <button class="btn btn-primary btn-block mt-4" @click="downloadSelectedGroupDocument(currentGroup)" v-else-if="currentGroup">
+                    <i class="fas fa-download"></i> Скачать документ для группы
+                </button>
             </div>
         </section>
     </script>

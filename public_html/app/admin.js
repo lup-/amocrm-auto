@@ -1,3 +1,7 @@
+function clone(object) {
+    return JSON.parse(JSON.stringify(object));
+}
+
 Vue.component('docs', {
     template: '#docs-template',
     props: ['groups', 'templates'],
@@ -20,6 +24,9 @@ Vue.component('docs', {
         },
         downloadSelectedDocument(studentId) {
             window.location.href = `/files.php?action=makedoc&templateId=${this.currentTemplateId}&leadId=${studentId}`;
+        },
+        downloadSelectedGroupDocument(group) {
+            window.location.href = `/files.php?action=makegroupdoc&templateId=${this.currentTemplateId}&group=${group.name}`;
         }
     },
     computed: {
@@ -27,20 +34,37 @@ Vue.component('docs', {
             return Object.keys(this.templates);
         },
         cityTemplates() {
-            return this.currentCity !== false ? this.templates[this.currentCity] : false;
+            if (this.currentCity === false) {
+                return false;
+            }
+
+            let templates = [];
+            Object.keys(this.templates[this.currentCity]).forEach((type) => {
+                this.templates[this.currentCity][type].forEach((template) => {
+                    let typedTemplate = clone(template);
+                    typedTemplate.type = type;
+
+                    templates.push(typedTemplate);
+                });
+            });
+
+            return templates;
         },
         currentTemplate() {
             if (!this.currentCity || !this.currentTemplateId) {
                 return false;
             }
 
-            return this.templates[this.currentCity].reduce((foundTemplate, iteratedTemplate) => {
+            return this.cityTemplates.reduce((foundTemplate, iteratedTemplate) => {
                 if (iteratedTemplate.id == this.currentTemplateId) {
                     return iteratedTemplate;
                 }
 
                 return foundTemplate;
             }, false);
+        },
+        isCurrentTemplatePersonal() {
+            return this.currentTemplate && this.currentTemplate.type === 'personal';
         },
         currentGroup() {
             return this.currentGroupCode !== false
