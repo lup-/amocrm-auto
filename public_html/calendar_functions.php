@@ -39,6 +39,13 @@ function getEvents($service, $calendarId, $timestamp) {
         ? false
         : $events;
 }
+
+/**
+ * @param $service
+ * @param $calendarId
+ * @param $timestamp
+ * @return Google_Service_Calendar_Event[] | bool
+ */
 function getAllEvents($service, $calendarId, $timestamp) {
     $startOfDay = $timestamp;
 
@@ -89,6 +96,24 @@ function getTimeframes($service, $calendarId, $timestamp) {
 
     return $timeframes;
 }
+function getFullCalendarEvent($service, $calendarId, $timestamp) {
+    $events = getAllEvents($service, $calendarId, $timestamp);
+    $fullCalendarEvents = [];
+
+    foreach ($events as $event) {
+        $start = new DateTime($event->start->dateTime);
+        $end = new DateTime($event->end->dateTime);
+
+        $fullCalendarEvents[] = [
+            'id' => $event->getId(),
+            'title' => $event->getSummary(),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    return $fullCalendarEvents;
+}
 function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
     $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $date." ".$startTimeInput, new DateTimeZone('Europe/Moscow'));
     if (!$startTime) {
@@ -115,4 +140,30 @@ function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
     return ($event->htmlLink)
         ? $event->htmlLink
         : false;
+}
+function updateEvent($service, $calendarId, $eventId, $newStart, $newEnd) {
+    /**
+     * @var $event Google_Service_Calendar_Event
+     */
+    $event = $service->events->get($calendarId, $eventId);
+
+    $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $newStart, new DateTimeZone('Europe/Moscow'));
+    $endTime = DateTime::createFromFormat('Y-m-d H:i:s', $newEnd, new DateTimeZone('Europe/Moscow'));
+
+    $startTimeEvent = new Google_Service_Calendar_EventDateTime([
+        'dateTime' => $startTime->format(DateTime::ISO8601),
+        'timeZone' => 'Europe/Moscow',
+    ]);
+
+    $endTimeEvent = new Google_Service_Calendar_EventDateTime([
+        'dateTime' => $endTime->format(DateTime::ISO8601),
+        'timeZone' => 'Europe/Moscow',
+    ]);
+
+    $event->setStart($startTimeEvent);
+    $event->setEnd($endTimeEvent);
+
+    $updatedEvent = $service->events->update($calendarId, $eventId, $event);
+
+    return $updatedEvent ? $updatedEvent : false;
 }

@@ -16,6 +16,10 @@ switch ($_REQUEST['action']) {
         $timestamp = DateTime::createFromFormat('Y-m-d H:i:s', $_REQUEST['date'].' 00:00:00')->getTimestamp();
         $response = getTimeframes($service, $calendarId, $timestamp);
     break;
+    case 'listEvents':
+        $timestamp = (new DateTime('today'))->getTimestamp();
+        $response = getFullCalendarEvent($service, $calendarId, $timestamp);
+    break;
     case 'add':
         $studentName = $_REQUEST['studentName'];
         $date = $_REQUEST['date'];
@@ -23,6 +27,15 @@ switch ($_REQUEST['action']) {
 
         $eventLink = addEvent($service, $calendarId, $studentName, $date, $startTime);
         $response = ["success" => boolval($eventLink), "link" => $eventLink];
+    break;
+    case 'update':
+        $newStart = $_REQUEST['start'];
+        $newEnd = $_REQUEST['end'];
+        $eventId = $_REQUEST['id'];
+
+        $updatedEvent = updateEvent($service, $calendarId, $eventId, $newStart, $newEnd);
+
+        $response = ["success" => boolval($updatedEvent), "event" => $updatedEvent];
     break;
 }
 
