@@ -20,18 +20,23 @@ document.addEventListener('DOMContentLoaded', function () {
       // prevents current tab from navigating
       arg.jsEvent.preventDefault();
     },
-    eventDragStart: function (info) {
+    // eventDragStart: function (info) {
 
+    //   var start = info.event.start.toISOString().replace('.000Z', '').replace('T', ' ');
+    //   console.log(start);
+    //   var end = info.event.end.toISOString().replace('.000Z', '').replace('T', ' ');
+    //   $.ajax({
+    //     url: "http://amo-auto.humanistic.tech/calendar.php?action=update&instructorId=920531&id=" + info.event.id + "&start=" + start + "&end=" + end
+    //   })
+    // },
+    events: 'http://amo-auto.humanistic.tech/calendar.php?action=listEvents&instructorId=920531',
+    eventDrop: function (info) {
       var start = info.event.start.toISOString().replace('.000Z', '').replace('T', ' ');
-      console.log(start);
       var end = info.event.end.toISOString().replace('.000Z', '').replace('T', ' ');
-      console.log(end);
-
       $.ajax({
         url: "http://amo-auto.humanistic.tech/calendar.php?action=update&instructorId=920531&id=" + info.event.id + "&start=" + start + "&end=" + end
       })
     },
-    events: 'http://amo-auto.humanistic.tech/calendar.php?action=listEvents&instructorId=920531'
   });
   calendar.render();
 });
