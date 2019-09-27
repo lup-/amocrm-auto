@@ -24,7 +24,6 @@ function getEvents($service, $calendarId, $timestamp) {
     $startOfDay = $timestamp;
     $dayLengthSeconds = 86400;
     $endOfDay = $startOfDay + $dayLengthSeconds;
-
     $optParams = [
         'maxResults'   => 10,
         'orderBy'      => 'startTime',
@@ -34,14 +33,18 @@ function getEvents($service, $calendarId, $timestamp) {
     ];
     $results = $service->events->listEvents($calendarId, $optParams);
     $events = $results->getItems();
-
     return empty($events)
         ? false
         : $events;
 }
+/**
+ * @param $service
+ * @param $calendarId
+ * @param $timestamp
+ * @return Google_Service_Calendar_Event[] | bool
+ */
 function getAllEvents($service, $calendarId, $timestamp) {
     $startOfDay = $timestamp;
-
     $optParams = [
         'maxResults'   => 10,
         'orderBy'      => 'startTime',
@@ -50,7 +53,6 @@ function getAllEvents($service, $calendarId, $timestamp) {
     ];
     $results = $service->events->listEvents($calendarId, $optParams);
     $events = $results->getItems();
-
     return empty($events)
         ? false
         : $events;
@@ -70,24 +72,35 @@ function getTimeframes($service, $calendarId, $timestamp) {
         "21:00" => [],
     ];
     $events = getEvents($service, $calendarId, $timestamp);
-
     if (!$events) {
         return $timeframes;
     }
-
     foreach ($events as $event) {
         $start = new DateTime($event->start->dateTime);
         $end = new DateTime($event->end->dateTime);
         $timeframe = $start->format('H:i');
-
         $timeframes[$timeframe][] = [
             'start' => $start->format('H:i'),
             'end' => $end->format('H:i'),
             'text' => $event->getSummary(),
         ];
     }
-
     return $timeframes;
+}
+function getFullCalendarEvent($service, $calendarId, $timestamp) {
+    $events = getAllEvents($service, $calendarId, $timestamp);
+    $fullCalendarEvents = [];
+    foreach ($events as $event) {
+        $start = new DateTime($event->start->dateTime);
+        $end = new DateTime($event->end->dateTime);
+        $fullCalendarEvents[] = [
+            'id' => $event->getId(),
+            'title' => $event->getSummary(),
+            'start' => $start->format('Y-m-d H:i:s'),
+            'end' => $end->format('Y-m-d H:i:s'),
+        ];
+    }
+    return $fullCalendarEvents;
 }
 function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
     $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $date." ".$startTimeInput, new DateTimeZone('Europe/Moscow'));
@@ -97,7 +110,6 @@ function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
     $oneAndHalfHourSpec = 'PT1H30M0S';
     $endTime = clone $startTime;
     $endTime->add(new DateInterval($oneAndHalfHourSpec));
-
     $event = new Google_Service_Calendar_Event([
         'summary'     => $studentName,
         'description' => EVENT_DESCRIPTION,
@@ -110,9 +122,28 @@ function addEvent($service, $calendarId, $studentName, $date, $startTimeInput) {
             'timeZone' => 'Europe/Moscow',
         ]
     ]);
-
     $event = $service->events->insert($calendarId, $event);
     return ($event->htmlLink)
         ? $event->htmlLink
         : false;
+}
+function updateEvent($service, $calendarId, $eventId, $newStart, $newEnd) {
+    /**
+     * @var $event Google_Service_Calendar_Event
+     */
+    $event = $service->events->get($calendarId, $eventId);
+    $startTime = DateTime::createFromFormat('Y-m-d H:i:s', $newStart, new DateTimeZone('Europe/Moscow'));
+    $endTime = DateTime::createFromFormat('Y-m-d H:i:s', $newEnd, new DateTimeZone('Europe/Moscow'));
+    $startTimeEvent = new Google_Service_Calendar_EventDateTime([
+        'dateTime' => $startTime->format(DateTime::ISO8601),
+        'timeZone' => 'Europe/Moscow',
+    ]);
+    $endTimeEvent = new Google_Service_Calendar_EventDateTime([
+        'dateTime' => $endTime->format(DateTime::ISO8601),
+        'timeZone' => 'Europe/Moscow',
+    ]);
+    $event->setStart($startTimeEvent);
+    $event->setEnd($endTimeEvent);
+    $updatedEvent = $service->events->update($calendarId, $eventId, $event);
+    return $updatedEvent ? $updatedEvent : false;
 }

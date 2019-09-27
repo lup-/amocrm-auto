@@ -1,37 +1,63 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="robots" content="noindex, nofollow">
     <title>Накатка часов</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="loader.css">
+    <link rel="stylesheet" href="packages\core\main.css">
+    <link rel="stylesheet" href="packages\daygrid\main.css">
+    <link rel="stylesheet" href="style.css">
     <style>
-        #instructorName {font-size: 0.9rem;}
-        .nav-tabs .nav-item.show .nav-link, .nav-tabs .nav-link.active {border-color: transparent!important;background-color: transparent!important;}
-        .nav-tabs {border-bottom: none;}
-        .date-text {font-size: 0.8rem;text-align: right;min-width: 4rem;}
+        #instructorName {
+            font-size: 0.9rem;
+        }
+
+        .nav-tabs .nav-item.show .nav-link,
+        .nav-tabs .nav-link.active {
+            border-color: transparent !important;
+            background-color: transparent !important;
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+        }
+
+        .date-text {
+            font-size: 0.8rem;
+            text-align: right;
+            min-width: 4rem;
+        }
     </style>
 </head>
+
 <body>
 
     <nav class="navbar navbar-dark bg-primary">
         <span class="navbar-brand" id="instructorName">...</span>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1"
-                aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Показать меню"><span class="navbar-toggler-icon"></span></button>
+            aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Показать меню"><span
+                class="navbar-toggler-icon"></span></button>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent1">
             <ul class="navbar-nav mr-auto nav nav-tabs" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active show" id="groups-tab" data-toggle="tab" href="#groups" role="tab" aria-controls="groups" aria-selected="true">Группы и зарплата</a>
+                    <a class="nav-link active show" id="groups-tab" data-toggle="tab" href="#groups" role="tab"
+                        aria-controls="groups" aria-selected="true">Группы и зарплата</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab" aria-controls="schedule" aria-selected="false">Расписание</a>
+                    <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab"
+                        aria-controls="schedule" aria-selected="false">Расписание</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="student-tab" data-toggle="tab" href="#student" role="tab" aria-controls="student" aria-selected="false">Записать ученика</a>
+                    <a class="nav-link" id="student-tab" data-toggle="tab" href="#student" role="tab"
+                        aria-controls="student" aria-selected="false">Записать ученика</a>
                 </li>
             </ul>
         </div>
@@ -45,25 +71,27 @@
                 <p class="mt-2 mb-0">Всего человек: <span id="totalCount">...</span></p>
                 <p class="mb-0">Всего ЗП: <span id="totalSalary">...</span></p>
                 <div class="accordion mt-3" id="leadsAccordion">
-                    <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;"><div style="width:100%;height:100%" class="lds-pacman"><div><div></div><div></div><div></div></div><div><div></div><div></div></div></div></div>
+                    <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
+                        <div style="width:100%;height:100%" class="lds-pacman">
+                            <div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
-            <h2 class="text-center">Расписание</h2>
-            <div class="d-flex flex-row align-items-center justify-content-center pb-4">
-                <button class="btn btn-back">&#8249;</button>
-                <h5 class="flex-fill m-0 text-center ">
-                    <label for="goto-date" class="schedule-date">
-                    </label>
-                    <input id="goto-date" type="date" class="form-control" style="display: none">
-                </h5>
-                <button class="btn btn-fwd">&#8250;</button>
-            </div>
-            <div class="schedule-list mb-4">
 
-            </div>
+        <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+
+            <div id="calendar"></div>
         </div>
 
         <div class="tab-pane fade" id="student" role="tabpanel" aria-labelledby="student-tab">
@@ -104,9 +132,20 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
     <script src="amo.js" crossorigin="anonymous"></script>
+    <script src="script.js"></script>
+    <script src="packages/core/main.js"></script>
+    <script src="packages/interaction/main.js"></script>
+    <script src="packages/timegrid/main.js"></script>
+    <script src="packages/daygrid/main.js"></script>
+    <script src="packages/list/main.js"></script>
+    <script src="packages/google-calendar/main.js"></script>
     <script>
         function sortByGroups(leadsData) {
             let sortedLeads = {};
@@ -193,7 +232,7 @@
             updateTimeframeInput(instructorId, today);
 
             $(document).on('change', '#date', function (event) {
-                let eventDate = new Date( $(this).val() );
+                let eventDate = new Date($(this).val());
                 updateTimeframeInput(instructorId, eventDate);
             });
 
@@ -224,7 +263,7 @@
                         $form[0].reset();
                         $button.attr('disabled', false).text('Записать');
 
-                        let currentScheduleDate = dateFromFormat( $('.schedule-date').text() );
+                        let currentScheduleDate = dateFromFormat($('.schedule-date').text());
                         loadAndShowSchedule(instructorId, currentScheduleDate);
                         loadAndShowInstructorData(instructorId);
                     })
@@ -324,7 +363,7 @@
             loadAndShowSchedule(instructorId, today);
 
             $(document).on('click', '.btn-fwd', function () {
-                let tomorrow = dateFromFormat( $('.schedule-date').text() );
+                let tomorrow = dateFromFormat($('.schedule-date').text());
                 tomorrow.setDate(tomorrow.getDate() + 1);
 
                 $('[name="date"]').val(formatDate(tomorrow, 'system'));
@@ -349,7 +388,7 @@
             });
 
             $(document).on('click', '.btn-back', function () {
-                let yesterday = dateFromFormat( $('.schedule-date').text() );
+                let yesterday = dateFromFormat($('.schedule-date').text());
                 yesterday.setDate(yesterday.getDate() - 1);
 
                 $('[name="date"]').val(formatDate(yesterday, 'system'));
@@ -364,9 +403,8 @@
             initGroupsTab(instructorId);
             initStudentTab(instructorId);
             initScheduleTab(instructorId);
-
-
         });
     </script>
 </body>
+
 </html>
