@@ -14,28 +14,34 @@ function getCalendarList() {
         "1074819" => "cb915lf43oahv74m4iabi2k7qo@group.calendar.google.com", //Кисилев Сергей Сергеевич
         "1090033" => "d3ca8ghfr0avddfmrtjn0b2bmk@group.calendar.google.com", //Мельников Владимир Юрьевич
         "1098473" => "2qkr3ue25lu8vh1c35i8t1plg8@group.calendar.google.com", //Мельников Дмитрий Геннадьевич
+        "920541"  => "ovlnarn2t1v7q6b7fpln0s0jak@group.calendar.google.com", //ПРИКАЗ
+        "1113415" => "8q4lvlg4k9ul8igulkbj4g5hbc@group.calendar.google.com", //Панкратов Леонид Александрович
+        "1113417" => "0j3cure22pujltndrqce02gnc0@group.calendar.google.com", //Мельников Геннадий Валентинович
     ];
 }
 function getInstructorCalendarId($instructorId) {
     $list = getCalendarList();
     return $list[$instructorId];
 }
-function getEvents($service, $calendarId, $timestamp) {
-    $startOfDay = $timestamp;
-    $dayLengthSeconds = 86400;
-    $endOfDay = $startOfDay + $dayLengthSeconds;
+function getTimeRangeEvents($service, $calendarId, $startTimestamp, $endTimestamp) {
     $optParams = [
         'maxResults'   => 10,
         'orderBy'      => 'startTime',
         'singleEvents' => true,
-        'timeMin'      => date('c', $startOfDay),
-        'timeMax'      => date('c', $endOfDay),
+        'timeMin'      => date('c', $startTimestamp),
+        'timeMax'      => date('c', $endTimestamp),
     ];
     $results = $service->events->listEvents($calendarId, $optParams);
     $events = $results->getItems();
     return empty($events)
         ? false
         : $events;
+}
+function getEvents($service, $calendarId, $timestamp) {
+    $startOfDay = $timestamp;
+    $dayLengthSeconds = 86400;
+    $endOfDay = $startOfDay + $dayLengthSeconds;
+    return getTimeRangeEvents($service, $calendarId, $startOfDay, $endOfDay);
 }
 /**
  * @param $service
@@ -87,17 +93,23 @@ function getTimeframes($service, $calendarId, $timestamp) {
     }
     return $timeframes;
 }
-function getFullCalendarEvent($service, $calendarId, $timestamp) {
-    $events = getAllEvents($service, $calendarId, $timestamp);
+function getFullCalendarEvent($service, $calendarId, $startTimestamp, $endTimestamp = false) {
+    if ($endTimestamp) {
+        $events = getTimeRangeEvents($service, $calendarId, $startTimestamp, $endTimestamp);
+    }
+    else {
+        $events = getAllEvents($service, $calendarId, $startTimestamp);
+    }
     $fullCalendarEvents = [];
     foreach ($events as $event) {
         $start = new DateTime($event->start->dateTime);
         $end = new DateTime($event->end->dateTime);
         $fullCalendarEvents[] = [
-            'id' => $event->getId(),
+            'id'    => $event->getId(),
             'title' => $event->getSummary(),
+            'url'   => $event->getHtmlLink(),
             'start' => $start->format('Y-m-d H:i:s'),
-            'end' => $end->format('Y-m-d H:i:s'),
+            'end'   => $end->format('Y-m-d H:i:s'),
         ];
     }
     return $fullCalendarEvents;

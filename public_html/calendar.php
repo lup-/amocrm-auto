@@ -13,8 +13,18 @@ switch ($_REQUEST['action']) {
         $response = getTimeframes($service, $calendarId, $timestamp);
     break;
     case 'listEvents':
-        $timestamp = (new DateTime('today'))->getTimestamp();
-        $response = getFullCalendarEvent($service, $calendarId, $timestamp);
+        $startTimestamp = (new DateTime('today'))->getTimestamp();
+        $endTimestamp = false;
+
+        if ($_REQUEST['start']) {
+            $startTimestamp = (new DateTime($_REQUEST['start']))->getTimestamp();
+        }
+
+        if ($_REQUEST['end']) {
+            $endTimestamp = (new DateTime($_REQUEST['end']))->getTimestamp();
+        }
+
+        $response = getFullCalendarEvent($service, $calendarId, $startTimestamp, $endTimestamp);
     break;
     case 'add':
         $studentName = $_REQUEST['studentName'];

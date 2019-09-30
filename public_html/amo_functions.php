@@ -162,7 +162,7 @@ function getCustomFieldValue($fieldId, $leadData) {
                 $fieldValue = "нет";
             }
 
-            return$fieldValue;
+            return $fieldValue;
         }
     }
 
@@ -774,6 +774,13 @@ function getGibddTickets() {
     ];
 }
 
+function timestampToFormat($format, $timestamp) {
+    $date = new DateTime();
+    $date->setTimestamp($timestamp);
+    $date->setTimezone(new DateTimeZone('Europe/Moscow'));
+    return $date->format($format);
+}
+
 function getGroupsInfo($leads) {
     $groups = [];
 
@@ -784,9 +791,9 @@ function getGroupsInfo($leads) {
         if ($groupName && !$isGroupAdded) {
             $groups[$groupName] = [
                 "name"   => $groupName,
-                "start"  => getCustomFieldValue(541467, $leadData) ? date('d.m.Y', getCustomFieldValue(541467, $leadData)) : false,
-                "end"    => getCustomFieldValue(541469, $leadData) ? date('d.m.Y', getCustomFieldValue(541469, $leadData)) : false,
-                "exam"   => getCustomFieldValue(540659, $leadData) ? date('d.m.Y', getCustomFieldValue(540659, $leadData)) : false,
+                "start"  => getCustomFieldValue(541467, $leadData) ? timestampToFormat('d.m.Y', getCustomFieldValue(541467, $leadData)) : false,
+                "end"    => getCustomFieldValue(541469, $leadData) ? timestampToFormat('d.m.Y', getCustomFieldValue(541469, $leadData)) : false,
+                "exam"   => getCustomFieldValue(540659, $leadData) ? timestampToFormat('d.m.Y', getCustomFieldValue(540659, $leadData)) : false,
                 "people" => 0,
                 "totalHours"  => 0,
                 "salary" => 0,
