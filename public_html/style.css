@@ -31,3 +31,24 @@ html, body {
   max-width: 900px;
   margin: 20px auto;
 }
+.fc-toolbar{
+  align-items: baseline;
+  position: relative;
+}
+
+.fc-today-button, .fc-timeGridWeek-button, .fc-listYear-button{
+  display: none;
+}
+@media (max-width: 768px){
+  .fc-center{
+    position: absolute;
+    top: -35px;
+    font-size: 15px;
+    left: 5px;
+  }
+}
+@media (max-width: 768px ){
+  .fc-scroller, .fc-time-grid-container{
+      height: 380px!important;
+  } 
+}

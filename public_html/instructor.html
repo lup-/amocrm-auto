@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="loader.css">
     <link rel="stylesheet" href="packages\core\main.css">
     <link rel="stylesheet" href="packages\daygrid\main.css">
+    <link rel="stylesheet" href="packages/timegrid/main.css">
     <link rel="stylesheet" href="style.css">
     <style>
         #instructorName {
@@ -90,8 +91,9 @@
 
 
         <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
-
-            <div id="calendar"></div>
+            <div class="calendar-container">
+                <div id="calendar"></div>
+            </div>
         </div>
 
         <div class="tab-pane fade" id="student" role="tabpanel" aria-labelledby="student-tab">
@@ -142,10 +144,11 @@
     <script src="script.js"></script>
     <script src="packages/core/main.js"></script>
     <script src="packages/interaction/main.js"></script>
-    <script src="packages/timegrid/main.js"></script>
     <script src="packages/daygrid/main.js"></script>
+    <script src="packages/timegrid/main.js"></script>
     <script src="packages/list/main.js"></script>
     <script src="packages/google-calendar/main.js"></script>
+    <script src='packages/core/locales/ru.js'></script>
     <script>
         function sortByGroups(leadsData) {
             let sortedLeads = {};
@@ -294,6 +297,7 @@
                     $('.schedule-list').html(scheduleHTML);
                 });
         }
+
         function getDateTimeframes(instructorId, date) {
             return loadCalendarEvents(instructorId, date)
                 .then(function (eventsResponse) {
@@ -308,6 +312,7 @@
                     return availtimeframes;
                 });
         }
+
         function updateTimeframeInput(instructorId, eventDate) {
             return getDateTimeframes(instructorId, eventDate)
                 .then(function (timeframes) {
@@ -319,6 +324,7 @@
                     $('#time').html(optionsHTML);
                 });
         }
+
         function initGroupsTab(instructorId) {
             loadAndShowInstructorData(instructorId);
 
@@ -355,7 +361,44 @@
             });
         }
         function initScheduleTab(instructorId) {
-            setupFullCalendar(instructorId);
+            let today = new Date;
+            $('.schedule-date').text(formatDate(today));
+            loadAndShowSchedule(instructorId, today);
+
+            $(document).on('click', '.btn-fwd', function () {
+                let tomorrow = dateFromFormat($('.schedule-date').text());
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                $('[name="date"]').val(formatDate(tomorrow, 'system'));
+                $('.schedule-date').text(formatDate(tomorrow));
+                $('.schedule-list').html("Загрузка...");
+                loadAndShowSchedule(instructorId, tomorrow);
+            });
+
+            $(document).on('change', '#goto-date', function (event) {
+                $('.schedule-date').show();
+                $('#goto-date').hide();
+
+                let goto = new Date(this.value);
+                $('[name="date"]').val(formatDate(goto, 'system'));
+                $('.schedule-date').text(formatDate(goto));
+                loadAndShowSchedule(instructorId, goto);
+            });
+
+            $(document).on('click', '.schedule-date', function () {
+                $('.schedule-date').hide();
+                $('#goto-date').show();
+            });
+
+            $(document).on('click', '.btn-back', function () {
+                let yesterday = dateFromFormat($('.schedule-date').text());
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                $('[name="date"]').val(formatDate(yesterday, 'system'));
+                $('.schedule-date').text(formatDate(yesterday));
+                $('.schedule-list').html("Загрузка...");
+                loadAndShowSchedule(instructorId, yesterday);
+            });
         }
 
         $(function () {
