@@ -8,8 +8,8 @@ function setupFullCalendar(instructorId) {
             center: 'title',
             right: 'dayGridMonth,listYear,timeGridWeek,timeGridDay'
         },
-        locale: 'ru',
         editable: true,
+        locale: 'ru',
         evenLimit: true,
         displayEventTime: false,
         eventStartEditable: true,
@@ -19,7 +19,7 @@ function setupFullCalendar(instructorId) {
             window.open(arg.event.url, '_blank', 'width=1000,height=600');
             arg.jsEvent.preventDefault();
         },
-        events: '/calendar.php?action=listEvents&instructorId='+instructorId,
+        events: '/calendar.php?action=listEvents&instructorId=' + instructorId,
         eventDrop: function (info) {
             var start = info.event.start.toISOString().replace('.000Z', '').replace('T', ' ');
             var end = info.event.end.toISOString().replace('.000Z', '').replace('T', ' ');
