@@ -47,7 +47,10 @@ html, body {
   }
 }
 @media (max-width: 768px ){
-  .fc-scroller, .fc-time-grid-container{
-      height: 380px!important;
-  } 
+  .fc-time-grid-container{
+      height: 500px!important;
+  }
+  .fc-view-container> table{
+    height: 350px!important;
+  }
 }
