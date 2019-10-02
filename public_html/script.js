@@ -8,6 +8,7 @@ function setupFullCalendar(instructorId) {
             center: 'title',
             right: 'dayGridMonth,listYear,timeGridWeek,timeGridDay'
         },
+        locale: 'ru',
         editable: true,
         evenLimit: true,
         displayEventTime: false,

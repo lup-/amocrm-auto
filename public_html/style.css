@@ -24,7 +24,6 @@ html, body {
 #calendar-container {
   position: relative;
   z-index: 1;
-  margin-left: 200px;
 }
 
 #calendar {
