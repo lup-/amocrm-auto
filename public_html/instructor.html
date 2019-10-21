@@ -175,7 +175,7 @@
                     let groupsData = responseData.groups;
                     let totalLeadsCount = Object.keys(unsortedLeadsData).length;
                     let sortedLeads = sortByGroups(unsortedLeadsData);
-                    let groupNames = Object.keys(sortedLeads);
+                    let groupNames = Object.keys(groupsData);
                     let totalSalary = Object.keys(groupsData).reduce(function (accumulator, groupName) {
                         let group = groupsData[groupName];
                         return accumulator + group.salary;
@@ -199,8 +199,8 @@
                                       Группа ${groupName}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dd${groupName}">
-                                      <span class='dropdown-item'>ЗП: ${groupData.salary}</span>
-                                      <span class='dropdown-item'>Человек: ${groupData.people}</span>
+                                      <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
+                                      <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
                                       <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
                                       <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
                                       <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>

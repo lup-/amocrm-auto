@@ -785,9 +785,10 @@ function getGroupsInfo($leads) {
 
     foreach ($leads as $leadData) {
         $groupName = getCustomFieldValue(GROUP_FIELD_ID, $leadData);
+        $isCorrectGroupName = $groupName !== 'false';
         $isGroupAdded = isset($groups[$groupName]);
 
-        if ($groupName && !$isGroupAdded) {
+        if ($groupName && $isCorrectGroupName && !$isGroupAdded) {
             $groups[$groupName] = [
                 "name"   => $groupName,
                 "start"  => getCustomFieldValue(541467, $leadData) ? timestampToFormat('d.m.Y', getCustomFieldValue(541467, $leadData)) : false,
@@ -800,7 +801,7 @@ function getGroupsInfo($leads) {
             ];
         }
 
-        if ($groupName) {
+        if ($groupName && $isCorrectGroupName) {
             $groups[$groupName]['people'] += 1;
             $groups[$groupName]['totalHours'] += getCustomFieldValue(HOURS_FIELD_ID, $leadData);
             $groups[$groupName]['salary'] += getCustomFieldValue(HOURS_FIELD_ID, $leadData) * HOUR_PRICE;
