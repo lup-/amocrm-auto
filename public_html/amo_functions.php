@@ -4,7 +4,7 @@ const HOURS_FIELD_ID = "552963";
 const DEBT_FIELD_ID = "552815";
 const NEEDED_HOURS_FIELD_ID = "414085";
 const PHONE_FIELD_ID = "389479";
-const GROUP_FIELD_ID = "399063";
+const GROUP_FIELD_ID = "580073";
 const MAILJOB_USER_ID = "2475916";
 
 const HOUR_PRICE = 250;
@@ -180,7 +180,7 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
         "ФИО"             => $contactData['name'],
         "Бюджет"          => $apiLeadData['sale'],
         "Категория"       => getCustomFieldValue(405003, $apiLeadData),
-        "Группа"          => getCustomFieldValue(399063, $apiLeadData),
+        "Группа"          => getCustomFieldValue(GROUP_FIELD_ID, $apiLeadData),
         "Коробка"         => getCustomFieldValue(389859, $apiLeadData),
         "Откат по часам"  => getCustomFieldValue(552963, $apiLeadData),
         "Остаток"         => getCustomFieldValue(552815, $apiLeadData),
@@ -262,7 +262,7 @@ function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
             'neededHours' => $leadData['cf' . NEEDED_HOURS_FIELD_ID],
             'debt'        => $leadData['cf' . DEBT_FIELD_ID],
             'phone'       => $phone,
-            'group'       => $leadData['cf' . GROUP_FIELD_ID],
+            'group'       => getCustomFieldValue(GROUP_FIELD_ID, $leadData),
             'schedule'    => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
         ];
     }
@@ -816,7 +816,7 @@ function getStudents($leads) {
     $students = [];
 
     foreach ($leads as $leadData) {
-        $groupName = $leadData['cf' . GROUP_FIELD_ID];
+        $groupName = getCustomFieldValue(GROUP_FIELD_ID, $leadData);
 
         if ($groupName) {
             $students[$groupName][] = [

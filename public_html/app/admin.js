@@ -4,7 +4,7 @@ function clone(object) {
 
 Vue.component('docs', {
     template: '#docs-template',
-    props: ['groups', 'templates'],
+    props: ['groups', 'templates', 'instructors'],
     data() {
         return {
             currentCity: false,
@@ -76,16 +76,28 @@ Vue.component('docs', {
 
 Vue.component('salary', {
     template: '#salary-template',
-    props: ['groups'],
+    props: ['groups', 'templates', 'instructors'],
     data() {
         return {
             currentGroupCode: false,
+            groupNames: []
         }
     },
     methods: {
         updateCurrentGroup(newGroupCode) {
             this.currentGroupCode = newGroupCode;
         },
+        groupCode(groupName) {
+            let groupIndex = this.groupNames.indexOf(groupName);
+
+            if (groupIndex !== -1) {
+                return groupIndex;
+            }
+            else {
+                this.groupNames.push(groupName);
+                return this.groupNames.indexOf(groupName);
+            }
+        }
     },
     computed: {
         currentGroup() {
@@ -98,16 +110,28 @@ Vue.component('salary', {
 
 Vue.component('instructors', {
     template: '#instructors-template',
-    props: ['instructors'],
+    props: ['groups', 'templates', 'instructors'],
     data() {
         return {
             currentInstructorId: false,
+            groupNames: []
         }
     },
     methods: {
         updateCurrentInstructorId(newInstructorId) {
             this.currentInstructorId = newInstructorId;
         },
+        groupCode(groupName) {
+            let groupIndex = this.groupNames.indexOf(groupName);
+
+            if (groupIndex !== -1) {
+                return groupIndex;
+            }
+            else {
+                this.groupNames.push(groupName);
+                return this.groupNames.indexOf(groupName);
+            }
+        }
     },
     computed: {
         currentInstructor() {
