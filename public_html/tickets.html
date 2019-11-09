@@ -1,132 +1,169 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="robots" content="noindex, nofollow">
     <title>Билеты</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="loader.css">
     <link rel="stylesheet" href="menu.css">
     <style>
         .card-body .btn {
-            white-space: pre-wrap!important;
+            white-space: pre-wrap !important;
         }
+
         #vk_app_pdd {
             margin: auto;
         }
+
+        #exam {
+            margin-top: 10px;
+            text-align: center;
+            background-color: #afafaf;
+            color: #fff;
+        }
     </style>
 </head>
+
 <body>
-<div class="container pt-4">
-    <div class="row">
-        <div class="col-sm">
-        </div>
-        <div class="col-sm" id="centralContainer">
-            <section id="vk_app_pdd" style="visibility: hidden; position: absolute"></section>
-            <section id="question">
+    <div class="container pt-4">
 
-            </section>
-            <section id="tickets-container">
-                <h3>Вопросы по ПДД</h3>
-                <div id="tickets" class="list-group">
-                    <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;"><div style="width:100%;height:100%" class="lds-pacman"><div><div></div><div></div><div></div></div><div><div></div><div></div></div></div></div>
-                </div>
-            </section>
+        <div class="row">
+            <div class="col-sm">
+            </div>
+            <div class="col-sm" id="centralContainer">
+                <section id="vk_app_pdd" style="visibility: hidden; position: absolute"></section>
+                <section id="question">
+
+                </section>
+                <section id="tickets-container">
+                    <h3>Вопросы по ПДД</h3>
+                    <div id="tickets" class="list-group">
+                        <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
+                            <div style="width:100%;height:100%" class="lds-pacman">
+                                <div>
+                                    <div></div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                                <div>
+                                    <div></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-sm">
+            </div>
         </div>
-        <div class="col-sm">
+        <div class="row">
+            <div class="col-sm">
+                <button class="btn btn-primary btn-block show-vk mt-3">
+                    Приложение VK
+                </button>
+                <button class="btn btn-primary btn-block show-tickets mt-3" style="display: none">
+                    Билеты
+                </button>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm">
-            <button class="btn btn-primary btn-block show-vk mt-3">
-                Приложение VK
-            </button>
-            <button class="btn btn-primary btn-block show-tickets mt-3" style="display: none">
-                Билеты
-            </button>
-        </div>
-    </div>
-</div>
 
-<script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
-<script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-<script src="amo.js" crossorigin="anonymous"></script>
-<script>
-    let allQuestions = false;
-    let errors = 0;
-    let correct = 0;
+    <script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous">
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous">
+    </script>
+    <script src="amo.js" crossorigin="anonymous"></script>
+    <script>
+        // $('#tickets-container').append(
+        //     "<a href='#' id='exam' class='list-group-item list-group-item-action section-link'>Экзамен</a>"
+        // );
+        let allQuestions = false;
+        let errors = 0;
+        let correct = 0;
 
-    function getAllQuestions() {
-        return allQuestions || [];
-    }
 
-    function getActiveSectionIndex() {
-        return $('#question').data('active-section') || false;
-    }
-
-    function getErrorsCount() {
-        return errors;
-    }
-
-    function getCorrectCount() {
-        return correct;
-    }
-
-    function addErrorCount() {
-        errors += 1;
-    }
-
-    function addCorrectCount() {
-        correct += 1;
-    }
-
-    function updateErrorCountDOM() {
-        $('.errors-count').text(getErrorsCount());
-    }
-
-    function updateCorrectCountDOM() {
-        $('.correct-count').text(getCorrectCount());
-    }
-
-    function showPageBlock(pageBlockId) {
-        $('#question, #tickets-container').hide();
-        $('#vk_app_pdd').css({'visibility': 'hidden', 'position': 'absolute'});
-
-        if (pageBlockId === 'vk_app_pdd') {
-            $('#vk_app_pdd').css({'visibility': 'visible', 'position': 'relative'});
-        }
-        else {
-            $('#'+pageBlockId).show();
-        }
-    }
-
-    function drawSections(sections) {
-        let sectionsHTML = sections.map(function (section) {
-            return `<a href="#" data-position="${section.position}" class="list-group-item list-group-item-action section-link">${section.section}</a>`
-        }).join("\n");
-        $('#tickets').html(sectionsHTML);
-    }
-
-    function drawQuestion(questions, questionIndex) {
-        if (!questionIndex) {
-            questionIndex = 0;
+        function getAllQuestions() {
+            return allQuestions || [];
         }
 
-        let question = questions[questionIndex];
-        let questionCount = questions.length;
-        let nextQuestion = questionIndex + 1 < questionCount ? questionIndex + 1 : false;
-        let hasImage = question.image !== 'images/all/no_image.jpg';
-        let answersHTML = question.answers.map(function (answer, index) {
-            return `<a href="#" data-answer="${index}" data-question="${questionIndex}" class="list-group-item list-group-item-action answer-link">${answer}</a>`
-        }).join("\n");
+        function getActiveSectionIndex() {
+            return $('#question').data('active-section') || false;
+        }
 
-        let questionHTML = `
+        function getErrorsCount() {
+            return errors;
+        }
+
+        function getCorrectCount() {
+            return correct;
+        }
+
+        function addErrorCount() {
+            errors += 1;
+        }
+
+        function addCorrectCount() {
+            correct += 1;
+        }
+
+        function updateErrorCountDOM() {
+            $('.errors-count').text(getErrorsCount());
+        }
+
+        function updateCorrectCountDOM() {
+            $('.correct-count').text(getCorrectCount());
+        }
+
+        function showPageBlock(pageBlockId) {
+            $('#question, #tickets-container').hide();
+            $('#vk_app_pdd').css({
+                'visibility': 'hidden',
+                'position': 'absolute'
+            });
+
+            if (pageBlockId === 'vk_app_pdd') {
+                $('#vk_app_pdd').css({
+                    'visibility': 'visible',
+                    'position': 'relative'
+                });
+            } else {
+                $('#' + pageBlockId).show();
+            }
+        }
+
+        function drawSections(sections) {
+            let sectionsHTML = sections.map(function (section) {
+                return `<a href="#" data-position="${section.position}" class="list-group-item list-group-item-action section-link">${section.section}</a>`
+            }).join("\n");
+            $('#tickets').html(sectionsHTML);
+        }
+
+        function drawQuestion(questions, questionIndex) {
+            if (!questionIndex) {
+                questionIndex = 0;
+            }
+
+            let question = questions[questionIndex];
+            let questionCount = questions.length;
+            let nextQuestion = questionIndex + 1 < questionCount ? questionIndex + 1 : false;
+            let hasImage = question.image !== 'images/all/no_image.jpg';
+            let answersHTML = question.answers.map(function (answer, index) {
+                return `<a href="#" data-answer="${index}" data-question="${questionIndex}" class="list-group-item list-group-item-action answer-link">${answer}</a>`
+            }).join("\n");
+
+            let questionHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
             <button class="btn btn-outline-primary to-list">Другие вопросы</button>
-            <h3 class="questionNum">${questionIndex+1}/${questionCount}</h3>
+            <h3 class="questionNum">${questionIndex+1}/${questionCount}</h3>    
             <span class="badge badge-danger errors-count">${getErrorsCount()}</span>
             <span class="badge badge-success correct-count">${getCorrectCount()}</span>
         </div>
@@ -148,127 +185,160 @@
             </div>
         </div>
         `;
+            $('#question').html(questionHTML);
+        }
 
-        $('#question').html(questionHTML);
-    }
+        function getQuestionsBySectionPosition(sectionPosition) {
+            let section = getAllQuestions().reduce(function (foundSection, currentSection) {
+                if (currentSection.position == sectionPosition) {
+                    return currentSection;
+                }
+                return foundSection;
+            }, false);
 
-    function getQuestionsBySectionPosition(sectionPosition) {
-        let section = getAllQuestions().reduce( function (foundSection, currentSection) {
-            if (currentSection.position == sectionPosition) {
-                return currentSection;
+            return section ? section.tickets : [];
+        }
+
+        function getActiveQuestions() {
+            let sectionPosition = getActiveSectionIndex();
+            let questions = getQuestionsBySectionPosition(sectionPosition);
+            return questions;
+        }
+
+        function startSectionQuestions(sectionPosition) {
+            let questions = getQuestionsBySectionPosition(sectionPosition);
+            let startIndex = 0;
+            $('#question').data('active-section', sectionPosition);
+            showPageBlock('question');
+            drawQuestion(questions, startIndex);
+        }
+
+        function checkAnswer(questions, questionIndex, answerIndex) {
+            let question = questions[questionIndex];
+            return answerIndex + 1 == question.correct;
+        }
+
+        function showHint() {
+            $('#question .question-hint').show();
+        }
+
+        function showCorrect() {
+            $('#question .question-success').show();
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        function randomQuestions(allQuestions) {
+            let maxSectionIndex = allQuestions.length - 1;
+            let randomSectionIndex = getRandomInt(0, maxSectionIndex);
+
+            let randomSection = allQuestions[maxSectionIndex];
+            let ticketsFromRandomSection = randomSection.tickets;
+
+            let maxTicketIndex = ticketsFromRandomSection.length - 1;
+            let randomTicketIndex = getRandomInt(0, maxTicketIndex);
+
+            let randomTicket = ticketsFromRandomSection[randomTicketIndex];
+            return randomTicket;
+        }
+
+        function twentyRandomQuestions(sections) {
+            let randomQuestionFromJson = [];
+
+            for (let index = 0; index < 20; index++) {
+                randomQuestionFromJson.push(randomQuestions(sections))
             }
+            sections.push({
+                section: "Экзамен",
+                tickets: randomQuestionFromJson,
+                position: 27
+            })
+        }
 
-            return foundSection;
-        }, false);
+        $(function () {
+            loadApiData(false, '/questions.json')
+                .then(function (sections) {
+                    twentyRandomQuestions(sections)
+                    allQuestions = sections;
+                    drawSections(sections);
+                });
 
-        return section ? section.tickets : [];
-    }
 
-    function getActiveQuestions() {
-        let sectionPosition = getActiveSectionIndex();
-        let questions = getQuestionsBySectionPosition(sectionPosition);
-        return questions;
-    }
+            $(document).on('click', '.section-link', function (event) {
+                event.preventDefault();
 
-    function startSectionQuestions(sectionPosition) {
-        let questions = getQuestionsBySectionPosition(sectionPosition);
-        let startIndex = 0;
-
-        $('#question').data('active-section', sectionPosition);
-        showPageBlock('question');
-        drawQuestion(questions, startIndex);
-    }
-
-    function checkAnswer(questions, questionIndex, answerIndex) {
-        let question = questions[questionIndex];
-        return answerIndex+1 == question.correct;
-    }
-
-    function showHint() {
-        $('#question .question-hint').show();
-    }
-
-    function showCorrect() {
-        $('#question .question-success').show();
-    }
-
-    $(function () {
-        loadApiData(false, '/questions.json')
-            .then(function (sections) {
-                allQuestions = sections;
-                drawSections(sections);
+                let sectionPosition = $(this).data('position');
+                if (sectionPosition) {
+                    startSectionQuestions(sectionPosition);
+                }
             });
 
-        $(document).on('click', '.section-link', function (event) {
-            event.preventDefault();
+            $(document).on('click', '.answer-link', function (event) {
+                event.preventDefault();
 
-            let sectionPosition = $(this).data('position');
-            if (sectionPosition) {
-                startSectionQuestions(sectionPosition);
-            }
+                let $answerEl = $(this);
+                let isDisabled = $answerEl.attr('disabled');
+
+                if (isDisabled) {
+                    return;
+                }
+
+                let questionIndex = $answerEl.data('question');
+                let answerIndex = $answerEl.data('answer');
+                let questions = getActiveQuestions();
+
+                let isCorrect = checkAnswer(questions, questionIndex, answerIndex);
+                if (isCorrect) {
+                    showCorrect();
+                    addCorrectCount();
+                    updateCorrectCountDOM();
+                } else {
+                    showHint();
+                    addErrorCount();
+                    updateErrorCountDOM();
+                }
+
+                $answerEl.addClass('active');
+                $('.answer-link').attr('disabled', true);
+                $('#question .btn-footer').attr('disabled', false);
+            });
+
+            $(document).on('click', '[data-to-question]', function () {
+                let $button = $(this);
+                let questionIndex = $button.data('to-question');
+                let questions = getActiveQuestions();
+                drawQuestion(questions, questionIndex);
+            });
+
+            $(document).on('click', '.to-list', function (event) {
+                event.preventDefault();
+                showPageBlock('tickets-container');
+            });
+
+            $(document).on('click', '.show-vk', function (event) {
+                event.preventDefault();
+                showPageBlock('vk_app_pdd');
+                $('.show-vk').hide();
+                $('.show-tickets').show();
+            });
+
+            $(document).on('click', '.show-tickets', function (event) {
+                event.preventDefault();
+                showPageBlock('tickets-container');
+                $('.show-vk').show();
+                $('.show-tickets').hide();
+            });
+
+            drawUserMenu();
+            VK.Widgets.App('vk_app_pdd', 6786894);
+
+
         });
-
-        $(document).on('click', '.answer-link', function (event) {
-            event.preventDefault();
-
-            let $answerEl = $(this);
-            let isDisabled = $answerEl.attr('disabled');
-
-            if (isDisabled) {
-                return;
-            }
-
-            let questionIndex = $answerEl.data('question');
-            let answerIndex = $answerEl.data('answer');
-            let questions = getActiveQuestions();
-
-            let isCorrect = checkAnswer(questions, questionIndex, answerIndex);
-            if (isCorrect) {
-                showCorrect();
-                addCorrectCount();
-                updateCorrectCountDOM();
-            }
-            else {
-                showHint();
-                addErrorCount();
-                updateErrorCountDOM();
-            }
-
-            $answerEl.addClass('active');
-            $('.answer-link').attr('disabled', true);
-            $('#question .btn-footer').attr('disabled', false);
-        });
-
-        $(document).on('click', '[data-to-question]', function () {
-            let $button = $(this);
-            let questionIndex = $button.data('to-question');
-            let questions = getActiveQuestions();
-
-            drawQuestion(questions, questionIndex);
-        });
-
-        $(document).on('click', '.to-list', function (event) {
-            event.preventDefault();
-            showPageBlock('tickets-container');
-        });
-
-        $(document).on('click', '.show-vk', function (event) {
-            event.preventDefault();
-            showPageBlock('vk_app_pdd');
-            $('.show-vk').hide();
-            $('.show-tickets').show();
-        });
-
-        $(document).on('click', '.show-tickets', function (event) {
-            event.preventDefault();
-            showPageBlock('tickets-container');
-            $('.show-vk').show();
-            $('.show-tickets').hide();
-        });
-
-        drawUserMenu();
-        VK.Widgets.App('vk_app_pdd', 6786894);
-    });
-</script>
+    </script>
 </body>
+
 </html>
