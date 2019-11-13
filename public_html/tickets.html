@@ -249,9 +249,32 @@
         function twentyRandomQuestions(sections) {
             let randomQuestionFromJson = [];
 
-            for (let index = 0; index < 20; index++) {
+            let result = [];
+
+            for (let index = 0; index < 40; index++) {
                 randomQuestionFromJson.push(randomQuestions(sections))
+
+                for (let str of randomQuestionFromJson) {
+                    if (!result.includes(str)) {
+                        result.push(str);
+                    }
+                }
             }
+            randomQuestionFromJson = result
+
+            for (let index = 0; index < 10; index++) {
+                randomQuestionFromJson.push(randomQuestions(sections))
+
+                for (let str of randomQuestionFromJson) {
+                    if (!result.includes(str)) {
+                        result.push(str);
+                    }
+                }
+            }
+
+            randomQuestionFromJson = result
+            console.log(randomQuestionFromJson)
+
             sections.push({
                 section: "Экзамен",
                 tickets: randomQuestionFromJson,
