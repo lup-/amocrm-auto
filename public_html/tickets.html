@@ -19,11 +19,19 @@
             margin: auto;
         }
 
-        #exam {
-            margin-top: 10px;
+        .all-questions.list-group-item,
+        .all-questions:hover,
+        .start-screen.list-group-item,
+        .show-vk {
+            padding: .375rem .75rem;
+            border-radius: .85rem;
             text-align: center;
-            background-color: #afafaf;
-            color: #fff;
+            background-color: #408cff;
+            color: white;
+        }
+
+        .all-questions.list-group-item{
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -83,13 +91,10 @@
     </script>
     <script src="amo.js" crossorigin="anonymous"></script>
     <script>
-        // $('#tickets-container').append(
-        //     "<a href='#' id='exam' class='list-group-item list-group-item-action section-link'>Экзамен</a>"
-        // );
+        let listQuestions = $("#tickets-container");
         let allQuestions = false;
         let errors = 0;
         let correct = 0;
-
 
         function getAllQuestions() {
             return allQuestions || [];
@@ -250,7 +255,7 @@
 
             let result = [];
 
-            for (let index = 0; index < 40; index++) {
+            for (let index = 0; index < 100; index++) {
                 randomQuestionFromJson.push(randomQuestions(sections))
 
                 for (let str of randomQuestionFromJson) {
@@ -272,7 +277,6 @@
             }
 
             randomQuestionFromJson = result
-            console.log(randomQuestionFromJson)
 
             sections.push({
                 section: "Экзамен",
@@ -281,12 +285,33 @@
             })
         }
 
+        function startScreen() {
+            // Добавляю класс к элементу на первом экране(идёт выбор раздела)
+            $("[data-position='27']").addClass("start-screen");
+            // Убираю лишний список, оставляю только вкладку экзамен 
+            $("a:not([data-position='27'])").hide();
+
+            let buttonQuestions =
+                $(
+                    "<button class='list-group-item list-group-item-action section-link all-questions'>Вопросы по темам</button>"
+                );
+
+            listQuestions.append(buttonQuestions);
+
+            listQuestions.on("click", function () {
+                $("a:not([data-position='27'])").show();
+                buttonQuestions.css("display", "none");
+                $("[data-position='27']").hide()
+            });
+        }
+
         $(function () {
             loadApiData(false, '/questions.json')
                 .then(function (sections) {
                     twentyRandomQuestions(sections)
                     allQuestions = sections;
                     drawSections(sections);
+                    startScreen();
                 });
 
 
