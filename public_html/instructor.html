@@ -142,15 +142,19 @@
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
         crossorigin="anonymous"></script>
     <script src="amo.js" crossorigin="anonymous"></script>
-    <script src="script.js"></script>
     <script src="packages/core/main.js"></script>
+    <script src="packages/daygrid/main.js"></script>
     <script src="packages/interaction/main.js"></script>
     <script src="packages/timegrid/main.js"></script>
-    <script src="packages/daygrid/main.js"></script>
     <script src="packages/list/main.js"></script>
     <script src="packages/google-calendar/main.js"></script>
     <script src='packages/core/locales/ru.js'></script>
+    <script src="script.js"></script>
     <script>
+        let calendar = false;
+        function updateCalendar() {
+            calendar.render();
+        }
         function sortByGroups(leadsData) {
             let sortedLeads = {};
 
@@ -358,8 +362,14 @@
 
             });
         }
+
         function initScheduleTab(instructorId) {
-            setupFullCalendar(instructorId);
+            calendar = setupFullCalendar(instructorId);
+            updateCalendar();
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                updateCalendar();
+            });
         }
 
         $(function () {

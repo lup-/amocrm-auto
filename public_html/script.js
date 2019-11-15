@@ -2,7 +2,7 @@ function setupFullCalendar(instructorId) {
     var calendarEl = document.getElementById('calendar');
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: ['dayGrid', 'interaction', 'timeGrid', 'list', 'googleCalendar'],
+        plugins: ['dayGrid', 'interaction', 'list', 'googleCalendar', 'timeGrid'],
         header: {
             left: 'prev,next today',
             center: 'title',
@@ -28,5 +28,6 @@ function setupFullCalendar(instructorId) {
             })
         },
     });
-    calendar.render();
+
+    return calendar;
 }

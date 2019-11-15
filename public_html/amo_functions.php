@@ -7,7 +7,7 @@ const PHONE_FIELD_ID = "389479";
 const GROUP_FIELD_ID = "580073";
 const MAILJOB_USER_ID = "2475916";
 
-const HOUR_PRICE = 250;
+const HOUR_PRICE = 275;
 
 function initAmoApi() {
     $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
