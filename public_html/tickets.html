@@ -30,7 +30,7 @@
             color: white;
         }
 
-        .all-questions.list-group-item{
+        .all-questions.list-group-item {
             margin-top: 1rem;
         }
     </style>
@@ -240,7 +240,7 @@
             let maxSectionIndex = allQuestions.length - 1;
             let randomSectionIndex = getRandomInt(0, maxSectionIndex);
 
-            let randomSection = allQuestions[maxSectionIndex];
+            let randomSection = allQuestions[randomSectionIndex];
             let ticketsFromRandomSection = randomSection.tickets;
 
             let maxTicketIndex = ticketsFromRandomSection.length - 1;
@@ -255,7 +255,7 @@
 
             let result = [];
 
-            for (let index = 0; index < 100; index++) {
+            for (let index = 0; index < 20; index++) {
                 randomQuestionFromJson.push(randomQuestions(sections))
 
                 for (let str of randomQuestionFromJson) {
@@ -266,17 +266,9 @@
             }
             randomQuestionFromJson = result
 
-            for (let index = 0; index < 10; index++) {
-                randomQuestionFromJson.push(randomQuestions(sections))
-
-                for (let str of randomQuestionFromJson) {
-                    if (!result.includes(str)) {
-                        result.push(str);
-                    }
-                }
+            if (randomQuestionFromJson.length < 20) {
+                return twentyRandomQuestions(sections)
             }
-
-            randomQuestionFromJson = result
 
             sections.push({
                 section: "Экзамен",
