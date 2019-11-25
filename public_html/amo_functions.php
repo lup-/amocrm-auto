@@ -189,7 +189,7 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
             "Кем выдано"             => getCustomFieldValue(413347, $apiLeadData),
             "Когда выдано"           => getCustomFieldValue(542317, $apiLeadData),
         ],
-        "Свидетельство" => [
+        "Сертификат" => [
             "Серия, номер" => getCustomFieldValue(413337, $apiLeadData),
             "Кем выдано"   => getCustomFieldValue(413343, $apiLeadData),
             "Когда выдано" => getCustomFieldValue(542325, $apiLeadData),
