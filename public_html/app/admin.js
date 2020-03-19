@@ -161,6 +161,15 @@ Vue.component('instructors', {
     }
 });
 
+Vue.component('students', {
+    template: '#students-template',
+    props: ['groups', 'templates', 'instructors'],
+    computed: {
+        // return fetch('https://batalichev.pro/auto/getStudents');
+        return 'test list';
+    }
+});
+
 new Vue({
     el: '#admin',
     data: {
@@ -172,6 +181,7 @@ new Vue({
             { code: 'salary', title: 'Зарплата по группам', active: true },
             { code: 'docs', title: 'Документы', active: false },
             { code: 'instructors', title: 'Зарплата по инструкторам', active: false},
+            { code: 'students', title: 'Обучающиеся и их инструкторы', active: false},
         ],
     },
     methods: {
