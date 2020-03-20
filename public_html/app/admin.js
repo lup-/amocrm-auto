@@ -165,8 +165,9 @@ Vue.component('students', {
     template: '#students-template',
     props: ['groups', 'templates', 'instructors'],
     computed: {
-        // return fetch('https://batalichev.pro/auto/getStudents');
-        return 'test list';
+        students_list() {
+          return ['test', 'list'];
+        }
     }
 });
 
