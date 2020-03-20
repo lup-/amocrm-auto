@@ -184,7 +184,7 @@ Vue.component('students', {
 
 
             console.log(keys)
-            return all;
+            return names;
         }
     }
 });
