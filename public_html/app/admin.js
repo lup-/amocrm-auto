@@ -166,7 +166,25 @@ Vue.component('students', {
     props: ['groups', 'templates', 'instructors'],
     computed: {
         students_list() {
-          return ['test', 'list'];
+
+            var names = '';
+            var all = this.instructors[0].students
+            var keys = Object.keys(all);
+
+            for (i in keys){
+                var one = this.instructors[0].students[keys[i]];
+                console.log()
+
+                var count = one.length
+                for (let z=0; z<count; z++){
+                    names += this.instructors[0].students[keys[i]][z].name+'\n';
+                    console.log()
+                }
+            }
+
+
+            console.log(keys)
+            return all;
         }
     }
 });
