@@ -180,8 +180,10 @@ Vue.component('students', {
 
                     var count = one.length
                     for (let z=0; z<count; z++){
+
                         var name = this.instructors[instr].students[keys[i]][z].name
                         var instructorName = this.instructors[instr].name
+                        
                         if(!names_list.includes(name)){
                             names += name+' — '+instructorName+'<br>';
                             names_list.push(name)
