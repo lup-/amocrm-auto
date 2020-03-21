@@ -170,6 +170,7 @@ Vue.component('students', {
             var names = '';
             var all = this.instructors[0].students
             var keys = Object.keys(all);
+            var instructorName = this.instructors.name
 
             for (i in keys){
                 var one = this.instructors[0].students[keys[i]];
@@ -177,7 +178,7 @@ Vue.component('students', {
 
                 var count = one.length
                 for (let z=0; z<count; z++){
-                    names += this.instructors[0].students[keys[i]][z].name+'<br>';
+                    names += this.instructors[0].students[keys[i]][z].name+' — '+instructorName+'<br>';
                     console.log()
                 }
             }
