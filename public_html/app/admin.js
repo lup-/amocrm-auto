@@ -177,7 +177,7 @@ Vue.component('students', {
 
                 var count = one.length
                 for (let z=0; z<count; z++){
-                    names += this.instructors[0].students[keys[i]][z].name+'\n';
+                    names += this.instructors[0].students[keys[i]][z].name+'<br>';
                     console.log()
                 }
             }
