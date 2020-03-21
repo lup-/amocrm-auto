@@ -257,6 +257,15 @@ new Vue({
                 Object.keys(instructor.groups).map((groupCode) => {
                     let currentInstructorGroup = instructor.groups[groupCode];
                     let students = instructor.students[groupCode];
+
+                    let uniq_students = [];
+                    for(student in students){
+                        if(!uniq_students.includes(student)){
+                            uniq_students.push(student);
+                        }
+                    }
+                    students = uniq_students;
+                    
                     let totalGroupData = typeof (groupsData[groupCode]) !== 'undefined'
                         ? groupsData[groupCode]
                         : {
