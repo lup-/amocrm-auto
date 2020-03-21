@@ -173,25 +173,26 @@ Vue.component('students', {
             var st_count = 0;
 
             for (instr in instructorsCount){
-                var students = this.instructors[instr].students
+                var students = this.instructors[instr].students;
                 var studentsKeys = Object.keys(students);                
 
                 for (i in studentsKeys){
                     var group = this.instructors[instr].students[studentsKeys[i]];
-                    var instructorName = this.instructors[instr].name
-                    var count = group.length
-                    console.log(count, instructorName)
+                    var instructorName = this.instructors[instr].name;
+                    var count = group.length;
+                    console.log(count, instructorName);
 
                     for (let z=0; z<count; z++){
-                        console.log()
-                        var name = this.instructors[instr].students[studentsKeys[i]][z].name
+                        console.log();
+                        var id = this.instructors[instr].students[studentsKeys[i]][z].id;
+                        var name = id+' '+this.instructors[instr].students[studentsKeys[i]][z].name;
                         
 //                         if(!names_list.includes(name)){
                         if(true){
                             names += name+' — '+instructorName+'<br>';
                             names_list.push(name);
                             
-                            console.log()
+                            console.log();
                         }
                         
                     }
