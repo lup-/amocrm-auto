@@ -168,25 +168,29 @@ Vue.component('students', {
         students_list() {
 
             var names = '';
-            var all = this.instructors[0].students
-            var keys = Object.keys(all);
             var instructorsCount = Object.keys(this.instructors);
-            var names_list = []
+            var names_list = [];
+            var st_count = 0;
 
             for (instr in instructorsCount){
-                for (i in keys){
-                    var one = this.instructors[instr].students[keys[i]];
-                    console.log()
+                var students = this.instructors[instr].students
+                var studentsKeys = Object.keys(students);                
 
-                    var count = one.length
+                for (i in studentsKeys){
+                    var group = this.instructors[instr].students[studentsKeys[i]];
+                    var instructorName = this.instructors[instr].name
+                    var count = group.length
+                    console.log(count, instructorName)
+
                     for (let z=0; z<count; z++){
-
-                        var name = this.instructors[instr].students[keys[i]][z].name
-                        var instructorName = this.instructors[instr].name
+                        console.log()
+                        var name = this.instructors[instr].students[studentsKeys[i]][z].name
                         
-                        if(!names_list.includes(name)){
+//                         if(!names_list.includes(name)){
+                        if(true){
                             names += name+' — '+instructorName+'<br>';
-                            names_list.push(name)
+                            names_list.push(name);
+                            
                             console.log()
                         }
                         
@@ -194,14 +198,13 @@ Vue.component('students', {
                 }
             }
             
-
-
-            console.log(keys)
+//             console.log(st_count)
             names_list = []
             return names;
         }
     }
 });
+
 
 new Vue({
     el: '#admin',
