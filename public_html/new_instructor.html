@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Накатка часов</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="loader.css">
+    <link rel="stylesheet" href="packages/core/main.css">
+    <link rel="stylesheet" href="packages/daygrid/main.css">
+    <link rel="stylesheet" href="packages/timegrid/main.css">
+    <link rel="stylesheet" href="packages/core/main.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #instructorName {
+            font-size: 0.9rem;
+        }
+
+        .nav-tabs .nav-item.show .nav-link,
+        .nav-tabs .nav-link.active {
+            border-color: transparent !important;
+            background-color: transparent !important;
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+        }
+
+        .date-text {
+            font-size: 0.8rem;
+            text-align: right;
+            min-width: 4rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-dark bg-primary">
+        <span class="navbar-brand" id="instructorName">...</span>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent1"
+            aria-controls="navbarSupportedContent1" aria-expanded="false" aria-label="Показать меню"><span
+                class="navbar-toggler-icon"></span></button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent1">
+            <ul class="navbar-nav mr-auto nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active show" id="groups-tab" data-toggle="tab" href="#groups" role="tab"
+                        aria-controls="groups" aria-selected="true">Группы и зарплата</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab"
+                        aria-controls="schedule" aria-selected="false">Расписание</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="student-tab" data-toggle="tab" href="#student" role="tab"
+                        aria-controls="student" aria-selected="false">Записать ученика</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="tab-content px-3 pt-4">
+        <div class="tab-pane fade show active" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+            <h2 class="text-center">Группы и зарплата</h2>
+
+            <div id="centralContainer">
+                <!-- <p class="mt-2 mb-0">Всего человек: <span id="totalCount">...</span></p>
+                <p class="mb-0">Всего ЗП: <span id="totalSalary">...</span></p> -->
+                <div class="accordion mt-3" id="leadsAccordion">
+                    <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
+                        <div style="width:100%;height:100%" class="lds-pacman">
+                            <div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
+            <div id='calendar-container'>
+                <div id='calendar'></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="student" role="tabpanel" aria-labelledby="student-tab">
+            <h2 class="text-center">Записать ученика</h2>
+            <form class="studentForm">
+                <input type="hidden" name="instructorId">
+                <input type="hidden" name="action" value="add">
+                <div class="form-group">
+                    <label for="studentName">Имя ученика</label>
+                    <input type="text" class="form-control" id="studentName" name="studentName" placeholder="ФИО">
+                </div>
+                <div class="form-group">
+                    <label for="date">Дата</label>
+                    <input type="date" class="form-control" id="date" name="date">
+                </div>
+                <div class="form-group">
+                    <label for="time">Начало занятия</label>
+                    <select class="form-control" id="time" name="time">
+                        <option value="06:00:00">06:00</option>
+                        <option value="07:30:00">07:30</option>
+                        <option value="09:00:00">09:00</option>
+                        <option value="10:30:00">10:30</option>
+                        <option value="12:00:00">12:00</option>
+                        <option value="13:30:00">13:30</option>
+                        <option value="15:00:00">15:00</option>
+                        <option value="16:30:00">16:30</option>
+                        <option value="18:00:00">18:00</option>
+                        <option value="19:30:00">19:30</option>
+                        <option value="21:00:00">21:00</option>
+                        <option value="-1">Другое</option>
+                    </select>
+                    <input class="form-control mt-2" type="time" id="time-detail" value="06:00" style="display: none">
+                </div>
+                <button type="submit" class="btn btn-primary">Записать</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+    <script src="amo.js" crossorigin="anonymous"></script>
+    <script src="packages/core/main.js"></script>
+    <script src="packages/daygrid/main.js"></script>
+    <script src="packages/interaction/main.js"></script>
+    <script src="packages/timegrid/main.js"></script>
+    <script src="packages/list/main.js"></script>
+    <script src="packages/google-calendar/main.js"></script>
+    <script src='packages/core/locales/ru.js'></script>
+    <script src="script.js"></script>
+    <script>
+        let calendar = false;
+        function updateCalendar() {
+            calendar.render();
+        }
+        function sortByGroups(leadsData) {
+            let sortedLeads = {};
+
+            Object.keys(leadsData).forEach(function (leadId) {
+                let leadData = leadsData[leadId];
+                let groupName = leadData['group'];
+
+                if (typeof (sortedLeads[groupName]) === 'undefined') {
+                    sortedLeads[groupName] = {};
+                }
+
+                sortedLeads[groupName][leadId] = leadData;
+            });
+
+            return sortedLeads;
+        }
+        function loadAndShowInstructorData(instructorId) {
+            loadHours(instructorId)
+                .then(function (responseData) {
+                    let instructorName = responseData.instructor;
+                    let unsortedLeadsData = responseData.leads;
+                    let groupsData = responseData.groups;
+                    let totalLeadsCount = Object.keys(unsortedLeadsData).length;
+                    let sortedLeads = sortByGroups(unsortedLeadsData);
+                    let groupNames = Object.keys(groupsData);
+                    let totalSalary = Object.keys(groupsData).reduce(function (accumulator, groupName) {
+                        let group = groupsData[groupName];
+                        return accumulator + group.salary;
+                    }, 0);
+
+                    $('#leadsAccordion').html("");
+                    $('#instructorName').html(instructorName);
+                    $('#totalCount').html(totalLeadsCount);
+                    $('#totalSalary').html(totalSalary);
+                    
+
+                    groupNames.forEach(function (groupName) {
+                        let groupLeadsData = sortedLeads[groupName];
+                        let leadsId = Object.keys(groupLeadsData);
+                        let groupData = groupsData[groupName];
+                        let money_remains_summ = 0;
+
+                        leadsId.forEach(function (leadId) {
+                            let leadData = groupLeadsData[leadId];
+                            money_remains_summ += Number(leadData.debt || 0);
+                            
+                        })
+
+                        $('#leadsAccordion').append(`<div class='h6 my-3'>
+                            <div class='title-wrapper'>
+                              <div class="dropdown">
+                                <div class="d-flex justify-content-between align-items-end">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                      Группа ${groupName}
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="dd${groupName}">
+                                      <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
+                                      <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
+                                      <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
+                                      <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
+                                      <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
+                                    </div>
+                                    <span>С группы: ${money_remains_summ}</span>
+                                </div>
+                              </div>
+                            </div>`);
+
+                        leadsId.forEach(function (leadId) {
+                            let leadData = groupLeadsData[leadId];
+                            // money_remains_summ += Number(leadData.debt);
+                            // console.log(money_remains_summ);
+                            $('#leadsAccordion').append(
+                                getCardHTML(
+                                    leadData.contact,
+                                    leadId,
+                                    leadData.hours || "",
+                                    leadData.neededHours || "",
+                                    leadData.debt || 0,
+                                    leadData.phone,
+                                    leadData.schedule || false,
+                                    instructorName
+                                )
+                            );
+                            
+                        })
+                    });
+
+
+                });
+        }
+        function initStudentTab(instructorId) {
+            let today = new Date;
+            $('[name="instructorId"]').val(instructorId);
+            $('[name="date"]').val(formatDate(today, 'system'));
+            updateTimeframeInput(instructorId, today);
+
+            $(document).on('change', '#date', function (event) {
+                let eventDate = new Date($(this).val());
+                updateTimeframeInput(instructorId, eventDate);
+            });
+
+            $(document).on('change', '#time', function (event) {
+                if ($(this).val() === "-1") {
+                    $('#time-detail').show().attr('name', 'time');
+                    $('#time').attr('name', false);
+                }
+                else {
+                    $('#time-detail').hide().attr('name', false);
+                    $('#time').attr('name', 'time');
+                }
+            });
+
+            $(document).on('submit', 'form.studentForm', function (event) {
+                event.preventDefault();
+
+                let $form = $(this);
+                let $button = $form.find('button');
+                $button
+                    .removeClass('btn-danger btn-primary')
+                    .addClass('btn-primary')
+                    .attr('disabled', 'disabled')
+                    .text('Запись ...');
+
+                addStudentEvent($form)
+                    .then(function () {
+                        $form[0].reset();
+                        $button.attr('disabled', false).text('Записать');
+
+                        let currentScheduleDate = dateFromFormat($('.schedule-date').text());
+                        loadAndShowSchedule(instructorId, currentScheduleDate);
+                        loadAndShowInstructorData(instructorId);
+                    })
+                    .catch(function () {
+                        $button
+                            .attr('disabled', false)
+                            .removeClass('btn-danger btn-primary')
+                            .addClass('btn-danger')
+                            .text('Записать повторно');
+                    });
+
+            });
+        }
+        function loadAndShowSchedule(instructorId, date) {
+            return loadCalendarEvents(instructorId, date)
+                .then(function (eventsResponse) {
+                    let timeframes = Object.keys(eventsResponse);
+                    let timeframesHTML = timeframes.map(function (timeframe) {
+                        let events = eventsResponse[timeframe];
+                        let studentName = events.length > 0
+                            ? events[0].text
+                            : false;
+
+                        return getTimeframeHTML(timeframe, studentName);
+                    }).join("\n");
+
+                    let scheduleHTML = `<ul class="list-group">${timeframesHTML}</ul>`;
+                    $('.schedule-list').html(scheduleHTML);
+                });
+        }
+        function getDateTimeframes(instructorId, date) {
+            return loadCalendarEvents(instructorId, date)
+                .then(function (eventsResponse) {
+                    let timeframes = Object.keys(eventsResponse);
+                    let availtimeframes = timeframes.reduce(function (timeframeAccumulator, timeframe) {
+                        if (eventsResponse[timeframe].length === 0) {
+                            timeframeAccumulator.push(timeframe);
+                        }
+                        return timeframeAccumulator;
+                    }, []);
+
+                    return availtimeframes;
+                });
+        }
+        function updateTimeframeInput(instructorId, eventDate) {
+            return getDateTimeframes(instructorId, eventDate)
+                .then(function (timeframes) {
+                    let optionsHTML = timeframes.map(function (timeframe) {
+                        return `<option value="${timeframe}:00">${timeframe}</option>`;
+                    }).join('\n');
+                    optionsHTML += "<option value=\"-1\">Другое</option>";
+
+                    $('#time').html(optionsHTML);
+                });
+        }
+        function initGroupsTab(instructorId) {
+            loadAndShowInstructorData(instructorId);
+
+            $(document).on('click', '.btn-calendar', function (event) {
+                event.preventDefault();
+                let name = $(this).data('name');
+                $('#studentName').val(name);
+                $('#student-tab').tab('show');
+            });
+
+            $(document).on('submit', 'form.hoursForm', function (event) {
+                event.preventDefault();
+
+                let $form = $(this);
+                let $button = $form.find('button');
+                $button
+                    .removeClass('btn-danger btn-primary')
+                    .addClass('btn-primary')
+                    .attr('disabled', 'disabled')
+                    .text('Сохранение ...');
+
+                updateHoursData($form)
+                    .then(function () {
+                        $button.attr('disabled', false).text('Сохранить');
+                    })
+                    .catch(function () {
+                        $button
+                            .attr('disabled', false)
+                            .removeClass('btn-danger btn-primary')
+                            .addClass('btn-danger')
+                            .text('Сохранить повторно');
+                    });
+
+            });
+        }
+
+        function initScheduleTab(instructorId) {
+            calendar = setupFullCalendar(instructorId);
+            updateCalendar();
+
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function () {
+                updateCalendar();
+            });
+        }
+
+        $(function () {
+            let instructorId = getParameterByName('id');
+            initGroupsTab(instructorId);
+            initStudentTab(instructorId);
+            initScheduleTab(instructorId);
+        });
+    </script>
+</body>
+
+</html>

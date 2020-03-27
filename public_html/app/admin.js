@@ -167,39 +167,39 @@ Vue.component('students', {
     computed: {
         students_list() {
 
-            var names = '';
-            var instructorsCount = Object.keys(this.instructors);
-            var names_list = [];
-            var st_count = 0;
+//             var names = '';
+//             var instructorsCount = Object.keys(this.instructors);
+//             var names_list = [];
+//             var st_count = 0;
 
-            for (instr in instructorsCount){
-                var students = this.instructors[instr].students;
-                var studentsKeys = Object.keys(students);                
+//             for (instr in instructorsCount){
+//                 var students = this.instructors[instr].students;
+//                 var studentsKeys = Object.keys(students);                
 
-                for (i in studentsKeys){
-                    var group = this.instructors[instr].students[studentsKeys[i]];
-                    var instructorName = this.instructors[instr].name;
-                    var count = group.length;
-                    console.log(count, instructorName);
+//                 for (i in studentsKeys){
+//                     var group = this.instructors[instr].students[studentsKeys[i]];
+//                     var instructorName = this.instructors[instr].name;
+//                     var count = group.length;
+//                     console.log(count, instructorName);
 
-                    for (let z=0; z<count; z++){
-                        console.log();
-                        var id = this.instructors[instr].students[studentsKeys[i]][z].id;
-                        var name = id+' '+this.instructors[instr].students[studentsKeys[i]][z].name;
+//                     for (let z=0; z<count; z++){
+//                         console.log();
+//                         var id = this.instructors[instr].students[studentsKeys[i]][z].id;
+//                         var name = id+' '+this.instructors[instr].students[studentsKeys[i]][z].name;
                         
-//                         if(!names_list.includes(name)){
-                        if(true){
-                            names += name+' — '+instructorName+'<br>';
-                            names_list.push(name);
+// //                         if(!names_list.includes(name)){
+//                         if(true){
+//                             names += name+' — '+instructorName+'<br>';
+//                             names_list.push(name);
                             
-                            console.log();
-                        }
+//                             console.log();
+//                         }
                         
-                    }
-                }
-            }
+//                     }
+//                 }
+//             }
             
-//             console.log(st_count)
+            console.log(this.groups)
             names_list = []
             return names;
         }

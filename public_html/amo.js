@@ -97,7 +97,7 @@ function zeroPad(num) {
     return num < 10 ? '0' + num : num;
 }
 
-function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
+function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, money_remains_summ) {
     let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
 
@@ -107,6 +107,12 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
         dateText = `${dayText}, ${zeroPad(date.getDate())}.${zeroPad(date.getMonth() + 1)}<br> ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
     }
 
+    // $('#money_remains_summ').text(money_remains_summ);
+
+    // money_remains_summ += debt;
+    // $('#debt').text(debt);
+    // console.log('AMO.JS: '+money_remains_summ);
+
     return `<div class="card">
             <div class="card-header d-flex flex-row justify-content-between" id="heading-${leadId}">
                 <a class="mb-0 btn-link flex-fill" href="#" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
@@ -114,7 +120,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
                 </a>
                 ${eventDate
                     ? '<span class="date-text">'+dateText+'</span>'
-                    : '<a href="#" class="btn btn-primary btn-calendar" data-name="'+name+'"><i class="far fa-calendar-plus"></i></a>'
+                    : debt
                 }
             </div>
 
@@ -122,8 +128,9 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate) {
                 <div class="card-body">
                    <p class="mb-0">Остаток оплаты: ${debt}</p>
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
+                   <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
-                    ${getFromHTML(leadId, hours)}
+                   <p class="mb-0">Инструктор: ${instructorName}</p>
                 </div>
             </div>
         </div>`;
