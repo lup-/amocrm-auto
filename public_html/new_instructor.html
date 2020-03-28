@@ -340,7 +340,13 @@
                 });
         }
         function initGroupsTab(instructorId) {
-            loadAndShowInstructorData(instructorId);
+            // loadAndShowInstructorData(instructorId);
+            let instructors = [788903, 920539, 920525, 920527, 1068181, 920533, 920531, 920537, 920563, 1074817, 1074819, 1098473, 1104055, 1113415, 1113417, 920541, 1064781, 1115851, 1118661]
+
+            for(instructor in instructors){
+                console.log(instructors[instructor])
+                loadAndShowInstructorData(instructors[instructor]);
+            }
 
             $(document).on('click', '.btn-calendar', function (event) {
                 event.preventDefault();
