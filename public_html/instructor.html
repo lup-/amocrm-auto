@@ -194,6 +194,13 @@
                         let groupLeadsData = sortedLeads[groupName];
                         let leadsId = Object.keys(groupLeadsData);
                         let groupData = groupsData[groupName];
+                        let money_remains_summ = 0;
+
+                        leadsId.forEach(function (leadId) {
+                            let leadData = groupLeadsData[leadId];
+                            money_remains_summ += Number(leadData.debt || 0);
+                            
+                        })
 
                         $('#leadsAccordion').append(`<div class='h6 my-3'>
                             <div class='title-wrapper'>
@@ -209,7 +216,7 @@
                                       <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
                                       <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
                                     </div>
-                                    <span class=''>ЗП: ${groupData.salary}</span>
+                                    <span>С группы: ${money_remains_summ}</span>
                                 </div>
                               </div>
                             </div>`);
