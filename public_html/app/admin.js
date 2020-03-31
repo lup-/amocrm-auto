@@ -164,6 +164,10 @@ Vue.component('instructors', {
 Vue.component('students', {
     template: '#students-template',
     props: ['groups', 'templates', 'instructors'],
+    data: {
+        mass: 'Mass text';
+        }
+    },
     computed: {
         students_list() {
 //             var names = '';
@@ -201,7 +205,7 @@ Vue.component('students', {
 //             console.log(this.groups)
 //             names_list = []
             // return names;
-            }}
+            }
 });
 
 
@@ -221,9 +225,9 @@ new Vue({
     },
     methods: {
         updateActiveMenu(newMenuCode) {
-            if(newMenuCode === 'students'){
-                location.href = 'new_instructor.html?id=788903';
-            }
+            // if(newMenuCode === 'students'){
+            //     location.href = 'new_instructor.html?id=788903';
+            // }
             this.currentTabComponent = newMenuCode;
             this.menu.map(item => {
                 item.active = item.code === newMenuCode;
