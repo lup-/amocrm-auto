@@ -171,9 +171,7 @@ Vue.component('students', {
     },
     computed: {
         students_list() {
-            // mass += '=================';
-            this.data.mass += '=================';
-            this.mass += '++++++++++++++++++';
+            this.mass = '++++++++++++++++++';
 //             var names = '';
 //             var instructorsCount = Object.keys(this.instructors);
 //             var names_list = [];
