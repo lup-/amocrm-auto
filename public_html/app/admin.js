@@ -205,7 +205,7 @@ Vue.component('students', {
 //             names_list = []
             // return names;
             }
-}};
+}});
 
 
 new Vue({
