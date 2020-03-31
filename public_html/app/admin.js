@@ -166,7 +166,6 @@ Vue.component('students', {
     props: ['groups', 'templates', 'instructors'],
     computed: {
         students_list() {
-
 //             var names = '';
 //             var instructorsCount = Object.keys(this.instructors);
 //             var names_list = [];
@@ -199,11 +198,10 @@ Vue.component('students', {
 //                 }
 //             }
             
-            console.log(this.groups)
-            names_list = []
-            return names;
-        }
-    }
+//             console.log(this.groups)
+//             names_list = []
+            // return names;
+            }}
 });
 
 
@@ -218,11 +216,14 @@ new Vue({
             { code: 'salary', title: 'Зарплата по группам', active: true },
             { code: 'docs', title: 'Документы', active: false },
             { code: 'instructors', title: 'Зарплата по инструкторам', active: false},
-            { code: 'students', title: 'Обучающиеся и их инструкторы', active: false},
+            { code: 'students', title: 'Группы', active: false},
         ],
     },
     methods: {
         updateActiveMenu(newMenuCode) {
+            if(newMenuCode === 'students'){
+                location.href = 'new_instructor.html?id=788903';
+            }
             this.currentTabComponent = newMenuCode;
             this.menu.map(item => {
                 item.active = item.code === newMenuCode;

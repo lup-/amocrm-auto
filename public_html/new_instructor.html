@@ -51,23 +51,23 @@
             <ul class="navbar-nav mr-auto nav nav-tabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active show" id="groups-tab" data-toggle="tab" href="#groups" role="tab"
-                        aria-controls="groups" aria-selected="true">Группы и зарплата</a>
+                        aria-controls="groups" aria-selected="true">Группы</a>
                 </li>
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link" id="schedule-tab" data-toggle="tab" href="#schedule" role="tab"
                         aria-controls="schedule" aria-selected="false">Расписание</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="student-tab" data-toggle="tab" href="#student" role="tab"
                         aria-controls="student" aria-selected="false">Записать ученика</a>
-                </li>
+                </li> -->
             </ul>
         </div>
     </nav>
 
     <div class="tab-content px-3 pt-4">
         <div class="tab-pane fade show active" id="groups" role="tabpanel" aria-labelledby="groups-tab">
-            <h2 class="text-center">Группы и зарплата</h2>
+            <h2 class="text-center">Группы</h2>
 
             <div id="centralContainer">
                 <!-- <p class="mt-2 mb-0">Всего человек: <span id="totalCount">...</span></p>
@@ -186,7 +186,7 @@
                     }, 0);
 
                     // $('#leadsAccordion').html("")
-                    $('#instructorName').html(instructorName);
+                    $('#instructorName').html(instructorName+' добавлен');
                     $('#totalCount').html(totalLeadsCount);
                     $('#totalSalary').html(totalSalary);
                     
