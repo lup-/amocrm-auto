@@ -164,8 +164,10 @@ Vue.component('instructors', {
 Vue.component('students', {
     template: '#students-template',
     props: ['groups', 'templates', 'instructors'],
-    data: {
-        mass: 'Mass text'
+    data: function () {
+        return {
+            mass: 'Mass text'
+        }
     },
     computed: {
         students_list() {
