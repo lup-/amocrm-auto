@@ -206,8 +206,9 @@
         <section class="tab-content px-3 pt-4">
             <div class="tab-pane fade show active">
                 <h2 class="text-center">Группы</h2>
-                <div :data-type='html' v-html="students_list"></div>
-                {{mass}}
+                <div :data-type='html' v-html="students_list">
+                    {{mass}}
+                </div>
             </div>
         </section>
 

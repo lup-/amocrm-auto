@@ -110,7 +110,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
 
     if (instructorName != undefined){
         instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>';
-    } else{
+    } else {
         instructorName = '';
         hours_form = getFromHTML(leadId, hours);
     }
