@@ -131,6 +131,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                    <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
                    <p class="mb-0">Инструктор: ${instructorName}</p>
+                   ${getFromHTML(leadId, hours)}
                 </div>
             </div>
         </div>`;
