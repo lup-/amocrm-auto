@@ -108,7 +108,9 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
     }
 
     if (instructorName != undefined){
-        instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>'
+        instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>';
+    } else{
+        instructorName = '';
     }
     // $('#money_remains_summ').text(money_remains_summ);
 
