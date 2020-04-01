@@ -107,7 +107,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
         dateText = `${dayText}, ${zeroPad(date.getDate())}.${zeroPad(date.getMonth() + 1)}<br> ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
     }
 
-    if !(instructorName === undefined){
+    if (instructorName != undefined){
         instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>'
     }
     // $('#money_remains_summ').text(money_remains_summ);
