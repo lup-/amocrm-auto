@@ -107,6 +107,9 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
         dateText = `${dayText}, ${zeroPad(date.getDate())}.${zeroPad(date.getMonth() + 1)}<br> ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
     }
 
+    if !(instructorName === undefined){
+        instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>'
+    }
     // $('#money_remains_summ').text(money_remains_summ);
 
     // money_remains_summ += debt;
@@ -130,7 +133,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
                    <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
-                   <p class="mb-0">Инструктор: ${instructorName}</p>
+                   ${instructorName}
                    ${getFromHTML(leadId, hours)}
                 </div>
             </div>
