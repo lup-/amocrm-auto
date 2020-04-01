@@ -100,6 +100,7 @@ function zeroPad(num) {
 function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, money_remains_summ) {
     let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
+    let hours_form = '';
 
     if (eventDate) {
         let date = new Date(eventDate);
@@ -111,6 +112,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
         instructorName = '<p class="mb-0">Инструктор: '+instructorName+'</p>';
     } else{
         instructorName = '';
+        hours_form = getFromHTML(leadId, hours);
     }
     // $('#money_remains_summ').text(money_remains_summ);
 
@@ -136,7 +138,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                    <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
                    ${instructorName}
-                   ${getFromHTML(leadId, hours)}
+                   ${hours_form}
                 </div>
             </div>
         </div>`;
