@@ -207,6 +207,7 @@ Vue.component('students', {
 //             console.log(this.groups)
 //             names_list = []
             // return names;
+            return '2nd mass';
             }
 }});
 
