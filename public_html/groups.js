@@ -236,9 +236,9 @@ function initScheduleTab(instructorId) {
     });
 }
 
-$(function () {
+function show () {
     let instructorId = getParameterByName('id');
     initGroupsTab(instructorId);
     // initStudentTab(instructorId);
     // initScheduleTab(instructorId);
-});
+}

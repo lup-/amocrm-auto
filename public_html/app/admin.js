@@ -228,9 +228,10 @@ new Vue({
     },
     methods: {
         updateActiveMenu(newMenuCode) {
-            // if(newMenuCode === 'students'){
-            //     location.href = 'new_instructor.html?id=788903';
-            // }
+            if(newMenuCode === 'students'){
+                // location.href = 'new_instructor.html?id=788903';
+                show();
+            }
             this.currentTabComponent = newMenuCode;
             this.menu.map(item => {
                 item.active = item.code === newMenuCode;
