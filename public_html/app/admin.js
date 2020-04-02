@@ -453,6 +453,8 @@ Vue.component('students', {
             // initStudentTab(instructorId);
             // initScheduleTab(instructorId);
         });
+
+        return this.mass;
             }
 }});
 
