@@ -171,6 +171,7 @@ Vue.component('students', {
     },
     computed: {
         students_list() {
+            this.mass = show();
             // this.mass += '<h2>++++++++++++++++++</h2>';
 //             var names = '';
 //             var instructorsCount = Object.keys(this.instructors);
@@ -228,10 +229,9 @@ new Vue({
     },
     methods: {
         updateActiveMenu(newMenuCode) {
-            if(newMenuCode === 'students'){
+            // if(newMenuCode === 'students'){
                 // location.href = 'new_instructor.html?id=788903';
-                show();
-            }
+            // }
             this.currentTabComponent = newMenuCode;
             this.menu.map(item => {
                 item.active = item.code === newMenuCode;
@@ -296,6 +296,8 @@ new Vue({
 
                 return groupsData;
             }, {});
+
+            // show();
 
             return groupsAsObject;
         }

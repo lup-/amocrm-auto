@@ -1,4 +1,6 @@
 let calendar = false;
+let mass = '';
+
 function updateCalendar() {
     calendar.render();
 }
@@ -50,7 +52,7 @@ function loadAndShowInstructorData(instructorId) {
                     
                 })
 
-                this.mass += `<div class='h6 my-3'>
+                mass += `<div class='h6 my-3'>
                     <div class='title-wrapper'>
                       <div class="dropdown">
                         <div class="d-flex justify-content-between align-items-end">
@@ -73,7 +75,7 @@ function loadAndShowInstructorData(instructorId) {
                     let leadData = groupLeadsData[leadId];
                     // money_remains_summ += Number(leadData.debt);
                     // console.log(money_remains_summ);
-                    this.mass +=
+                    mass +=
                         getCardHTML(
                             leadData.contact,
                             leadId,
@@ -241,4 +243,5 @@ function show () {
     initGroupsTab(instructorId);
     // initStudentTab(instructorId);
     // initScheduleTab(instructorId);
+    return mass;
 }
