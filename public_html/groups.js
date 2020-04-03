@@ -1,5 +1,5 @@
 let calendar = false;
-let mass = '';
+let mass = 'mass text 2';
 
 function updateCalendar() {
     calendar.render();
