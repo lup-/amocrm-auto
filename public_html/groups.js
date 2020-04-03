@@ -237,11 +237,3 @@ function initScheduleTab(instructorId) {
         updateCalendar();
     });
 }
-
-function show () {
-    let instructorId = getParameterByName('id');
-    initGroupsTab(instructorId);
-    // initStudentTab(instructorId);
-    // initScheduleTab(instructorId);
-    return mass;
-}
