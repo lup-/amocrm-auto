@@ -171,10 +171,10 @@ Vue.component('students', {
     },
     computed: {
         students_list() {
-            console.log(groups);
+            console.log(this.groups);
             list = '';
 
-            for(group in groups){
+            for(group in Object.keys(this.groups)){
                 list+='<div id="'+group+'"></div><br>';
             }
 
