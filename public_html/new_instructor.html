@@ -121,7 +121,6 @@
                         let group = groupsData[groupName];
                         return accumulator + group.salary;
                     }, 0);
-                    let groups_added = [];
 
                     // $('#leadsAccordion').html("")
                     $('#instructorName').html(instructorName+' добавлен');
@@ -341,6 +340,7 @@
         }
 
         $(function () {
+            let groups_added = [];
             let instructorId = getParameterByName('id');
             initGroupsTab(instructorId);
 
