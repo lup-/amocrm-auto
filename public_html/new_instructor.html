@@ -168,6 +168,7 @@
                         } else {
                             groups_added.push(groupName);
                             console.log('NOW INCLUDES');
+                            console.log(groups_added);
 
                             $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
                                 <div class='title-wrapper'>
@@ -342,7 +343,7 @@
         $(function () {
             let instructorId = getParameterByName('id');
             initGroupsTab(instructorId);
-            console.log(groups_added);
+
             // initStudentTab(instructorId);
             // initScheduleTab(instructorId);
 
