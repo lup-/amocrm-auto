@@ -171,6 +171,14 @@ Vue.component('students', {
     },
     computed: {
         students_list() {
+            console.log(groups);
+            list = '';
+
+            for(group in groups){
+                list+='<div id="'+group+'"></div><br>';
+            }
+
+            return list;
             // this.mass += show();
             // this.mass += '<h2>++++++++++++++++++</h2>';
 //             var names = '';
