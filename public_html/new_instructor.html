@@ -121,6 +121,7 @@
                         let group = groupsData[groupName];
                         return accumulator + group.salary;
                     }, 0);
+                    let groups_added = [];
 
                     // $('#leadsAccordion').html("")
                     $('#instructorName').html(instructorName+' добавлен');
@@ -140,30 +141,13 @@
                             
                         })
 
-                        $('#'+groupName).append(`<div class='h6 my-3'>
-                            <div class='title-wrapper'>
-                              <div class="dropdown">
-                                <div class="d-flex justify-content-between align-items-end">
-                                    <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                      Группа ${groupName}
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dd${groupName}">
-                                      <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
-                                      <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
-                                      <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
-                                      <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
-                                      <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
-                                    </div>
-                                    <span>С группы: ${money_remains_summ}</span>
-                                </div>
-                              </div>
-                            </div>`);
+                        if (groups_added.includes(groupName)){
 
-                        leadsId.forEach(function (leadId) {
+                            leadsId.forEach(function (leadId) {
                             let leadData = groupLeadsData[leadId];
                             // money_remains_summ += Number(leadData.debt);
                             // console.log(money_remains_summ);
-                            $('#leadsAccordion').append(
+                            $('#'+groupName).append(
                                 getCardHTML(
                                     leadData.contact,
                                     leadId,
@@ -175,8 +159,31 @@
                                     instructorName
                                 )
                             );
-                            
                         })
+
+                        } else {
+                            groups_added.push(groupName);
+
+                            $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
+                                <div class='title-wrapper'>
+                                  <div class="dropdown">
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Группа ${groupName}
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dd${groupName}">
+                                          <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
+                                          <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
+                                          <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
+                                          <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
+                                          <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
+                                        </div>
+                                        <span>С группы: ${money_remains_summ}</span>
+                                    </div>
+                                  </div>
+                                </div>`);
+                            }
+                            
                     });
 
 
@@ -333,12 +340,12 @@
             // initStudentTab(instructorId);
             // initScheduleTab(instructorId);
 
-            console.log(list);
+            // console.log(list);
 
-            for(group in this.groups){
-                console.log(group);
-                $('#listing').append('<div id="'+group+'"></div><br>')
-            }
+            // for(group in this.groups){
+            //     console.log(group);
+            //     $('#listing').append('<div id="'+group+'"></div><br>')
+            // }
         });
     </script>
 </body>
