@@ -171,14 +171,14 @@ Vue.component('students', {
     },
     computed: {
         students_list() {
-            console.log(this.groups);
-            list = '';
+            // console.log(this.groups);
+            // list = '';
 
-            for(group in Object.keys(this.groups)){
-                list+='<div id="'+group+'"></div><br>';
-            }
+            // for(group in this.groups){
+            //     list+='<div id="'+group+'"></div><br>';
+            // }
 
-            return list;
+            // return list;
             // this.mass += show();
             // this.mass += '<h2>++++++++++++++++++</h2>';
 //             var names = '';

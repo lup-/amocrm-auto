@@ -49,6 +49,9 @@
                 <!-- <p class="mt-2 mb-0">Всего человек: <span id="totalCount">...</span></p>
                 <p class="mb-0">Всего ЗП: <span id="totalSalary">...</span></p> -->
                 <div class="accordion mt-3" id="leadsAccordion">
+                    <div id="listing">
+                        
+                    </div>
                     <!-- <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
                         <div style="width:100%;height:100%" class="lds-pacman">
                             <div>
@@ -327,8 +330,12 @@
         $(function () {
             let instructorId = getParameterByName('id');
             initGroupsTab(instructorId);
-            initStudentTab(instructorId);
-            initScheduleTab(instructorId);
+            // initStudentTab(instructorId);
+            // initScheduleTab(instructorId);
+
+            for(group in list){
+                $('#listing').append('<div id="'+group+'"></div><br>')
+            }
         });
     </script>
 </body>
