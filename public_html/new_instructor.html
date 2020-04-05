@@ -141,7 +141,11 @@
                             
                         })
 
+                        console.log(groupName);
+
                         if (groups_added.includes(groupName)){
+
+                            console.log('INCLUDES');
 
                             leadsId.forEach(function (leadId) {
                             let leadData = groupLeadsData[leadId];
@@ -163,6 +167,7 @@
 
                         } else {
                             groups_added.push(groupName);
+                            console.log('NOW INCLUDES');
 
                             $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
                                 <div class='title-wrapper'>
@@ -183,7 +188,7 @@
                                   </div>
                                 </div>`);
                             }
-                            
+
                     });
 
 
