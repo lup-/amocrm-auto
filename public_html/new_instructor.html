@@ -50,7 +50,7 @@
                 <p class="mb-0">Всего ЗП: <span id="totalSalary">...</span></p> -->
                 <div class="accordion mt-3" id="leadsAccordion">
                     <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
-                        <div style="width:100%;height:100%" class="lds-pacman">
+                        <!-- <div style="width:100%;height:100%" class="lds-pacman">
                             <div>
                                 <div></div>
                                 <div></div>
@@ -60,52 +60,10 @@
                                 <div></div>
                                 <div></div>
                             </div>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
-        </div>
-
-
-        <div class="tab-pane fade" id="schedule" role="tabpanel" aria-labelledby="schedule-tab">
-            <div id='calendar-container'>
-                <div id='calendar'></div>
-            </div>
-        </div>
-
-        <div class="tab-pane fade" id="student" role="tabpanel" aria-labelledby="student-tab">
-            <h2 class="text-center">Записать ученика</h2>
-            <form class="studentForm">
-                <input type="hidden" name="instructorId">
-                <input type="hidden" name="action" value="add">
-                <div class="form-group">
-                    <label for="studentName">Имя ученика</label>
-                    <input type="text" class="form-control" id="studentName" name="studentName" placeholder="ФИО">
-                </div>
-                <div class="form-group">
-                    <label for="date">Дата</label>
-                    <input type="date" class="form-control" id="date" name="date">
-                </div>
-                <div class="form-group">
-                    <label for="time">Начало занятия</label>
-                    <select class="form-control" id="time" name="time">
-                        <option value="06:00:00">06:00</option>
-                        <option value="07:30:00">07:30</option>
-                        <option value="09:00:00">09:00</option>
-                        <option value="10:30:00">10:30</option>
-                        <option value="12:00:00">12:00</option>
-                        <option value="13:30:00">13:30</option>
-                        <option value="15:00:00">15:00</option>
-                        <option value="16:30:00">16:30</option>
-                        <option value="18:00:00">18:00</option>
-                        <option value="19:30:00">19:30</option>
-                        <option value="21:00:00">21:00</option>
-                        <option value="-1">Другое</option>
-                    </select>
-                    <input class="form-control mt-2" type="time" id="time-detail" value="06:00" style="display: none">
-                </div>
-                <button type="submit" class="btn btn-primary">Записать</button>
-            </form>
         </div>
 
     </div>
