@@ -175,7 +175,7 @@
 
                           
                             updated_summ = Number(document.getElementById(groupName+'_group_summ').innerHTML)
-                            updated_summ += leadData.debt
+                            updated_summ += Number(leadData.debt)
 
                             $('#'+groupName+'_group_summ').text(updated_summ);
 
