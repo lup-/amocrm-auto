@@ -93,7 +93,7 @@
 
         groups_list = ["16", "№18", "№19", "№20", "№21", "№22", "№23", "89", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "120", "125"]
 
-        for (group in groups_list){
+        for (groupName in groups_list){
             // $('#listing').append('<div id="'+groups_list[group]+'"></div><br>');
             $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
                                 <div class='title-wrapper'>
@@ -149,23 +149,12 @@
                         return accumulator + group.salary;
                     }, 0);
 
-                    // $('#leadsAccordion').html("")
                     // $('#instructorName').html(instructorName+' добавлен');
-                    // $('#totalCount').html(totalLeadsCount);
-                    // $('#totalSalary').html(totalSalary);
-                    
 
                     groupNames.forEach(function (groupName) {
                         let groupLeadsData = sortedLeads[groupName];
                         let leadsId = Object.keys(groupLeadsData);
                         let groupData = groupsData[groupName];
-                        let money_remains_summ = 0;
-
-                        leadsId.forEach(function (leadId) {
-                            let leadData = groupLeadsData[leadId];
-                            money_remains_summ += Number(leadData.debt || 0);
-                            
-                        })
 
                         console.log(groupName);
 
