@@ -173,9 +173,9 @@
                             );
 
                           
-                            let updated_summ = Number(document.getElementById(groupName).innerHTML) + leadData.debt
+                            let updated_summ = Number(document.getElementById(groupName+'_group_summ').innerHTML) + leadData.debt
 
-                            $('#'+groupName+'_group_summ').html(updated_summ);
+                            $('#'+groupName+'_group_summ').value(updated_summ);
 
                         })
 
