@@ -94,7 +94,25 @@
         groups_list = ["16", "№18", "№19", "№20", "№21", "№22", "№23", "89", "94", "95", "96", "97", "98", "99", "100", "101", "102", "103", "104", "105", "106", "107", "108", "109", "110", "120", "125"]
 
         for (group in groups_list){
-            $('#listing').append('<div id="'+groups_list[group]+'"></div><br>');
+            // $('#listing').append('<div id="'+groups_list[group]+'"></div><br>');
+            $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
+                                <div class='title-wrapper'>
+                                  <div class="dropdown">
+                                    <div class="d-flex justify-content-between align-items-end">
+                                        <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          Группа ${groupName}
+                                        </button>
+                                        <div class="dropdown-menu" aria-labelledby="dd${groupName}">
+                                          <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
+                                          <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
+                                          <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
+                                          <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
+                                          <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
+                                        </div>
+                                        <span>С группы: </span><span id="${groupName}_group_summ">---</span>
+                                    </div>
+                                  </div>
+                                </div>`);
         }
 
 
@@ -171,31 +189,18 @@
                                     instructorName
                                 )
                             );
+
+                          
+                            let updated_summ = Number(document.getElementById(groupName).innerHTML) + leadData.debt
+
+                            $('#'+groupName+'_group_summ').html(updated_summ);
+
                         })
 
                         } else {
                             groups_added.push(groupName);
                             console.log('NOW INCLUDES');
                             console.log(groups_added);
-
-                            $('#leadsAccordion').append(`<div class='h6 my-3' id='${groupName}'>
-                                <div class='title-wrapper'>
-                                  <div class="dropdown">
-                                    <div class="d-flex justify-content-between align-items-end">
-                                        <button class="btn btn-primary dropdown-toggle" type="button" id="dd${groupName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          Группа ${groupName}
-                                        </button>
-                                        <div class="dropdown-menu" aria-labelledby="dd${groupName}">
-                                          <span class='dropdown-item'>ЗП: ${groupData.salary || "-"}</span>
-                                          <span class='dropdown-item'>Человек: ${groupData.people || "-"}</span>
-                                          <span class='dropdown-item'>Начало: ${(groupData.start || "-")}</span>
-                                          <span class='dropdown-item'>Конец: ${(groupData.end || "-")}</span>
-                                          <span class='dropdown-item'>Дата экзамена:  ${(groupData.exam || "-")}</span>
-                                        </div>
-                                        <span>С группы: ${money_remains_summ}</span>
-                                    </div>
-                                  </div>
-                                </div>`);
                             }
 
                     });
