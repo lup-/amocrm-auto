@@ -101,7 +101,7 @@
                                   <div class="dropdown">
                                     <div class="d-flex justify-content-between align-items-end">
                                         <button class="btn btn-primary" type="button" id="dd${groups_list[group]}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                          Группа ${groups_list[group]}
+                                          Группа ${groups_list[group]}<span id='${groups_list[group]}_count'>0</span>
                                         </button>
                                         <span id="${groups_list[group]}_group_summ">0</span>
                                     </div>
@@ -178,6 +178,11 @@
                             updated_summ += Number(leadData.debt)
 
                             $('#'+groupName+'_group_summ').text(updated_summ);
+
+                            updated_count = Number(document.getElementById(groupName+'_count').innerHTML) + 1;
+                            $('#'+groupName+'_count').text(updated_count);
+
+                            // ${groups_list[group]}
 
                         })
 
