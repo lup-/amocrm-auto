@@ -168,6 +168,36 @@ function getCustomFieldValue($fieldId, $leadData) {
 
     return "не задано";
 }
+
+function getPaymentDetails($apiLeadData) {
+    $details = [
+        "Остаток"                => getCustomFieldValue(552815, $apiLeadData),
+        "Вступительный взнос"    => getCustomFieldValue(587231, $apiLeadData),
+        "Членский взнос"         => getCustomFieldValue(587233, $apiLeadData),
+        "ГСМ"                    => getCustomFieldValue(561445, $apiLeadData),
+        "Медcправка"             => getCustomFieldValue(561693, $apiLeadData),
+    ];
+
+    $paymentStageFieldIds = [
+        "Оплата 1" => 413511,
+        "Оплата 2" => 413515,
+        "Оплата 3" => 413517,
+        "Оплата 4" => 413519,
+        "Оплата 5" => 571769,
+    ];
+
+    foreach ($paymentStageFieldIds as $fieldName => $fieldId) {
+        $fieldValue = getCustomFieldValue($fieldId, $apiLeadData);
+        $hasPayment = $fieldValue !== "не задано" && $fieldValue !== "нет";
+
+        if ($hasPayment) {
+            $details[ $fieldName ] = $fieldValue;
+        }
+    }
+
+    return $details;
+}
+
 function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
     $apiData = loadApiLead($cookieFileName, $leadId);
     $apiLeadData = $apiData['_embedded']['items'][0];
@@ -183,18 +213,7 @@ function loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId) {
         "Группа"          => getCustomFieldValue(GROUP_FIELD_ID, $apiLeadData),
         "Коробка"         => getCustomFieldValue(389859, $apiLeadData),
         "Откат по часам"  => getCustomFieldValue(552963, $apiLeadData),
-        "Остаток"         => [
-            "Остаток"                => getCustomFieldValue(552815, $apiLeadData),
-            "Вступительный взонс"    => getCustomFieldValue(587231, $apiLeadData),
-            "Членский взонс"         => getCustomFieldValue(587233, $apiLeadData),
-            "ГСМ"                    => getCustomFieldValue(561445, $apiLeadData),
-            "Медcправка"             => getCustomFieldValue(561693, $apiLeadData),
-            "Оплата 1"               => getCustomFieldValue(413511, $apiLeadData),
-            "Оплата 2"               => getCustomFieldValue(413515, $apiLeadData),
-            "Оплата 3"               => getCustomFieldValue(413517, $apiLeadData),
-            "Оплата 4"               => getCustomFieldValue(413519, $apiLeadData),
-            "Оплата 5"               => getCustomFieldValue(571769, $apiLeadData),
-        ],
+        "Остаток"         => getPaymentDetails($apiLeadData),
         "Медкомиссия"   => [
             "Серия, номер, лицензия" => getCustomFieldValue(413345, $apiLeadData),
             "Кем выдано"             => getCustomFieldValue(413347, $apiLeadData),
@@ -272,6 +291,7 @@ function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
             'hours'       => $leadData['cf' . HOURS_FIELD_ID],
             'neededHours' => $leadData['cf' . NEEDED_HOURS_FIELD_ID],
             'debt'        => $leadData['cf' . DEBT_FIELD_ID],
+            'gsmPayment'  => $leadData['cf561445'],
             'phone'       => $phone,
             'group'       => getCustomFieldValue(GROUP_FIELD_ID, $leadData),
             'schedule'    => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,

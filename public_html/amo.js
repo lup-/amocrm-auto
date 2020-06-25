@@ -97,7 +97,7 @@ function zeroPad(num) {
     return num < 10 ? '0' + num : num;
 }
 
-function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, money_remains_summ) {
+function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, gsmPayment) {
     let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
     let hours_form = '';
@@ -114,11 +114,6 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
         instructorName = '';
         hours_form = getFromHTML(leadId, hours);
     }
-    // $('#money_remains_summ').text(money_remains_summ);
-
-    // money_remains_summ += debt;
-    // $('#debt').text(debt);
-    // console.log('AMO.JS: '+money_remains_summ);
 
     return `<div class="card">
             <div class="card-header d-flex flex-row justify-content-between" id="heading-${leadId}">
@@ -134,6 +129,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
             <div id="collapse-${leadId}" class="collapse" aria-labelledby="heading-${leadId}" data-parent="#leadsAccordion">
                 <div class="card-body">
                    <p class="mb-0">Остаток оплаты: ${debt}</p>
+                   <p class="mb-0">Оплата ГСМ: ${gsmPayment}</p>
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
                    <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
