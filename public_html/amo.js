@@ -156,7 +156,7 @@ function getComplexFieldHTML(fieldName, fieldValue) {
     let titleFieldName = subFieldNames[0];
     let titleFieldValue = fieldValue[titleFieldName];
 
-    return `<div class="list-group-item flex-column align-items-start">
+    return `<div class="list-group-item flex-column align-items-start" data-field="${fieldName}">
                 <h5 class="mb-1">${fieldName}</h5>
                 <div class="dropdown">
                     <button class="btn btn-primary btn-block dropdown-toggle" type="button" id="dd${fieldName}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

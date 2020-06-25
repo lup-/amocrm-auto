@@ -87,6 +87,15 @@
 
                         if (typeof (fieldValue) === "object") {
                             $('#fieldsList').append( getComplexFieldHTML(fieldName, fieldValue) );
+
+                            if (fieldName === "Остаток") {
+                                let paymentLeft = parseInt(fieldValue['Остаток']) > 0;
+
+                                if (paymentLeft) {
+                                    let paymentButtonHTML = `<a class="btn btn-success btn-block mt-2" href="https://voa-driving.ru/stranica-oplaty/" target="_blank">Оплатить</a>`;
+                                    $('#fieldsList [data-field="Остаток"]').append(paymentButtonHTML);
+                                }
+                            }
                         }
                         else {
                             $('#fieldsList').append( getLeadFieldHTML(fieldName, fieldValue) );
