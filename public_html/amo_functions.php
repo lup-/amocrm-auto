@@ -61,7 +61,6 @@ function authAmoInterface($cookieFileName) {
     ]);
     curl_setopt($requestHandle, CURLOPT_CUSTOMREQUEST, "POST");
     curl_setopt($requestHandle, CURLOPT_POSTFIELDS, $authData);
-    curl_setopt($requestHandle, CURLOPT_VERBOSE, 1);
 
     curl_exec($requestHandle);
 
@@ -114,6 +113,58 @@ function loadInstructorIds($cookieFileName) {
 
     return $instructors;
 }
+
+function loadCustomFieldsDataFromSettings($cookieFileName) {
+    $fieldsUrl = "https://mailjob.amocrm.ru/ajax/settings/custom_fields/";
+    $requestHandle = curl_init();
+    curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
+    curl_setopt($requestHandle, CURLOPT_POST, 1);
+    curl_setopt($requestHandle, CURLOPT_URL, $fieldsUrl);
+    curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($requestHandle, CURLOPT_HTTPHEADER, [
+        "X-Requested-With: XMLHttpRequest",
+    ]);
+
+    $response = curl_exec($requestHandle);
+    curl_close($requestHandle);
+
+    $asArray = true;
+    $parsedResponse = json_decode($response, $asArray);
+
+    return $parsedResponse['response']['params']['fields'];
+}
+
+function getCustomFieldDescription($allFieldsData, $searchFieldId) {
+    foreach ($allFieldsData as $segmentCode => $segmentFields) {
+        $foundFields = array_filter( $segmentFields, function ($field) use ($searchFieldId) {
+            return $field['id'] == $searchFieldId;
+        });
+
+        if (count($foundFields) > 0) {
+            return current($foundFields);
+        }
+    }
+
+    return false;
+}
+
+function loadInstructorIdsFromFieldEnum($cookieFileName) {
+    $fieldsData = loadCustomFieldsDataFromSettings($cookieFileName);
+    $instructorFieldData = getCustomFieldDescription($fieldsData, INSTRUCTOR_FIELD_ID);
+
+    if (!$instructorFieldData) {
+        return false;
+    }
+
+    $instructors = [];
+
+    foreach ($instructorFieldData['enums'] as $enumEntry) {
+        $instructors[ $enumEntry['id'] ] = $enumEntry['value'];
+    }
+
+    return $instructors;
+}
+
 function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
     $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
 

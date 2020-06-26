@@ -3,11 +3,11 @@
  * Возвращает авторизованный клиент API Google
  * @return Google_Client
  */
-function getClient($tokenPath) {
+function getClient($tokenPath, $credentialsPath = '../credentials.json') {
     $client = new Google_Client();
     $client->setApplicationName('Интерфейс инструктора автошколы ВОА');
     $client->setScopes([Google_Service_Calendar::CALENDAR_EVENTS, Google_Service_Drive::DRIVE_READONLY]);
-    $client->setAuthConfig('../credentials.json');
+    $client->setAuthConfig($credentialsPath);
     $client->setAccessType('offline');
     $client->setPrompt('select_account consent');
 

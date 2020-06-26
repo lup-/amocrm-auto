@@ -1,0 +1,21 @@
+<?php
+return array (
+  788903 => 'dbhe2bkg2e4c5p9tgqjk9qdlps@group.calendar.google.com',
+  920525 => '423eu1ams26911lcje1tv7c994@group.calendar.google.com',
+  920527 => 'jc9dusa5n43hsqv6kn8shu8fjc@group.calendar.google.com',
+  920531 => 'vovpks0oodl64pscluhc613hek@group.calendar.google.com',
+  920533 => 'juot3gdq89rber7q55kd7m34lo@group.calendar.google.com',
+  920537 => 'thph1brp7lh38881f16t8u16jk@group.calendar.google.com',
+  920539 => '6bt34i3qg228jj3prro1iokres@group.calendar.google.com',
+  920563 => 'idtrsqrnk20l233doidl8p83d8@group.calendar.google.com',
+  1068181 => '59oc9t2attulefbm1tncf620e0@group.calendar.google.com',
+  1074817 => 'kqofepg4leucaco7ma4514h574@group.calendar.google.com',
+  1074819 => 'cb915lf43oahv74m4iabi2k7qo@group.calendar.google.com',
+  1098473 => '2qkr3ue25lu8vh1c35i8t1plg8@group.calendar.google.com',
+  920541 => 'ovlnarn2t1v7q6b7fpln0s0jak@group.calendar.google.com',
+  1113415 => '8q4lvlg4k9ul8igulkbj4g5hbc@group.calendar.google.com',
+  1113417 => '0j3cure22pujltndrqce02gnc0@group.calendar.google.com',
+  1104055 => '3le1u02nbm2oddi2hkcuqmn2mc@group.calendar.google.com',
+  1064781 => '0cland0olqmoujji68ejmdflms@group.calendar.google.com',
+  1118661 => 'mcbm4lm3oievcgo8bb28hl7060@group.calendar.google.com',
+);
