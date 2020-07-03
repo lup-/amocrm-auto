@@ -1,0 +1,174 @@
+<template>
+    <div class="mt-3">
+        <div class="lds-css ng-scope" style="width: 200px; height: 200px; margin: auto;">
+            <div class="lds-pacman" style="width:100%;height:100%">
+                <div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    export default {
+        name: "Loader"
+    }
+</script>
+
+<style scoped>
+    @keyframes lds-pacman-1 {
+        0% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        50% {
+            -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+        }
+        100% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+    }
+
+    @-webkit-keyframes lds-pacman-1 {
+        0% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+        50% {
+            -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+        }
+        100% {
+            -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+        }
+    }
+
+    @keyframes lds-pacman-2 {
+        0% {
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+        50% {
+            -webkit-transform: rotate(225deg);
+            transform: rotate(225deg);
+        }
+        100% {
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+    }
+
+    @-webkit-keyframes lds-pacman-2 {
+        0% {
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+        50% {
+            -webkit-transform: rotate(225deg);
+            transform: rotate(225deg);
+        }
+        100% {
+            -webkit-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+    }
+
+    @keyframes lds-pacman-3 {
+        0% {
+            -webkit-transform: translate(190px, 0);
+            transform: translate(190px, 0);
+            opacity: 0;
+        }
+        20% {
+            opacity: 1;
+        }
+        100% {
+            -webkit-transform: translate(70px, 0);
+            transform: translate(70px, 0);
+            opacity: 1;
+        }
+    }
+
+    @-webkit-keyframes lds-pacman-3 {
+        0% {
+            -webkit-transform: translate(190px, 0);
+            transform: translate(190px, 0);
+            opacity: 0;
+        }
+        20% {
+            opacity: 1;
+        }
+        100% {
+            -webkit-transform: translate(70px, 0);
+            transform: translate(70px, 0);
+            opacity: 1;
+        }
+    }
+
+    .lds-pacman {
+        position: relative;
+    }
+
+    .lds-pacman > div:nth-child(2) div {
+        position: absolute;
+        top: 40px;
+        left: 40px;
+        width: 120px;
+        height: 60px;
+        border-radius: 120px 120px 0 0;
+        background: #f05125;
+        -webkit-animation: lds-pacman-1 1s linear infinite;
+        animation: lds-pacman-1 1s linear infinite;
+        -webkit-transform-origin: 60px 60px;
+        transform-origin: 60px 60px;
+    }
+
+    .lds-pacman > div:nth-child(2) div:nth-child(2) {
+        -webkit-animation: lds-pacman-2 1s linear infinite;
+        animation: lds-pacman-2 1s linear infinite;
+    }
+
+    .lds-pacman > div:nth-child(1) div {
+        position: absolute;
+        top: 92px;
+        left: -8px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fdb813;
+        -webkit-animation: lds-pacman-3 1s linear infinite;
+        animation: lds-pacman-3 1s linear infinite;
+    }
+
+    .lds-pacman > div:nth-child(1) div:nth-child(1) {
+        -webkit-animation-delay: -0.67s;
+        animation-delay: -0.67s;
+    }
+
+    .lds-pacman > div:nth-child(1) div:nth-child(2) {
+        -webkit-animation-delay: -0.33s;
+        animation-delay: -0.33s;
+    }
+
+    .lds-pacman > div:nth-child(1) div:nth-child(3) {
+        -webkit-animation-delay: 0s;
+        animation-delay: 0s;
+    }
+
+    .lds-pacman {
+        width: 200px !important;
+        height: 200px !important;
+        -webkit-transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
+        transform: translate(-100px, -100px) scale(1) translate(100px, 100px);
+    }
+</style>

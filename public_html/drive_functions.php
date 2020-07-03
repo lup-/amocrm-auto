@@ -76,12 +76,17 @@ function downloadTemplate($templateId, $service) {
     return $tempFileName;
 }
 
-function replaceInDocxTemplate($filePath, $replacePairs) {
-    $phpword = new PercentedVariablesTemplateProcessor($filePath);
-
+function setPairs($phpword, $replacePairs) {
     foreach ($replacePairs as $from => $to) {
         $phpword->setValue($from, $to);
     }
+
+    return $phpword;
+}
+
+function replaceInDocxTemplate($filePath, $replacePairs) {
+    $phpword = new PercentedVariablesTemplateProcessor($filePath);
+    $phpword = setPairs($phpword, $replacePairs);
 
     $tempResultFileName = tempnam(sys_get_temp_dir(), 'phpword_template_');
     $phpword->saveAs($tempResultFileName);
@@ -89,10 +94,14 @@ function replaceInDocxTemplate($filePath, $replacePairs) {
     return $tempResultFileName;
 }
 
-function groupReplaceInDocxTemplate($filePath, $group, $cookieFileName) {
+function groupReplaceInDocxTemplate($filePath, $group, $date, $cookieFileName) {
     $phpword = new PercentedVariablesTemplateProcessor($filePath);
+    $groupPairs = makeGroupReplacementParis($group);
 
-    $phpword->setValue('Группа', $group['name']);
+    $phpword = setPairs($phpword, $groupPairs);
+
+    $phpword->setValue('Дата', $date);
+    $phpword->setValue('дата', $date);
 
     $replacePairs = [];
     foreach ($group['leads'] as $apiLeadData) {

@@ -97,7 +97,7 @@ function zeroPad(num) {
     return num < 10 ? '0' + num : num;
 }
 
-function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, gsmPayment) {
+function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, gsmPayment, paymentOverdue) {
     let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
     let hours_form = '';
@@ -117,7 +117,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
 
     return `<div class="card">
             <div class="card-header d-flex flex-row justify-content-between" id="heading-${leadId}">
-                <a class="mb-0 btn-link flex-fill" href="#" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
+                <a class="mb-0 btn-link flex-fill ${paymentOverdue >= 10 ? 'text-danger' : ''}" href="#" data-toggle="collapse" data-target="#collapse-${leadId}" aria-expanded="true" aria-controls="collapse-${leadId}">
                     ${name}
                 </a>
                 ${eventDate
@@ -130,6 +130,7 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                 <div class="card-body">
                    <p class="mb-0">Остаток оплаты: ${debt}</p>
                    <p class="mb-0">Оплата ГСМ: ${gsmPayment}</p>
+                   ${paymentOverdue >= 10 ? '<p class="mb-0 text-danger">Просрочка оплаты: '+paymentOverdue+' дн.</p>' : ''}
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
                    <p class="mb-0">Откатано часов: ${hours}</p>
                    <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>

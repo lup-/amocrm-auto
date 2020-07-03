@@ -44,6 +44,7 @@ switch ($_REQUEST['action']) {
     case 'makegroupdoc':
         $templateId = $_REQUEST['templateId'];
         $groupName = $_REQUEST['group'];
+        $date = (new DateTime())->format('d.m.Y');
 
         $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
         authAmoInterface($cookieFileName);
@@ -52,7 +53,7 @@ switch ($_REQUEST['action']) {
         $group = $groups[$groupName];
 
         $templateFile = downloadTemplate($templateId, $service);
-        $replacedFile = groupReplaceInDocxTemplate($templateFile, $group, $cookieFileName);
+        $replacedFile = groupReplaceInDocxTemplate($templateFile, $group, $date, $cookieFileName);
         $downloadFileName = getFilename($templateId, $service);
         $fileNameSuffix = $groupName;
         $downloadFileName = str_replace('.', '_'.$fileNameSuffix.'.', $downloadFileName);

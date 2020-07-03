@@ -44,10 +44,14 @@ switch ($requestType) {
         if ($instructorId) {
             $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
             authAmoInterface($cookieFileName);
+            authAmoApi($cookieFileName);
+
+            $allApiLeadsResponse = loadApiLeads($cookieFileName);
+            $allApiLeads = $allApiLeadsResponse['_embedded']['items'];
 
             $instructors = loadInstructorIds($cookieFileName);
             $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
-            $leads = $leadsResponse['response']['items'];
+            $leads = joinLeads($leadsResponse['response']['items'], $allApiLeads);
 
             $client = getClient('../token.json');
             $service = new Google_Service_Calendar($client);
