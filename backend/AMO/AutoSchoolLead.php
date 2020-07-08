@@ -9,6 +9,7 @@ class AutoSchoolLead
 
     protected $paymentFields = [413511, 413515, 413517, 413519, 571769];
     protected $invoiceFields = [539217, 539221, 539223, 539225, 571771];
+    protected $sidePaymentFields = [587233, 561445];
 
     public static function createFromArray($rawData) {
         return new self($rawData);
@@ -35,7 +36,10 @@ class AutoSchoolLead
 
         return null;
     }
-
+    public function fieldExists($fieldId) {
+        $field = $this->findCustomField($fieldId);
+        return !empty($field);
+    }
     public function getCustomFieldValue($fieldId) {
         if (isset($this->rawData['cf' . $fieldId])) {
             return $this->rawData['cf' . $fieldId];
@@ -55,12 +59,68 @@ class AutoSchoolLead
         return $fieldValue;
     }
 
+    public function getCustomFieldName($fieldId) {
+        $field = $this->findCustomField($fieldId);
+
+        if (!$field) {
+            return null;
+        }
+
+        return $field['name'];
+    }
+
+    public function getPaymentValue($fieldId) {
+        $fieldValue = $this->getCustomFieldValue($fieldId);
+
+        preg_match('#^[\d \.,]+#', $fieldValue, $matches);
+        if ($matches[0]) {
+            $preparedValue = preg_replace('#\W#', '', $matches[0]);
+            return intval($preparedValue);
+        }
+
+        return false;
+    }
+
+    public function getPaymentDate($fieldId) {
+        return $this->getDateFromValue( $this->getCustomFieldValue($fieldId) );
+    }
+
     public function isEverythingPayed() {
         return $this->getCustomFieldValue(583197) === '1';
     }
 
     public function totalDebt() {
-        return intval( $this->getCustomFieldValue(552815) );
+        $studyPrice = $this->studyPrice();
+
+        if (!$studyPrice) {
+            return $this->getPaymentValue(552815);
+        }
+
+        $debt = $studyPrice - $this->totalPaymentsMade();
+        return $debt > 0 ? $debt : 0;
+    }
+
+    public function studyPrice() {
+        $payment = $this->getPaymentValue(587713);
+        if ($payment > 0) {
+            return $payment;
+        }
+
+        return false;
+    }
+
+    public function totalPaymentsMade() {
+        $sum = 0;
+
+        foreach ($this->sidePaymentFields as $fieldId) {
+            $sum += $this->getPaymentValue($fieldId);
+        }
+
+        foreach ($this->paymentFields as $fieldId) {
+            $sum += $this->getPaymentValue($fieldId);
+        }
+
+        return $sum;
     }
 
     public function phone() {
@@ -86,13 +146,35 @@ class AutoSchoolLead
     }
 
     public function sidePayments() {
-        return [
-            "Остаток"                => $this->getCustomFieldValue(552815),
-            "Вступительный взнос"    => $this->getCustomFieldValue(587231),
-            "Членский взнос"         => $this->getCustomFieldValue(587233),
-            "ГСМ"                    => $this->getCustomFieldValue(561445),
-            "Медcправка"             => $this->getCustomFieldValue(561693),
+        $sidePayments = [
+            "Остаток" => $this->totalDebt(),
         ];
+
+        foreach ($this->sidePaymentFields as $fieldId) {
+            if ($this->fieldExists($fieldId)) {
+                $sidePayments[$this->getCustomFieldName($fieldId)] = $this->getPaymentValue($fieldId);
+            }
+        }
+
+        return $sidePayments;
+    }
+
+    public function paymentDetails() {
+        $details = $this->sidePayments();
+
+        foreach ($this->paymentFields as $index => $fieldId) {
+            if ($this->fieldExists($fieldId)) {
+                $fieldName = $this->getCustomFieldName($fieldId);
+                $paymentValue = $this->getPaymentValue($fieldId);
+                $hasPayment = $paymentValue !== "не задано" && $paymentValue !== "нет";
+
+                if ($hasPayment) {
+                    $details[$fieldName] = $paymentValue;
+                }
+            }
+        }
+
+        return $details;
     }
 
     private function getDateFromValue($valueWithDate) {
@@ -119,10 +201,10 @@ class AutoSchoolLead
             return 0;
         }
 
-        $sidePayments = array_values( $this->sidePayments() );
         $lastSidePaymentDate = false;
-        foreach ($sidePayments as $paymentValue) {
-            $paymentDate = $this->getDateFromValue($paymentValue);
+        foreach ($this->sidePaymentFields as $fieldId) {
+            $paymentDate = $this->getPaymentDate($fieldId);
+
             if ($paymentDate) {
                 if (!$lastSidePaymentDate) {
                     $lastSidePaymentDate = $paymentDate;
@@ -140,13 +222,12 @@ class AutoSchoolLead
         $unpayedInvoiceDate = false;
 
         foreach ($this->paymentFields as $index => $paymentFieldId) {
-            $paymentValue = $this->getCustomFieldValue($paymentFieldId);
+            $paymentValue = $this->getPaymentValue($paymentFieldId);
 
             $invoiceFieldId = $this->invoiceFields[$index];
-            $invoiceValue = $this->getCustomFieldValue($invoiceFieldId);
-            $invoiceDate = $this->getDateFromValue($invoiceValue);
+            $invoiceDate = $this->getPaymentDate($invoiceFieldId);
 
-            if ($invoiceValue) {
+            if ($invoiceDate) {
                 $isInvoicePayed = $paymentValue > 0;
                 $allInvoicesPayed = $allInvoicesPayed && $isInvoicePayed;
 
