@@ -15,16 +15,16 @@
                      <div>
                          Всего ЗП: {{currentInstructorSalary}}
                      </div>
-                     <b-card no-body class="mb-2" v-for="(group, groupName) in currentInstructor.groups" :key="groupName">
+                     <b-card no-body class="mb-2" v-for="group in instructorGroups(currentInstructor)" :key="group.name">
                          <b-card-header header-tag="header" class="p-1" role="tab">
-                             <b-button block v-b-toggle="'collapse'+groupCode(groupName)" variant="link" class="d-flex align-items-center">
-                                 <span class="w-75 mr-4">Группа {{group.name}}</span><span class="btn btn-secondary w-25">{{group.salary}}</span>
+                             <b-button block v-b-toggle="'collapse'+groupCode(group.name)" variant="link" class="d-flex align-items-center">
+                                 <span class="w-75 mr-4">Группа {{group.name}}</span><span class="btn btn-secondary w-25">{{instructorGroupSalary(currentInstructor, group)}}</span>
                              </b-button>
                          </b-card-header>
-                         <b-collapse :id="'collapse'+groupCode(groupName)" :accordion="'instructorAccordion'+currentInstructor.id" role="tabpanel">
+                         <b-collapse :id="'collapse'+groupCode(group.name)" :accordion="'instructorAccordion'+currentInstructor.id" role="tabpanel">
                              <b-card-body>
                                  <ul class="list-group list-group-flush">
-                                     <li class="list-group-item" v-for="student in currentInstructor.students[groupName]" :key="student.name">{{student.name}}</li>
+                                     <li class="list-group-item" v-for="student in instructorStudentsInGroup(group)" :key="student.name">{{student.name}}</li>
                                  </ul>
                              </b-card-body>
                          </b-collapse>
@@ -50,6 +50,9 @@
             }
         },
         methods: {
+            instructorStudentsInGroup(group) {
+                return this.currentInstructor.students.filter( student => student.group === group.name );
+            },
             updateCurrentInstructorId(newInstructorId) {
                 this.currentInstructorId = newInstructorId;
             },
@@ -63,6 +66,19 @@
                     this.groupNames.push(groupName);
                     return this.groupNames.indexOf(groupName);
                 }
+            },
+            instructorGroups(instructor) {
+                let groupNames = instructor.students.map(student => student.group);
+                let uniqueNames = groupNames.filter( (groupName, index) => groupNames.indexOf(groupName) === index );
+                let groups = this.groups.filter( group => uniqueNames.indexOf(group.name) !== -1 );
+                return groups;
+            },
+            instructorGroupSalary(instructor, group) {
+                let instructorStudentsInGroup = instructor.students.filter(student => student.group === group.name);
+                return instructorStudentsInGroup.reduce( (summ, student) => {
+                    summ += student.salary;
+                    return summ;
+                }, 0);
             }
         },
         computed: {
@@ -78,12 +94,11 @@
                     return false;
                 }
 
-                return Object.keys(this.currentInstructor.groups).reduce( (summ, code) => {
-                    let group = this.currentInstructor.groups[code];
-                    summ += group.salary;
+                return this.currentInstructor.students.reduce( (summ, student) => {
+                    summ += student.salary;
                     return summ;
                 }, 0);
-            }
+            },
         }
 
     }

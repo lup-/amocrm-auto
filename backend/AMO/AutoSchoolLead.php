@@ -7,6 +7,7 @@ class AutoSchoolLead
 {
     protected $rawData;
 
+    protected $dateFormat = "d.m.Y";
     protected $paymentFields = [413511, 413515, 413517, 413519, 571769];
     protected $invoiceFields = [539217, 539221, 539223, 539225, 571771];
     protected $sidePaymentFields = [587233, 561445];
@@ -58,7 +59,6 @@ class AutoSchoolLead
 
         return $fieldValue;
     }
-
     public function getCustomFieldName($fieldId) {
         $field = $this->findCustomField($fieldId);
 
@@ -68,7 +68,6 @@ class AutoSchoolLead
 
         return $field['name'];
     }
-
     public function getPaymentValue($fieldId) {
         $fieldValue = $this->getCustomFieldValue($fieldId);
 
@@ -80,15 +79,36 @@ class AutoSchoolLead
 
         return false;
     }
-
     public function getPaymentDate($fieldId) {
         return $this->getDateFromValue( $this->getCustomFieldValue($fieldId) );
+    }
+
+    public function getDateValue($fieldId) {
+        $timestamp = $this->getIntValue($fieldId);
+
+        if (!$timestamp) {
+            return false;
+        }
+
+        $date = new \DateTime();
+        $date->setTimestamp($timestamp);
+        $date->setTimezone(new \DateTimeZone('Europe/Moscow'));
+        return $date->format($this->dateFormat);
+    }
+    public function getIntValue($fieldId) {
+        try {
+            $value = intval($this->getCustomFieldValue($fieldId));
+        }
+        catch (Exception $e) {
+            $value = 0;
+        }
+
+        return $value;
     }
 
     public function isEverythingPayed() {
         return $this->getCustomFieldValue(583197) === '1';
     }
-
     public function totalDebt() {
         $studyPrice = $this->studyPrice();
 
@@ -99,16 +119,14 @@ class AutoSchoolLead
         $debt = $studyPrice - $this->totalPaymentsMade();
         return $debt > 0 ? $debt : 0;
     }
-
     public function studyPrice() {
-        $payment = $this->getPaymentValue(587713);
+        $payment = intval( $this->rawData['sale'] );
         if ($payment > 0) {
             return $payment;
         }
 
         return false;
     }
-
     public function totalPaymentsMade() {
         $sum = 0;
 
@@ -123,6 +141,12 @@ class AutoSchoolLead
         return $sum;
     }
 
+    public function id() {
+        return $this->rawData['id'];
+    }
+    public function name() {
+        return $this->rawData['main_contact']['name'];
+    }
     public function phone() {
         $phone = $this->getCustomFieldValue(389479);
         if ( is_array($phone) ) {
@@ -140,11 +164,22 @@ class AutoSchoolLead
 
         return '+'.$phone;
     }
-
     public function group() {
-        return $this->getCustomFieldValue(580073);
+        return $this->groupData()->name();
+    }
+    public function instructor() {
+        return $this->getCustomFieldValue(398075);
+    }
+    public function hours() {
+        return $this->getIntValue(552963);
+    }
+    public function neededHours() {
+        return $this->getIntValue(414085);
     }
 
+    public function groupData() {
+        return Group::createFromLead($this);
+    }
     public function sidePayments() {
         $sidePayments = [
             "Остаток" => $this->totalDebt(),
@@ -158,7 +193,6 @@ class AutoSchoolLead
 
         return $sidePayments;
     }
-
     public function paymentDetails() {
         $details = $this->sidePayments();
 
@@ -176,7 +210,6 @@ class AutoSchoolLead
 
         return $details;
     }
-
     private function getDateFromValue($valueWithDate) {
         if (!$valueWithDate) {
             return false;
@@ -191,8 +224,7 @@ class AutoSchoolLead
 
         return false;
     }
-
-    function getPaymentOverdueDays() {
+    public function getPaymentOverdueDays() {
         if ($this->isEverythingPayed()) {
             return 0;
         }
@@ -257,5 +289,23 @@ class AutoSchoolLead
         $today = new \DateTime();
         $daysFromLastPayment = $today->diff($lastPaymentDate)->days;
         return $daysFromLastPayment;
+    }
+
+    public function asStudentArray($foundEvent = false) {
+        return [
+            'id'             => $this->id(),
+            'name'           => $this->name(),
+            'contact'        => $this->name(),
+            'hours'          => $this->hours(),
+            'neededHours'    => $this->neededHours(),
+            'salary'         => $this->hours() * HOUR_PRICE,
+            'debt'           => $this->totalDebt(),
+            'paymentOverdue' => $this->getPaymentOverdueDays(),
+            'gsmPayment'     => $this->getPaymentValue(561445),
+            'phone'          => $this->phone(),
+            'group'          => $this->group(),
+            'schedule'       => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
+            'instructor'     => $this->instructor(),
+        ];
     }
 }

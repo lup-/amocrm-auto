@@ -1,4 +1,7 @@
 <?php
+
+use AMO\LeadsCollection;
+
 require __DIR__ . '/../vendor/autoload.php';
 require_once 'google_functions.php';
 require_once 'calendar_functions.php';
@@ -15,6 +18,15 @@ switch ($requestType) {
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode($instructors);
+    break;
+    case 'getAdminData':
+        $leads = LeadsCollection::loadAllFromInterface();
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode([
+            "instructors" => $leads->getInstructors(),
+            "groups" => $leads->getGroups(),
+        ]);
     break;
     case 'getAllInstructorsData':
         $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");

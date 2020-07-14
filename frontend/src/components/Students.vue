@@ -6,7 +6,7 @@
             <b-card no-body class="mb-2" v-for="(group, index) in groups" :key="group.name">
                 <b-card-header header-tag="header" class="p-1" role="tab">
                     <b-button block v-b-toggle="'group'+index" variant="link" class="d-flex align-items-center">
-                        <span class="w-75 mr-4">{{group.name}}</span><span class="btn btn-secondary w-25">{{group.totalPeople}} чел</span>
+                        <span class="w-75 mr-4">{{group.name}}</span><span class="btn btn-secondary w-25">{{group.students.length}} чел</span>
                     </b-button>
                 </b-card-header>
                 <b-collapse :id="'group'+index" accordion="groupAccordion" role="tabpanel">

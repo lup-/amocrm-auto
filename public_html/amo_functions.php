@@ -190,6 +190,46 @@ function loadInstructorIdsFromFieldEnum($cookieFileName) {
     return $instructors;
 }
 
+function loadLeadsWithExtraDataPage($cookieFileName, $page = 1) {
+    $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
+
+    $leadsFilter = [
+        "skip_filter"          => "y",
+        "page"                 => $page,
+        "json"                 => 1,
+    ];
+
+    $requestHandle = curl_init();
+    curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
+    curl_setopt($requestHandle, CURLOPT_URL, $leadsUrl);
+    curl_setopt($requestHandle, CURLOPT_POST, 1);
+    curl_setopt($requestHandle, CURLOPT_POSTFIELDS, http_build_query($leadsFilter));
+    curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($requestHandle, CURLOPT_HTTPHEADER, [
+        "X-Requested-With: XMLHttpRequest",
+    ]);
+
+    $response = curl_exec($requestHandle);
+    curl_close($requestHandle);
+
+    $asArray = true;
+    $parsedResponse = json_decode($response, $asArray);
+
+    return $parsedResponse;
+}
+
+function loadAllLeadsWithExtraData($cookieFileName) {
+    $result = loadLeadsWithExtraDataPage($cookieFileName);
+    $totalPages = $result['response']['pagination']['total'];
+
+    for ($page = 2; $page <= $totalPages; $page++) {
+        $pageResult = loadLeadsWithExtraDataPage($cookieFileName, $page);
+        $result['response']['items'] = array_merge($result['response']['items'], $pageResult['response']['items']);
+    }
+
+    return $result;
+}
+
 function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
     $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
 

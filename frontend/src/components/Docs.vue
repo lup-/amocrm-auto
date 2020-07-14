@@ -12,7 +12,7 @@
 
             <b-dropdown v-if="currentCity" :text="currentGroup ? 'Группа ' + currentGroup.name : 'Выбор группы'" variant="primary" block class="mb-2">
                 <b-dropdown-item v-for="group in groups"
-                        @click="updateCurrentGroup(group.name)"
+                        @click="updateCurrentGroup(group)"
                         :key="group.name"
                 >{{group.name}}</b-dropdown-item>
             </b-dropdown>
@@ -62,7 +62,7 @@
             return {
                 currentCity: 'Железнодорожный',
                 currentTemplateId: false,
-                currentGroupCode: false,
+                currentGroup: false,
             }
         },
         methods: {
@@ -72,8 +72,8 @@
             updateCurrentTemplateId(newTemplateId) {
                 this.currentTemplateId = newTemplateId;
             },
-            updateCurrentGroup(newGroupCode) {
-                this.currentGroupCode = newGroupCode;
+            updateCurrentGroup(newGroup) {
+                this.currentGroup = newGroup;
             },
             downloadSelectedDocument(studentId) {
                 window.location.href = `/files.php?action=makedoc&templateId=${this.currentTemplateId}&leadId=${studentId}`;
@@ -119,11 +119,6 @@
             isCurrentTemplatePersonal() {
                 return this.currentTemplate && this.currentTemplate.type === 'personal';
             },
-            currentGroup() {
-                return this.currentGroupCode !== false
-                    ? this.groups[this.currentGroupCode]
-                    : false;
-            }
         }
     }
 </script>

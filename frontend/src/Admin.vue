@@ -48,6 +48,7 @@
             return {
                 isLoading: true,
                 instructorsData: [],
+                groupsData: [],
                 templates: [],
                 currentTabComponent: 'salary',
                 menu: [
@@ -67,10 +68,11 @@
             },
             async loadInstructorGroupsData() {
                 let responseData = await loadApiData({
-                    type: 'getAllInstructorsData',
+                    type: 'getAdminData',
                 });
 
                 this.instructorsData = responseData.instructors;
+                this.groupsData = responseData.groups;
             },
             async loadDocumentTemplatesData() {
                 let responseData = await loadApiData({
@@ -89,50 +91,7 @@
         },
         computed: {
             groups() {
-                if (!this.instructorsData) {
-                    return {};
-                }
-
-                let groupsAsObject = this.instructorsData.reduce((groupsData, instructor) => {
-                    Object.keys(instructor.groups).map((groupCode) => {
-                        let currentInstructorGroup = instructor.groups[groupCode];
-                        let students = instructor.students[groupCode];
-
-                        let groupAlreadyFound = typeof (groupsData[groupCode]) !== 'undefined';
-                        let totalGroupData = {};
-
-                        if (groupAlreadyFound) {
-                            totalGroupData = groupsData[groupCode];
-                            totalGroupData.students = totalGroupData.students.concat(students);
-                        }
-                        else {
-                            totalGroupData = {
-                                name: currentInstructorGroup.name,
-                                start: currentInstructorGroup.start,
-                                end: currentInstructorGroup.end,
-                                exam: currentInstructorGroup.exam,
-                                totalPeople: 0,
-                                instructors: [],
-                                students: students,
-                            };
-                        }
-
-                        totalGroupData.totalPeople += currentInstructorGroup.people;
-                        totalGroupData.instructors.push({
-                            'id': instructor.id,
-                            'name': instructor.name,
-                            'people': currentInstructorGroup.people,
-                            'salary': currentInstructorGroup.salary,
-                            'students': students,
-                        });
-
-                        groupsData[groupCode] = totalGroupData;
-                    });
-
-                    return groupsData;
-                }, {});
-
-                return groupsAsObject;
+                return Object.values(this.groupsData);
             }
         }
     }
