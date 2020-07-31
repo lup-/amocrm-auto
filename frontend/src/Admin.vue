@@ -1,10 +1,10 @@
 <template>
-    <div id="admin">
+    <b-container fluid class="px-0" id="admin">
         <loader v-if="isLoading"></loader>
-        <div class="mb-4" v-else>
-            <b-navbar toggleable type="dark" variant="primary">
+        <div v-else>
+            <b-navbar toggleable type="dark" variant="primary" class="sticky-navbar">
                 <b-navbar-brand href="#">Администратор</b-navbar-brand>
-                <b-navbar-toggle target="nav-menu"></b-navbar-toggle>
+                <b-navbar-toggle target="nav-menu" class="d-block d-md-none"></b-navbar-toggle>
 
                 <b-collapse id="nav-menu" is-nav>
                     <b-navbar-nav>
@@ -22,9 +22,24 @@
                 </b-collapse>
             </b-navbar>
 
-            <component :groups="groups" :instructors="instructorsData" :is="currentTabComponent" :templates="templates"></component>
+            <div class="row mx-0 md-4">
+                <nav class="d-none col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                    <div class="sidebar-sticky">
+                        <ul class="nav flex-column">
+                            <li class="nav-item" v-for="item in menu" :key="item.code+'-side'">
+                                <a class="nav-link" :class="{active: item.active}" href="#" @click="updateActiveMenu(item.code)">
+                                    {{item.title}}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+                <main class="col-12 col-md-9 ml-sm-auto col-lg-10 p-2">
+                    <component :groups="groups" :instructors="instructorsData" :is="currentTabComponent" :templates="templates"></component>
+                </main>
+            </div>
         </div>
-    </div>
+    </b-container>
 </template>
 
 <script>
@@ -97,4 +112,29 @@
     }
 </script>
 
-<style></style>
+<style>
+    .sidebar {
+        position: fixed!important;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 50;
+        padding: 56px 0 0;
+        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    }
+
+    .sidebar-sticky {
+        position: sticky!important;
+        top: 0;
+        height: calc(100vh - 48px);
+        padding-top: .5rem;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .sticky-navbar {
+        position: sticky!important;
+        top: 0;
+        z-index: 100;
+    }
+</style>

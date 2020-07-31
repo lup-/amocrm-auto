@@ -370,7 +370,13 @@ function makeReplacementPairs($apiLeadData, $contactData) {
     ];
 
     foreach ($apiLeadData['custom_fields'] as $field) {
-        $replacementPairs[ $field['name'] ] = $field['values'][0]['value'];
+        $name = $field['name'];
+        $value = $field['values'][0]['value'];
+        $replacementPairs[ $name ] = $value;
+
+        if (is_numeric($value)) {
+            $replacementPairs[ $name.'.Прописью' ] = numberToText($value);
+        }
     }
 
     if ($contactData['custom_fields']) {
