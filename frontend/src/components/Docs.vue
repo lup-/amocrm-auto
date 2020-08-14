@@ -1,6 +1,6 @@
 <template>
     <section class="tab-content px-3 pt-4">
-        <div class="tab-pane fade show active">
+        <b-row class="tab-pane fade show active">
             <h2 class="text-center">Документы</h2>
 
             <b-dropdown :text="currentCity ? currentCity : 'Выбор города'" variant="primary" block class="mb-2">
@@ -17,43 +17,93 @@
                 >{{group.name}}</b-dropdown-item>
             </b-dropdown>
 
-            <b-dropdown v-if="currentGroup" :text="currentTemplate ? currentTemplate.title : 'Выбор шаблона'" variant="primary" block class="mb-2">
-                <b-dropdown-text>На каждого студента</b-dropdown-text>
-                <b-dropdown-item v-for="template in this.templates[this.currentCity]['personal']"
-                        @click="updateCurrentTemplateId(template.id)"
-                        :key="template.id"
-                >
-                    {{template.title}}
-                </b-dropdown-item>
-                <b-dropdown-divider></b-dropdown-divider>
-                <b-dropdown-text>На всю группу</b-dropdown-text>
-                <b-dropdown-item v-for="template in this.templates[this.currentCity]['group']"
-                        @click="updateCurrentTemplateId(template.id)"
-                        :key="template.id"
-                >
-                    {{template.title}}
-                </b-dropdown-item>
-            </b-dropdown>
+            <b-form-row v-if="currentGroup" class="align-items-center mt-4 px-4">
+                <b-col>
+                    <b-form-checkbox @change="toggleSelectAll">Выделить всех</b-form-checkbox>
+                </b-col>
+                <b-col class="text-right">
+                    <b-overlay :show="multipleProcessing" rounded opacity="0.6" spinner-small spinner-variant="primary" class="d-inline-block">
+                        <b-button v-if="currentTemplate && isCurrentTemplatePersonal && selectedRecords.length > 0"
+                            variant="primary"
+                            class="mr-2 mb-2"
+                            :disabled="multipleProcessing"
+                            @click="createMultipleDocuments"
+                        >Сформировать для выбранных</b-button>
+                    </b-overlay>
+                    <b-dropdown :text="currentTemplate ? currentTemplate.title : 'Выбор шаблона'" right variant="primary" class="mb-2">
+                        <b-dropdown-text>На каждого студента</b-dropdown-text>
+                        <b-dropdown-item v-for="template in this.templates[this.currentCity]['personal']"
+                                @click="updateCurrentTemplateId(template.id)"
+                                :key="template.id"
+                        >
+                            {{template.title}}
+                        </b-dropdown-item>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-text>На всю группу</b-dropdown-text>
+                        <b-dropdown-item v-for="template in this.templates[this.currentCity]['group']"
+                                @click="updateCurrentTemplateId(template.id)"
+                                :key="template.id"
+                        >
+                            {{template.title}}
+                        </b-dropdown-item>
+                    </b-dropdown>
+                </b-col>
+            </b-form-row>
 
-            <ul class="list-group mt-4" v-if="currentGroup && currentTemplate && isCurrentTemplatePersonal">
-                <li class="list-group-item d-flex align-items-center" v-for="student in currentGroup.students" :key="student.id">
-                    <span class="w-75 mr-4 flex-fill">{{student.name}}</span>
-                    <button class="btn btn-primary" @click="downloadSelectedDocument(student.id)">
-                        <b-icon-download></b-icon-download>
-                    </button>
-                </li>
-            </ul>
+            <b-form-group  v-if="currentGroup">
+                <b-form-checkbox-group v-model="selectedRecords">
+                    <ul class="list-group">
+                        <li class="list-group-item" v-for="student in currentGroup.students" :key="student.id">
+                            <div class="d-md-flex flex-row">
+                                <b-form-checkbox :value="student.id" class="mr-4 flex-fill align-items-center">
+                                    <span>{{student.name}}</span>
+                                </b-form-checkbox>
 
-            <button class="btn btn-primary btn-block mt-4" @click="downloadSelectedGroupDocument(currentGroup)" v-else-if="currentGroup && currentTemplate">
+                                <div class="row-buttons text-right">
+                                    <b-button v-if="student.docs.length"
+                                            v-b-toggle="'collapse-'+student.id"
+                                            variant="primary" class="mr-2"
+                                    >Готовые документы</b-button>
+
+                                    <b-overlay :show="isLoading(student.id)" rounded opacity="0.6" spinner-small spinner-variant="primary" class="d-inline-block">
+                                        <button class="btn btn-primary"
+                                                v-if="currentTemplate && isCurrentTemplatePersonal"
+                                                :disabled="isLoading(student.id)"
+                                                @click="createSelectedDocument(student.id)"
+                                        >
+                                            <b-icon-download></b-icon-download>
+                                        </button>
+                                    </b-overlay>
+                                </div>
+                            </div>
+
+                            <b-row>
+                                <b-col>
+                                    <b-collapse :id="'collapse-'+student.id" class="mt-2">
+                                        <b-list-group>
+                                            <b-list-group-item v-for="doc in student.docs" :key="doc.googleId">
+                                                <b-button variant="link"  :href="doc.downloadUrl" target="_blank">{{doc.filename}}</b-button>
+                                            </b-list-group-item>
+                                        </b-list-group>
+                                    </b-collapse>
+                                </b-col>
+                            </b-row>
+                        </li>
+                    </ul>
+                </b-form-checkbox-group>
+            </b-form-group>
+
+            <button class="btn btn-primary btn-block mt-4" @click="downloadSelectedGroupDocument(currentGroup)" v-if="currentGroup && currentTemplate && !isCurrentTemplatePersonal">
                 <b-icon-download></b-icon-download>
-                Скачать документ для группы
+                Скачать документ для группы {{selectedRecords.length > 0 ? '(выбранные)' : '(все в списке)'}}
             </button>
-        </div>
+        </b-row>
     </section>
 </template>
 
 <script>
     import {clone} from "../modules/objectsArrays";
+    import axios from "axios";
 
     export default {
         name: "Docs",
@@ -63,9 +113,33 @@
                 currentCity: 'Железнодорожный',
                 currentTemplateId: false,
                 currentGroup: false,
+                selectedRecords: [],
+                processing: [],
+                multipleProcessing: false,
+            }
+        },
+        watch: {
+            groups() {
+                if (this.currentGroup) {
+                    let newGroup = this.groups.find(group => group.name === this.currentGroup.name);
+                    if (newGroup) {
+                        this.currentGroup = newGroup;
+                    }
+                    else {
+                        this.currentGroup = false;
+                    }
+                }
             }
         },
         methods: {
+            toggleSelectAll(selected) {
+                if (selected) {
+                    this.selectedRecords = this.currentGroup.students.map(student => student.id);
+                }
+                else {
+                    this.selectedRecords = [];
+                }
+            },
             updateCurrentCity(newCity) {
                 this.currentCity = newCity;
             },
@@ -74,12 +148,39 @@
             },
             updateCurrentGroup(newGroup) {
                 this.currentGroup = newGroup;
+                this.selectedRecords = [];
+            },
+            isLoading(studentId) {
+                return this.processing.indexOf(studentId) !== -1;
+            },
+            async createMultipleDocuments() {
+                this.multipleProcessing = true;
+                await Promise.all( this.selectedRecords.map(selectedId => this.createSelectedDocument(selectedId)) );
+                this.multipleProcessing = false;
+            },
+            async createSelectedDocument(studentId) {
+                this.processing.push(studentId);
+
+                let docResult = await axios.get('/files.php', {
+                    params: {
+                        action: 'makedocajax',
+                        templateId: this.currentTemplateId,
+                        leadId: studentId,
+                    }
+                });
+
+                let newDoc = docResult.data.doc;
+                this.$emit('newDoc', this.currentGroup, studentId, newDoc);
+
+                let processingIndex = this.processing.indexOf(studentId);
+                this.processing.splice(processingIndex, 1);
             },
             downloadSelectedDocument(studentId) {
                 window.location.href = `/files.php?action=makedoc&templateId=${this.currentTemplateId}&leadId=${studentId}`;
             },
             downloadSelectedGroupDocument(group) {
-                window.location.href = `/files.php?action=makegroupdoc&templateId=${this.currentTemplateId}&group=${group.name}`;
+                let selected = this.selectedRecords.map(studentId => `&selected[]=${studentId}`).join('');
+                window.location.href = `/files.php?action=makegroupdoc&templateId=${this.currentTemplateId}&group=${group.name}${selected}`;
             }
         },
         computed: {

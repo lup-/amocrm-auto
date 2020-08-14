@@ -1,5 +1,6 @@
 <?php
 
+use AMO\Database;
 use AMO\LeadsCollection;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -20,12 +21,32 @@ switch ($requestType) {
         echo json_encode($instructors);
     break;
     case 'getAdminData':
-        $leads = LeadsCollection::loadAllFromInterface();
+        $loadFromAMO = $_GET['loadFromAMO'] === '1';
+
+        if ($loadFromAMO) {
+            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+            authAmoInterface($cookieFileName);
+
+            $activeLeads = LeadsCollection::loadActiveFromInterface($cookieFileName);
+            $completeLeads = LeadsCollection::loadCompletedFromInterface($cookieFileName, $activeLeads->getRawInstructors());
+
+            Database::getInstance()->updateLeads( $activeLeads );
+            Database::getInstance()->updateLeads( $completeLeads, true );
+        }
+        else {
+            $activeLeads = Database::getInstance()->loadActiveLeads();
+            $completeLeads = Database::getInstance()->loadCompleteLeads();
+        }
+
+        $docs = Database::getInstance()->loadAllDocs();
+        $activeLeads->setDocs($docs);
+        $completeLeads->setDocs($docs);
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode([
-            "instructors" => $leads->getInstructors(),
-            "groups" => $leads->getGroups(),
+            "instructors"    => $activeLeads->getInstructors(),
+            "groups"         => $activeLeads->getGroups(),
+            "completeGroups" => $completeLeads->getGroups(),
         ]);
     break;
     case 'getAllInstructorsData':

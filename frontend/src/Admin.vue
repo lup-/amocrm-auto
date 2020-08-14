@@ -31,11 +31,20 @@
                                     {{item.title}}
                                 </a>
                             </li>
+                            <b-dropdown-divider></b-dropdown-divider>
                         </ul>
+
+                        <b-button variant="primary" @click="refreshData">Обновить данные</b-button>
                     </div>
                 </nav>
                 <main class="col-12 col-md-9 ml-sm-auto col-lg-10 p-2">
-                    <component :groups="groups" :instructors="instructorsData" :is="currentTabComponent" :templates="templates"></component>
+                    <component
+                        :groups="completeOrActiveGroups"
+                        :instructors="instructorsData"
+                        :is="currentTabComponent"
+                        :templates="templates"
+                        @newDoc="addNewDocument"
+                    ></component>
                 </main>
             </div>
         </div>
@@ -49,6 +58,10 @@
     import Instructors from "./components/Instructors";
     import Students from "./components/Students";
     import {loadApiData} from './modules/api';
+
+    function clone(obj) {
+        return JSON.parse( JSON.stringify(obj) );
+    }
 
     export default {
         name: 'Admin',
@@ -64,30 +77,57 @@
                 isLoading: true,
                 instructorsData: [],
                 groupsData: [],
+                completeGroupsData: [],
                 templates: [],
-                currentTabComponent: 'salary',
+                currentTabComponent: 'docs',
                 menu: [
-                    {code: 'salary', title: 'Зарплата по группам', active: true},
-                    {code: 'docs', title: 'Документы', active: false},
+                    {code: 'salary', title: 'Зарплата по группам', active: false},
+                    {code: 'docs', title: 'Документы', active: true},
                     {code: 'instructors', title: 'Зарплата по инструкторам', active: false},
                     {code: 'students', title: 'Группы', active: false},
                 ],
             }
         },
         methods: {
+            addNewDocument(targetGroup, studentId, newDoc) {
+                let changedGroup = clone(targetGroup);
+                let studentIndex = changedGroup.students.findIndex(student => student.id === studentId);
+                let student = changedGroup.students[studentIndex];
+
+                if (!student.docs) {
+                    student.docs = [];
+                }
+
+                student.docs.push(newDoc);
+                changedGroup.students[studentIndex] = student;
+                this.$set( this.groupsData, changedGroup.name, changedGroup);
+            },
             updateActiveMenu(newMenuCode) {
                 this.currentTabComponent = newMenuCode;
                 this.menu.map(item => {
                     item.active = item.code === newMenuCode;
                 });
             },
-            async loadInstructorGroupsData() {
-                let responseData = await loadApiData({
+            async refreshData() {
+                this.isLoading = true;
+                await Promise.all([
+                    this.loadInstructorGroupsData(true),
+                    this.loadDocumentTemplatesData()
+                ]);
+                this.isLoading = false;
+            },
+            async loadInstructorGroupsData(refresh = false) {
+                let params = {
                     type: 'getAdminData',
-                });
+                };
+                if (refresh) {
+                    params['loadFromAMO'] = 1;
+                }
+                let responseData = await loadApiData(params);
 
                 this.instructorsData = responseData.instructors;
                 this.groupsData = responseData.groups;
+                this.completeGroupsData = responseData.completeGroups;
             },
             async loadDocumentTemplatesData() {
                 let responseData = await loadApiData({
@@ -107,6 +147,15 @@
         computed: {
             groups() {
                 return Object.values(this.groupsData);
+            },
+            completeGroups() {
+                return Object.values(this.completeGroupsData);
+            },
+            completeOrActiveGroups() {
+                let componentNeedsCompleteGroups = this.currentTabComponent === 'salary' || this.currentTabComponent === 'instructors';
+                return componentNeedsCompleteGroups
+                    ? this.completeGroups
+                    : this.groups;
             }
         }
     }

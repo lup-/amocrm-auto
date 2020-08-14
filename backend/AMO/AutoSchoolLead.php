@@ -12,6 +12,8 @@ class AutoSchoolLead
     protected $invoiceFields = [539217, 539221, 539223, 539225, 571771];
     protected $sidePaymentFields = [587233, 561445];
 
+    protected $docs = [];
+
     public static function createFromArray($rawData) {
         return new self($rawData);
     }
@@ -83,6 +85,12 @@ class AutoSchoolLead
         return $this->getDateFromValue( $this->getCustomFieldValue($fieldId) );
     }
 
+    private function formatTimestamp($timestamp) {
+        $date = new \DateTime();
+        $date->setTimestamp($timestamp);
+        $date->setTimezone(new \DateTimeZone('Europe/Moscow'));
+        return $date->format($this->dateFormat);
+    }
     public function getDateValue($fieldId) {
         $timestamp = $this->getIntValue($fieldId);
 
@@ -90,10 +98,7 @@ class AutoSchoolLead
             return false;
         }
 
-        $date = new \DateTime();
-        $date->setTimestamp($timestamp);
-        $date->setTimezone(new \DateTimeZone('Europe/Moscow'));
-        return $date->format($this->dateFormat);
+        return $this->formatTimestamp($timestamp);
     }
     public function getIntValue($fieldId) {
         try {
@@ -175,6 +180,25 @@ class AutoSchoolLead
     }
     public function neededHours() {
         return $this->getIntValue(414085);
+    }
+
+    public function isSuccessful() {
+        return $this->rawData['status'] == 142;
+    }
+    public function isCanceled() {
+        return $this->rawData['status'] == 143;
+    }
+    public function lastChangedDate() {
+        if ($this->rawData['last_event_at']) {
+            return $this->formatTimestamp( $this->rawData['last_event_at'] );
+        }
+
+        return $this->getDateFromValue( $this->rawData['date_create'] );
+    }
+    public function finishedDate() {
+        return $this->isSuccessful()
+            ? $this->lastChangedDate()
+            : false;
     }
 
     public function groupData() {
@@ -291,6 +315,10 @@ class AutoSchoolLead
         return $daysFromLastPayment;
     }
 
+    public function setDocs($docs) {
+        $this->docs = $docs;
+    }
+
     public function asStudentArray($foundEvent = false) {
         return [
             'id'             => $this->id(),
@@ -299,6 +327,8 @@ class AutoSchoolLead
             'hours'          => $this->hours(),
             'neededHours'    => $this->neededHours(),
             'salary'         => $this->hours() * HOUR_PRICE,
+            'success'        => $this->isSuccessful(),
+            'dateFinished'   => $this->finishedDate(),
             'debt'           => $this->totalDebt(),
             'paymentOverdue' => $this->getPaymentOverdueDays(),
             'gsmPayment'     => $this->getPaymentValue(561445),
@@ -306,6 +336,7 @@ class AutoSchoolLead
             'group'          => $this->group(),
             'schedule'       => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
             'instructor'     => $this->instructor(),
+            'docs'           => $this->docs,
         ];
     }
 }

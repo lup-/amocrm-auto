@@ -37,7 +37,7 @@ function refreshTokenFile($tokenPath, $client) {
 
 $client = new Google_Client();
 $client->setApplicationName('Интерфейс инструктора автошколы ВОА');
-$client->setScopes([Google_Service_Calendar::CALENDAR, Google_Service_Calendar::CALENDAR_EVENTS, Google_Service_Drive::DRIVE_READONLY]);
+$client->setScopes([Google_Service_Calendar::CALENDAR, Google_Service_Calendar::CALENDAR_EVENTS, Google_Service_Drive::DRIVE]);
 $client->setAuthConfig('credentials.json');
 $client->setAccessType('offline');
 $client->setPrompt('select_account consent');

@@ -9,3 +9,5 @@ manifest.old.json
 token.json
 /token.json
 /.phpunit.result.cache
+/etc/database/mongo/
+!.gitkeep

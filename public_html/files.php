@@ -1,4 +1,9 @@
 <?php
+
+use AMO\AmoApi;
+use AMO\Database;
+use AMO\Document;
+
 require __DIR__ . '/../vendor/autoload.php';
 require_once 'google_functions.php';
 require_once 'drive_functions.php';
@@ -24,26 +29,39 @@ switch ($_REQUEST['action']) {
         echo json_encode($response);
     break;
     case 'makedoc':
-        //$templateId = '1uDmyRhOUtjvl9194cI6antqCAE5AcpqA';
-        $templateId = $_REQUEST['templateId'];
+    case 'makedocajax':
+        $googleTemplateId = $_REQUEST['templateId'];
         $leadId = $_REQUEST['leadId'];
+
         $cookieFileName = initAmoApi();
         authAmoInterface($cookieFileName);
+
         $leadPairs = loadLeadReplacementPairs($cookieFileName, $leadId);
 
-        $templateFile = downloadTemplate($templateId, $service);
-        $replacedFile = replaceInDocxTemplate($templateFile, $leadPairs);
-        $downloadFileName = getFilename($templateId, $service);
-        $fileNameSuffix = $leadPairs['Контакт.Имя'].'_'.$leadPairs['Группа'];
-        $downloadFileName = str_replace('.', '_'.$fileNameSuffix.'.', $downloadFileName);
+        $doc = Document::makeFromTemplate($service, $googleTemplateId, $leadId)
+                ->prepareTemplate()
+                ->fillTemplate($leadPairs)
+                ->generateFileName()
+                ->uploadToGoogleDrive();
 
-        header("Content-disposition: attachment; filename=" . $downloadFileName);
-        header("Content-type: application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        readfile($replacedFile);
+        $doc = Database::getInstance()->saveDocument($doc);
+        AmoApi::getInstance()->sendFileToLead($doc);
+
+        if ($_REQUEST['action'] === 'makedoc') {
+            $doc->sendDownload();
+        }
+        else {
+            header("Content-type: application/json; charset=utf-8");
+            echo json_encode([
+                "doc" => $doc->asArray()
+            ]);
+        }
     break;
     case 'makegroupdoc':
-        $templateId = $_REQUEST['templateId'];
+        $googleTemplateId = $_REQUEST['templateId'];
         $groupName = $_REQUEST['group'];
+        $selectedLeads = !empty($_REQUEST['selected']) ? $_REQUEST['selected'] : false;
+
         $date = (new DateTime())->format('d.m.Y');
 
         $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
@@ -52,9 +70,15 @@ switch ($_REQUEST['action']) {
         $groups = loadGroups($cookieFileName);
         $group = $groups[$groupName];
 
-        $templateFile = downloadTemplate($templateId, $service);
+        if ($selectedLeads) {
+            $group['leads'] = array_values( array_filter($group['leads'], function ($lead) use ($selectedLeads) {
+                return array_search($lead['id'], $selectedLeads) !== false;
+            }) );
+        }
+
+        $templateFile = downloadTemplate($googleTemplateId, $service);
         $replacedFile = groupReplaceInDocxTemplate($templateFile, $group, $date, $cookieFileName);
-        $downloadFileName = getFilename($templateId, $service);
+        $downloadFileName = getFilename($googleTemplateId, $service);
         $fileNameSuffix = $groupName;
         $downloadFileName = str_replace('.', '_'.$fileNameSuffix.'.', $downloadFileName);
 

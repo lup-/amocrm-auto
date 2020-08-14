@@ -7,19 +7,61 @@ class LeadsCollection
     protected $rawLeads;
     protected $rawFields;
 
+    /**
+     * @var AutoSchoolLead[]
+     */
     protected $leads = [];
     protected $instructors = [];
 
+    /**
+     * @var DocsCollection
+     */
+    protected $docs;
 
+    public static function loadActiveFromInterface($cookieFileName = false, $instructors = false) {
+        if (!$cookieFileName) {
+            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+            authAmoInterface($cookieFileName);
+        }
 
-    public static function loadAllFromInterface() {
-        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-        authAmoInterface($cookieFileName);
+        if (!$instructors) {
+            $instructors = loadInstructorIds($cookieFileName);
+        }
+
         $responseData = loadAllLeadsWithExtraData($cookieFileName);
 
-        $instructors = loadInstructorIds($cookieFileName);
+        return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
+    }
+
+    public static function loadCompletedFromInterface($cookieFileName = false, $instructors = false) {
+        if (!$cookieFileName) {
+            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+            authAmoInterface($cookieFileName);
+        }
+
+        if (!$instructors) {
+            $instructors = loadInstructorIds($cookieFileName);
+        }
+
+        $responseData = loadCompletedLeadsWithExtraData($cookieFileName);
 
         return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
+    }
+
+    public static function fromDbResult($leads, $fields, $instructors) {
+        return new self($leads, $fields, $instructors);
+    }
+
+    /**
+     * @param DocsCollection $docs
+     */
+    public function setDocs(DocsCollection $docs) {
+        $this->docs = $docs;
+
+        foreach ($this->leads as $lead) {
+            $leadDocs = $docs->getDocsForUser( $lead->id() );
+            $lead->setDocs( $leadDocs );
+        }
     }
 
     public function __construct($leads, $fields, $instructors) {
@@ -119,5 +161,17 @@ class LeadsCollection
         }
 
         return $instructorsData;
+    }
+
+    public function getRawLeads() {
+        return $this->rawLeads;
+    }
+
+    public function getRawFields() {
+        return $this->rawFields;
+    }
+
+    public function getRawInstructors() {
+        return $this->instructors;
     }
 }

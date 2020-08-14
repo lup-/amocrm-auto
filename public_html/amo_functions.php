@@ -190,14 +190,9 @@ function loadInstructorIdsFromFieldEnum($cookieFileName) {
     return $instructors;
 }
 
-function loadLeadsWithExtraDataPage($cookieFileName, $page = 1) {
+function loadLeadsWithExtraDataPage($cookieFileName, $leadsFilter, $page = 1) {
     $leadsUrl = "https://mailjob.amocrm.ru/ajax/leads/list/pipeline/";
-
-    $leadsFilter = [
-        "skip_filter"          => "y",
-        "page"                 => $page,
-        "json"                 => 1,
-    ];
+    $leadsFilter["page"] = $page;
 
     $requestHandle = curl_init();
     curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
@@ -218,16 +213,37 @@ function loadLeadsWithExtraDataPage($cookieFileName, $page = 1) {
     return $parsedResponse;
 }
 
-function loadAllLeadsWithExtraData($cookieFileName) {
-    $result = loadLeadsWithExtraDataPage($cookieFileName);
+function loadLeadsWithExtraDataFilter($cookieFileName, $filter) {
+    $result = loadLeadsWithExtraDataPage($cookieFileName, $filter);
     $totalPages = $result['response']['pagination']['total'];
 
     for ($page = 2; $page <= $totalPages; $page++) {
-        $pageResult = loadLeadsWithExtraDataPage($cookieFileName, $page);
+        $pageResult = loadLeadsWithExtraDataPage($cookieFileName, $filter, $page);
         $result['response']['items'] = array_merge($result['response']['items'], $pageResult['response']['items']);
     }
 
     return $result;
+}
+
+function loadAllLeadsWithExtraData($cookieFileName) {
+    $filter = [
+        "skip_filter" => "y",
+        "json"        => 1,
+    ];
+
+    return loadLeadsWithExtraDataFilter($cookieFileName, $filter);
+}
+
+function loadCompletedLeadsWithExtraData($cookieFileName) {
+    $filter = [
+        "filter[pipe][1191751][]" => "142",
+        "filter[tags_logic]"      => "or",
+        "useFilter"               => "y",
+        "sel"                     => "complited",
+        "json"                    => 1,
+    ];
+
+    return loadLeadsWithExtraDataFilter($cookieFileName, $filter);
 }
 
 function loadInstructorLeadsWithExtraData($cookieFileName, $instructorId) {
@@ -352,16 +368,16 @@ function makeReplacementPairs($apiLeadData, $contactData) {
 
     $replacementPairs = [
         'Сделка.ID'               => $apiLeadData['id'],
-        'Имя'             => $contactData['name'],
-        'Имя.Фамилия' => $familyName,
-        'Имя.Имя' => $name,
-        'Имя.Отчество' => $secondName,
-        'Телефон'         => '',
-        'Телефон.Рабочий' => '',
+        'Имя'                     => $contactData['name'],
+        'Имя.Фамилия'             => $familyName,
+        'Имя.Имя'                 => $name,
+        'Имя.Отчество'            => $secondName,
+        'Телефон'                 => '',
+        'Телефон.Рабочий'         => '',
         'Контакт.Имя'             => $contactData['name'],
-        'Контакт.Имя.Фамилия' => $familyName,
-        'Контакт.Имя.Имя' => $name,
-        'Контакт.Имя.Отчество' => $secondName,
+        'Контакт.Имя.Фамилия'     => $familyName,
+        'Контакт.Имя.Имя'         => $name,
+        'Контакт.Имя.Отчество'    => $secondName,
         'Контакт.Телефон'         => '',
         'Контакт.Телефон.Рабочий' => '',
         'Сделка.Бюджет'           => $apiLeadData['sale'],
