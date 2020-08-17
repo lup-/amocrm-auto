@@ -155,7 +155,11 @@
             },
             async createMultipleDocuments() {
                 this.multipleProcessing = true;
-                await Promise.all( this.selectedRecords.map(selectedId => this.createSelectedDocument(selectedId)) );
+
+                for (let selectedId of this.selectedRecords) {
+                    await this.createSelectedDocument(selectedId);
+                }
+
                 this.multipleProcessing = false;
             },
             async createSelectedDocument(studentId) {
