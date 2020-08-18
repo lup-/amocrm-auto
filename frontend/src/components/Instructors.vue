@@ -32,8 +32,8 @@
                                          responsive="sm"
                                          @row-selected="selected => updateSelected(group, selected)"
                                  >
-                                     <template v-slot:cell(selected)="{ rowSelected }">
-                                         <b-form-checkbox :value="rowSelected"></b-form-checkbox>
+                                     <template v-slot:cell(selected)="{ rowSelected, selectRow, unselectRow, index }">
+                                         <b-form-checkbox :checked="rowSelected" @change="(value) => toggleRow(value, index, selectRow, unselectRow)"></b-form-checkbox>
                                      </template>
                                      <template v-slot:cell(id)="data">
                                          <b-button variant="link" :href="'https://mailjob.amocrm.ru/leads/detail/'+data.id" target="_blank">{{data.id}}</b-button>
@@ -82,6 +82,14 @@
             }
         },
         methods: {
+            toggleRow(isSelected, index, selectRow, unselectRow) {
+                if (isSelected) {
+                    selectRow(index);
+                }
+                else {
+                    unselectRow(index);
+                }
+            },
             updateSelected(group, selected) {
                 this.$set(this.selected, group.name, selected);
             },
@@ -117,15 +125,20 @@
                     return instructorStudents.length > 0;
                 });
             },
+            getSelectedStudents(group) {
+                let selectedStudents = this.selected[group.name];
+                if (!selectedStudents || selectedStudents.length === 0) {
+                    selectedStudents = this.instructorStudentsInGroup(group);
+                }
+                return selectedStudents;
+            },
             totalSalary(group) {
-                let selected = this.selected[group.name] || this.instructorStudentsInGroup(group);
-                return selected.reduce((sum, student) => {
+                return this.getSelectedStudents(group).reduce((sum, student) => {
                     return sum+student.salary;
                 }, 0);
             },
             totalHours(group) {
-                let selected = this.selected[group.name] || this.instructorStudentsInGroup(group);
-                return selected.reduce((sum, student) => {
+                return this.getSelectedStudents(group).reduce((sum, student) => {
                     return sum+student.hours;
                 }, 0);
             },

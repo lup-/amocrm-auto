@@ -155,6 +155,7 @@
             },
             async createMultipleDocuments() {
                 this.multipleProcessing = true;
+                this.processing = this.processing.concat(this.selectedRecords);
 
                 for (let selectedId of this.selectedRecords) {
                     await this.createSelectedDocument(selectedId);
@@ -163,7 +164,10 @@
                 this.multipleProcessing = false;
             },
             async createSelectedDocument(studentId) {
-                this.processing.push(studentId);
+                let processingIndex = this.processing.indexOf(studentId);
+                if (processingIndex === -1) {
+                    this.processing.push(studentId);
+                }
 
                 let docResult = await axios.get('/files.php', {
                     params: {
@@ -176,7 +180,7 @@
                 let newDoc = docResult.data.doc;
                 this.$emit('newDoc', this.currentGroup, studentId, newDoc);
 
-                let processingIndex = this.processing.indexOf(studentId);
+                processingIndex = this.processing.indexOf(studentId);
                 this.processing.splice(processingIndex, 1);
             },
             downloadSelectedDocument(studentId) {

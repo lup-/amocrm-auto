@@ -19,11 +19,33 @@
                             </b-button>
                         </b-card-header>
                         <b-collapse :id="'heading'+index" :accordion="'groupAccordion'+groupCode(currentGroup.name)" role="tabpanel">
+
                             <b-card-body>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item" v-for="student in currentGroupInstructorStudents(instructor)" :key="student.name">{{student.name}}</li>
-                                </ul>
+                                <b-table
+                                        :items="currentGroupInstructorStudents(instructor)"
+                                        :fields="tableFields"
+                                        caption-top
+                                        selectable
+                                        select-mode="multi"
+                                        responsive="sm"
+                                        @row-selected="selected => updateSelected(instructor, selected)"
+                                >
+                                    <template v-slot:cell(selected)="{ rowSelected, selectRow, unselectRow, index }">
+                                        <b-form-checkbox :checked="rowSelected" @change="(value) => toggleRow(value, index, selectRow, unselectRow)"></b-form-checkbox>
+                                    </template>
+                                    <template v-slot:cell(id)="data">
+                                        <b-button variant="link" :href="'https://mailjob.amocrm.ru/leads/detail/'+data.id" target="_blank">{{data.id}}</b-button>
+                                    </template>
+                                    <template v-slot:cell(hours)="data">
+                                        <b-form-input size="sm" v-model="data.value" @change="updateHours(data.item, data.value)"></b-form-input>
+                                    </template>
+                                </b-table>
+                                <b-row>
+                                    <b-col>Итого</b-col>
+                                    <b-col>{{totalHours(instructor)}}, {{totalSalary(instructor)}}</b-col>
+                                </b-row>
                             </b-card-body>
+
                         </b-collapse>
                     </b-card>
                 </div>
@@ -36,16 +58,66 @@
 </template>
 
 <script>
+    import {loadApiData} from "@/modules/api";
+
     export default {
         name: "Salary",
         props: ['groups', 'templates', 'instructors'],
         data() {
             return {
                 currentGroup: false,
-                groupNames: []
+                groupNames: [],
+                tableFields: [
+                    {key: 'selected', label: ''},
+                    {key: 'dateFinished', label: 'Дата закрытия'},
+                    {key: 'id', label: 'Сделка'},
+                    {key: 'name', label: 'Курсант'},
+                    {key: 'instructor', label: 'Инструктор'},
+                    {key: 'hours', label: 'Часы'},
+                    {key: 'salary', label: 'Сумма'},
+                ],
+                selected: {},
             }
         },
         methods: {
+            toggleRow(isSelected, index, selectRow, unselectRow) {
+                if (isSelected) {
+                    selectRow(index);
+                }
+                else {
+                    unselectRow(index);
+                }
+            },
+            updateSelected(instructor, selected) {
+                this.$set(this.selected, instructor.name, selected);
+            },
+            async updateHours(student, hours) {
+                await loadApiData({
+                    action: 'updateHours',
+                    leadId: student.id,
+                    hours
+                });
+
+                student.salary = hours * 275;
+            },
+            getSelectedStudents(instructor) {
+                let selectedStudents = this.selected[instructor.name];
+                if (!selectedStudents || selectedStudents.length === 0) {
+                    selectedStudents = this.currentGroupInstructorStudents(instructor);
+                }
+                return selectedStudents;
+            },
+            totalSalary(instructor) {
+                return this.getSelectedStudents(instructor).reduce((sum, student) => {
+                    return sum+student.salary;
+                }, 0);
+            },
+            totalHours(instructor) {
+                return this.getSelectedStudents(instructor).reduce((sum, student) => {
+                    return sum+student.hours;
+                }, 0);
+            },
+
             updateCurrentGroup(newGroup) {
                 this.currentGroup = newGroup;
             },
