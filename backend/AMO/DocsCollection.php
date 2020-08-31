@@ -25,7 +25,7 @@ class DocsCollection
             return $docModel->asArray();
         }, $docsOfUser);
 
-        return $docsAsArray;
+        return array_values($docsAsArray);
     }
 
     public static function from(array $docsArray) {
