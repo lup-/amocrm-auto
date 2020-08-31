@@ -66,7 +66,7 @@ class AmoApi
     }
 
     public function sendFileToLead(Document $document) {
-        $noteText = "{$document->getFilename()}: {$document->getDownloadUrl()}";
+        $noteText = "{$document->getFilename()}: {$document->getEditUrl()}";
         $this->addNoteToLead($document->getUserId(), $noteText);
     }
 
