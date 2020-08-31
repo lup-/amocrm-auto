@@ -1,5 +1,6 @@
 <?php
 
+use AMO\AmoApi;
 use AMO\Database;
 use AMO\LeadsCollection;
 
@@ -102,6 +103,13 @@ switch ($requestType) {
                 "groups"     => $groups,
             ]);
         }
+    break;
+    case 'getPhone':
+        $contactId = $_GET['contactId'];
+        $contact = AmoApi::getInstance()->getContact($contactId);
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode($contact->asArray());
     break;
     case 'updateHours':
         $leadId = $_GET['leadId'];

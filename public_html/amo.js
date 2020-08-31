@@ -97,7 +97,7 @@ function zeroPad(num) {
     return num < 10 ? '0' + num : num;
 }
 
-function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, gsmPayment, paymentOverdue) {
+function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, instructorName, gsmPayment, paymentOverdue, fullData) {
     let dayNames = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
     let dateText = "";
     let hours_form = '';
@@ -133,7 +133,10 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                    ${paymentOverdue >= 10 ? '<p class="mb-0 text-danger">Просрочка оплаты: '+paymentOverdue+' дн.</p>' : ''}
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
                    <p class="mb-0">Откатано часов: ${hours}</p>
-                   <p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>
+                   ${phone
+                        ? `<p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>`
+                        : `<p class=""><button class="btn btn-primary btn-sm loadPhone" data-contact-id="${fullData.contactId}">Загрузить телефон</button></p>`
+                    }
                    ${instructorName}
                    ${hours_form}
                 </div>

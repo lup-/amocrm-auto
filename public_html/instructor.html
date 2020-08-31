@@ -227,7 +227,8 @@
                                     leadData.schedule || false,
                                     false,
                                     leadData.gsmPayment || 0,
-                                    leadData.paymentOverdue || 0
+                                    leadData.paymentOverdue || 0,
+                                    leadData
                                 )
                             );
                         })
@@ -338,6 +339,22 @@
                 let name = $(this).data('name');
                 $('#studentName').val(name);
                 $('#student-tab').tab('show');
+            });
+
+            $(document).on('click', '.loadPhone', function (event) {
+               event.preventDefault();
+               let contactId = $(this).data('contact-id');
+
+                loadApiData({
+                    type: 'getPhone',
+                    contactId: contactId,
+                })
+                    .then(function (contact) {
+                        let phone = contact.phone;
+                        $('[data-contact-id="'+contactId+'"]')
+                            .closest('p')
+                            .html(`Телефон: <a href="tel:${phone}">${phone}</a>`);
+                    });
             });
 
             $(document).on('submit', 'form.hoursForm', function (event) {

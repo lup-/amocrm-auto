@@ -82,7 +82,9 @@
                                     <b-collapse :id="'collapse-'+student.id" class="mt-2">
                                         <b-list-group>
                                             <b-list-group-item v-for="doc in student.docs" :key="doc.googleId">
-                                                <b-button variant="link"  :href="doc.downloadUrl" target="_blank">{{doc.filename}}</b-button>
+                                                <label>{{doc.filename}}</label>
+                                                <b-button variant="link" :href="doc.downloadUrl" class="mr-4" target="_blank"><b-icon-download></b-icon-download></b-button>
+                                                <b-button variant="link" :href="doc.editUrl" target="_blank"><b-icon-pencil-square></b-icon-pencil-square></b-button>
                                             </b-list-group-item>
                                         </b-list-group>
                                     </b-collapse>

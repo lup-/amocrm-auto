@@ -493,8 +493,10 @@ function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
             }
         }
 
-        $contactsAndHours[ $leadData['id'] ] = [
+        $contactsAndHours[ $leadData['id'] ] = $schoolLead->asStudentArray($foundEvent);
+        /*$contactsAndHours[ $leadData['id'] ] = [
             'contact'     => $name,
+            'contactId'   => $schoolLead->contactId(),
             'hours'       => $leadData['cf' . HOURS_FIELD_ID],
             'neededHours' => $leadData['cf' . NEEDED_HOURS_FIELD_ID],
             'debt'        => $schoolLead->totalDebt(),
@@ -504,7 +506,7 @@ function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
             'group'       => $schoolLead->group(),
             'schedule'    => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
             'instructor'  => $leadData['cf' . INSTRUCTOR_FIELD_ID],
-        ];
+        ];*/
     }
 
     return $contactsAndHours;

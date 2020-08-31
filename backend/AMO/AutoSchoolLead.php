@@ -149,13 +149,21 @@ class AutoSchoolLead
     public function id() {
         return $this->rawData['id'];
     }
+    public function contactId() {
+        return $this->rawData['main_contact']['id'];
+    }
     public function name() {
         return $this->rawData['main_contact']['name'];
     }
     public function phone() {
         $phone = $this->getCustomFieldValue(389479);
+
         if ( is_array($phone) ) {
             $phone = $phone[0];
+        }
+
+        if ( empty($phone) ) {
+            return false;
         }
 
         $phone = preg_replace('#\W#', '', $phone);
@@ -324,6 +332,7 @@ class AutoSchoolLead
             'id'             => $this->id(),
             'name'           => $this->name(),
             'contact'        => $this->name(),
+            'contactId'      => $this->contactId(),
             'hours'          => $this->hours(),
             'neededHours'    => $this->neededHours(),
             'salary'         => $this->hours() * HOUR_PRICE,

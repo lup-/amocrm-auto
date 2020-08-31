@@ -16,6 +16,7 @@ class Document
     private $filename;
     private $googleTemplateId;
     private $templateData;
+    private $templateName;
 
     /**
      * @var Google_Service
@@ -163,6 +164,14 @@ class Document
         return "https://drive.google.com/uc?export=download&id={$this->getGoogleId()}";
     }
 
+    public function getEditUrl() {
+        if (!$this->getGoogleId()) {
+            return false;
+        }
+
+        return "https://docs.google.com/document/d/{$this->getGoogleId()}/edit";
+    }
+
     public function asArray() {
         return [
             'filename'     => $this->getFilename(),
@@ -172,6 +181,7 @@ class Document
             'googleId'     => $this->getGoogleId(),
             'templateId'   => $this->getGoogleTemplateId(),
             'downloadUrl'  => $this->getDownloadUrl(),
+            'editUrl'      => $this->getEditUrl(),
         ];
     }
 
@@ -227,13 +237,20 @@ class Document
         return $this;
     }
 
+    public function setTemplateName($templateName) {
+        $this->templateName = $templateName;
+    }
+
     public function getTemplateName() {
+        if ($this->templateName) {
+            return $this->templateName;
+        }
+
         if (!$this->googleTemplateId || !$this->googleService) {
             return false;
         }
 
         return $this->getTemplateDriveFile()->getName();
-
     }
 
     public function generateFileName() {
@@ -282,6 +299,36 @@ class Document
         $doc->setGoogleService($service);
         $doc->setGoogleTemplateId($googleTemplateId);
         $doc->setUserId($userId);
+
+        return $doc;
+    }
+
+    public static function makeFromArray($props) {
+        $doc = new Document();
+
+        if (isset($props['filename'])) {
+            $doc->setFilename($props['filename']);
+        }
+
+        if (isset($props['templateName'])) {
+            $doc->setTemplateName($props['templateName']);
+        }
+
+        if (isset($props['templateId'])) {
+            $doc->setGoogleTemplateId($props['templateId']);
+        }
+
+        if (isset($props['googleId'])) {
+            $doc->setGoogleId($props['googleId']);
+        }
+
+        if (isset($props['userId'])) {
+            $doc->setUserId($props['userId']);
+        }
+
+        if (isset($props['mime'])) {
+            $doc->setMimeType($props['mime']);
+        }
 
         return $doc;
     }

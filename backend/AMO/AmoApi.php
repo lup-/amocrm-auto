@@ -11,6 +11,7 @@ class AmoApi
     private $userHash = '142a2eebe3051c6b30a9d2cbe3c4cbdb';
 
     private $authUrl = 'https://mailjob.amocrm.ru/private/api/auth.php';
+    private $contactUrl = 'https://mailjob.amocrm.ru/api/v2/contacts';
     private $notesUrl = 'https://mailjob.amocrm.ru/api/v2/notes';
 
     const ELEMENT_TYPE_LEAD = 2; //https://www.amocrm.com/developers/content/api/notes/#element_types
@@ -67,6 +68,25 @@ class AmoApi
     public function sendFileToLead(Document $document) {
         $noteText = "{$document->getFilename()}: {$document->getDownloadUrl()}";
         $this->addNoteToLead($document->getUserId(), $noteText);
+    }
+
+    public function getContact($contactId) {
+        $requestUrl = $this->contactUrl . '?id=' . $contactId;
+
+        $requestHandle = curl_init();
+        curl_setopt($requestHandle,CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($requestHandle,CURLOPT_URL, $requestUrl);
+        curl_setopt($requestHandle,CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($requestHandle,CURLOPT_HEADER,false);
+        curl_setopt($requestHandle,CURLOPT_COOKIEFILE, $this->cookieFileName);
+        $response = curl_exec($requestHandle);
+
+        $asArray = true;
+        $parsedResponse = json_decode($response, $asArray);
+
+        return $parsedResponse
+            ? AmoContact::createFromArray($parsedResponse['_embedded']['items'][0])
+            : false;
     }
 
     /**
