@@ -117,6 +117,12 @@ function groupReplaceInDocxTemplate($filePath, $group, $date, $cookieFileName) {
         $replacePairs[] = $leadPairs;
     }
 
+    $a = 1;
+
+    usort($replacePairs, function ($pairsA, $pairsB) {
+        return strcmp($pairsA["Имя"], $pairsB["Имя"]);
+    });
+
     for ($i = 1; $i < 10; $i++) {
         try {
             $phpword->cloneRowAndSetValues("авторяд{$i}", $replacePairs);
