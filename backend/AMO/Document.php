@@ -110,6 +110,11 @@ class Document
      * @return mixed
      */
     public function getFilename() {
+        $parts = explode('.', $this->filename);
+        if (empty($parts[1])) {
+            return $this->filename.'.docx';
+        }
+
         return $this->filename;
     }
 

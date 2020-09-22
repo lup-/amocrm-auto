@@ -63,11 +63,17 @@ function getFilename($templateId, $service) {
      * @var Google_Service_Drive_DriveFile $file
      */
     $file = $service->files->get($templateId);
-    return $file->getName();
+    $filename = $file->getName();
+    if (strpos($filename, '.') === false) {
+        return $filename.".docx";
+    }
+
+    return $filename;
 }
 
 function downloadTemplate($templateId, $service) {
-    $response = $service->files->get($templateId, ['alt' => 'media']);
+    //$response = $service->files->get($templateId, ['alt' => 'media']);
+    $response = $service->files->export($templateId, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ['alt' => 'media']);
     $content = $response->getBody()->getContents();
 
     $tempFileName = tempnam(sys_get_temp_dir(), 'gdrive_download_');
