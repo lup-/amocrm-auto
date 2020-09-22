@@ -1,5 +1,8 @@
 <template>
     <b-container fluid class="px-0" id="admin">
+        <b-alert variant="success" dismissible show class="top-alert" @dismissed="successMessage = false" v-if="successMessage">{{successMessage}}</b-alert>
+        <b-alert variant="danger" dismissible show class="top-alert" @dismissed="errorMessage = false" v-if="errorMessage">{{errorMessage}}</b-alert>
+
         <loader v-if="isLoading"></loader>
         <div v-else>
             <b-navbar toggleable type="dark" variant="primary" class="sticky-navbar">
@@ -34,7 +37,8 @@
                             <b-dropdown-divider></b-dropdown-divider>
                         </ul>
 
-                        <b-button variant="primary" @click="refreshData">Обновить данные</b-button>
+                        <b-button variant="primary" block @click="refreshData">Обновить данные</b-button>
+                        <b-button variant="primary" block class="mt-2" @click="syncInstructors">Обновить инструкторов</b-button>
                     </div>
                 </nav>
                 <main class="col-12 col-md-9 ml-sm-auto col-lg-10 p-2">
@@ -75,6 +79,8 @@
         data() {
             return {
                 isLoading: true,
+                successMessage: false,
+                errorMessage: false,
                 instructorsData: [],
                 groupsData: [],
                 completeGroupsData: [],
@@ -115,6 +121,10 @@
                     this.loadDocumentTemplatesData()
                 ]);
                 this.isLoading = false;
+            },
+            async syncInstructors() {
+                let responseData = await loadApiData({type: 'syncInstructors'});
+                this.successMessage = `Успешно обновлено. Добавлено календарей: ${responseData.added.length}. Удалено календарей: ${responseData.removed.length}.`;
             },
             async loadInstructorGroupsData(refresh = false) {
                 let params = {
@@ -185,5 +195,11 @@
         position: sticky!important;
         top: 0;
         z-index: 100;
+    }
+
+    .top-alert {
+        position: absolute!important;
+        z-index: 1000;
+        width: 100%;
     }
 </style>

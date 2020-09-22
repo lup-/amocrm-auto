@@ -11,6 +11,10 @@ require_once 'amo_functions.php';
 
 $requestType = $_GET['type'];
 
+function saveConfig($filename, $config) {
+    file_put_contents($filename, "<?php\nreturn " . var_export($config, true) . ";");
+}
+
 switch ($requestType) {
     case 'instructors':
         $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
@@ -49,6 +53,58 @@ switch ($requestType) {
             "groups"         => $activeLeads->getGroups(),
             "completeGroups" => $completeLeads->getGroups(),
         ]);
+    break;
+    case 'syncInstructors':
+        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+        authAmoInterface($cookieFileName);
+        $client = getClient('../token.json', '../credentials.json');
+        $service = new Google_Service_Calendar($client);
+
+        $instructors = loadInstructorIdsFromFieldEnum($cookieFileName);
+        $calendarConfig = include('calendar_config.php');
+
+        $allInstructorIds = array_keys($instructors);
+        $instructorsWithCalendars = array_keys($calendarConfig);
+
+        $instructorsToAddCalendar = array_diff( $allInstructorIds, $instructorsWithCalendars );
+        $instructorsToRemoveCalendar = array_diff( $instructorsWithCalendars, $allInstructorIds );
+
+        $result = [
+            "changed" => false,
+            "added" => [],
+            "removed" => [],
+        ];
+
+        foreach ($instructorsToAddCalendar as $instructorId) {
+            $instructorName = $instructors[$instructorId];
+            $calendarId = addCalendar($service, $instructorName);
+            $calendarConfig[ $instructorId ] = $calendarId;
+
+            $result['changed'] = true;
+            $result['added'][] = [
+                'id' => $instructorId,
+                'name' => $instructorName,
+                'calendarId' => $calendarId,
+            ];
+        }
+
+        foreach ($instructorsToRemoveCalendar as $instructorId) {
+            $instructorName = $instructors[$instructorId];
+            $calendarId = $calendarConfig[ $instructorId ];
+            removeCalendar($service, $calendarId);
+            unset($calendarConfig[$instructorId]);
+
+            $result['changed'] = true;
+            $result['removed'][] = [
+                'id' => $instructorId,
+                'name' => $instructorName,
+                'calendarId' => $calendarId,
+            ];
+        }
+
+        saveConfig('calendar_config.php', $calendarConfig);
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode($result);
     break;
     case 'getAllInstructorsData':
         $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");

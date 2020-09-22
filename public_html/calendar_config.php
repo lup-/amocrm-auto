@@ -20,4 +20,6 @@ return array (
   1118661 => 'mcbm4lm3oievcgo8bb28hl7060@group.calendar.google.com',
   1122335 => '55nuns174nf174b6jovr4432io@group.calendar.google.com',
   1123369 => 'o3i4srn8g9q57mpb38itjmoedg@group.calendar.google.com',
+  1124659 => 'q9sbfenecohn4k869ae44i4bnk@group.calendar.google.com',
+  1124879 => 'd2uo9ev52ro3051bojjcpbhebk@group.calendar.google.com',
 );
