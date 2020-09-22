@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 8080:80
+      - 8180:80
     volumes:
       - "./public_html:/var/www/public"
       - "./frontend:/var/www/frontend"
