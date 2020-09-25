@@ -58,6 +58,7 @@ switch ($_REQUEST['action']) {
         }
     break;
     case 'makegroupdoc':
+    case 'makegroupdocajax':
         $googleTemplateId = $_REQUEST['templateId'];
         $groupName = $_REQUEST['group'];
         $selectedLeads = !empty($_REQUEST['selected']) ? $_REQUEST['selected'] : false;
@@ -76,14 +77,22 @@ switch ($_REQUEST['action']) {
             }) );
         }
 
-        $templateFile = downloadTemplate($googleTemplateId, $service);
-        $replacedFile = groupReplaceInDocxTemplate($templateFile, $group, $date, $cookieFileName);
-        $downloadFileName = getFilename($googleTemplateId, $service);
-        $fileNameSuffix = $groupName;
-        $downloadFileName = str_replace('.', '_'.$fileNameSuffix.'.', $downloadFileName);
+        $doc = Document::makeFromTemplate($service, $googleTemplateId)
+                   ->prepareTemplate()
+                   ->fillGroupTemplate($group, $date)
+                   ->generateFileName()
+                   ->uploadToGoogleDrive();
 
-        header("Content-disposition: attachment; filename=" . $downloadFileName);
-        header("Content-type: application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-        readfile($replacedFile);
+        $doc = Database::getInstance()->saveDocument($doc);
+
+        if ($_REQUEST['action'] === 'makegroupdoc') {
+            $doc->sendDownload();
+        }
+        else {
+            header("Content-type: application/json; charset=utf-8");
+            echo json_encode([
+                "doc" => $doc->asArray()
+            ]);
+        }
     break;
 }

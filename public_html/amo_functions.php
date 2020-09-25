@@ -1017,7 +1017,7 @@ function getGibddTickets() {
 
 function timestampToFormat($format, $timestamp) {
     $date = new DateTime();
-    $date->setTimestamp($timestamp);
+    $date->setTimestamp( intval($timestamp) );
     $date->setTimezone(new DateTimeZone('Europe/Moscow'));
     return $date->format($format);
 }

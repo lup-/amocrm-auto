@@ -79,12 +79,37 @@ class AmoContact
         return $this->rawData['id'];
     }
 
+    private function splitName() {
+        list($familyName, $name, $secondName) = explode(' ', $this->name()) + ['', '', ''];
+        return [
+            "familyName" => $familyName,
+            "firstName"  => $name,
+            "secondName" => $secondName,
+        ];
+    }
+
     public function name() {
         return $this->rawData['name'];
     }
 
+    public function firstName() {
+        return $this->splitName()['firstName'];
+    }
+
+    public function secondName() {
+        return $this->splitName()['secondName'];
+    }
+
+    public function familyName() {
+        return $this->splitName()['familyName'];
+    }
+
     public function phone() {
         return $this->getPhoneField(389479);
+    }
+
+    public function customFields() {
+        return $this->rawData['custom_fields'] ? $this->rawData['custom_fields'] : false;
     }
 
     public function asArray() {

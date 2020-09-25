@@ -65,7 +65,7 @@
                                             variant="primary" class="mr-2"
                                     >Готовые документы</b-button>
 
-                                    <b-overlay :show="isLoading(student.id)" rounded opacity="0.6" spinner-small spinner-variant="primary" class="d-inline-block">
+                                    <b-overlay :show="isLoading(student.id)" opacity="0.6" spinner-small spinner-variant="primary" class="d-inline-block">
                                         <button class="btn btn-primary"
                                                 v-if="currentTemplate && isCurrentTemplatePersonal"
                                                 :disabled="isLoading(student.id)"
@@ -95,10 +95,24 @@
                 </b-form-checkbox-group>
             </b-form-group>
 
-            <button class="btn btn-primary btn-block mt-4" @click="downloadSelectedGroupDocument(currentGroup)" v-if="currentGroup && currentTemplate && !isCurrentTemplatePersonal">
-                <b-icon-download></b-icon-download>
-                Скачать документ для группы {{selectedRecords.length > 0 ? '(выбранные)' : '(все в списке)'}}
-            </button>
+            <b-overlay :show="groupProcessing" opacity="0.6" spinner-small spinner-variant="primary" class="d-inline-block w-100">
+                <button v-if="currentGroup && currentTemplate && !isCurrentTemplatePersonal"
+                        :disabled="groupProcessing"
+                        class="btn btn-primary btn-block my-4"
+                        @click="createSelectedGroupDocument(currentGroup)"
+                >
+                    Сделать документ для группы {{selectedRecords.length > 0 ? '(выбранные)' : '(все в списке)'}}
+                </button>
+            </b-overlay>
+
+            <b-list-group v-if="currentGroup.docs">
+                <b-list-group-item v-for="doc in currentGroup.docs" :key="doc.googleId" class="d-flex align-items-center">
+                    <label class="flex-fill pb-0 mb-0">{{doc.filename}}</label>
+                    <b-button variant="link" :href="doc.downloadUrl" class="mr-4" target="_blank"><b-icon-download></b-icon-download></b-button>
+                    <b-button variant="link" :href="doc.editUrl" target="_blank"><b-icon-pencil-square></b-icon-pencil-square></b-button>
+                </b-list-group-item>
+            </b-list-group>
+
         </b-row>
     </section>
 </template>
@@ -117,6 +131,7 @@
                 currentGroup: false,
                 selectedRecords: [],
                 processing: [],
+                groupProcessing: false,
                 multipleProcessing: false,
             }
         },
@@ -184,6 +199,23 @@
 
                 processingIndex = this.processing.indexOf(studentId);
                 this.processing.splice(processingIndex, 1);
+            },
+            async createSelectedGroupDocument(group) {
+                this.groupProcessing = true;
+
+                let docResult = await axios.get('/files.php', {
+                    params: {
+                        action: 'makegroupdocajax',
+                        templateId: this.currentTemplateId,
+                        group: group.name,
+                        selected: this.selectedRecords,
+                    }
+                });
+
+                let newDoc = docResult.data.doc;
+                this.$emit('newGroupDoc', this.currentGroup, newDoc);
+
+                this.groupProcessing = false;
             },
             downloadSelectedDocument(studentId) {
                 window.location.href = `/files.php?action=makedoc&templateId=${this.currentTemplateId}&leadId=${studentId}`;

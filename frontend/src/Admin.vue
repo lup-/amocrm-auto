@@ -48,6 +48,7 @@
                         :is="currentTabComponent"
                         :templates="templates"
                         @newDoc="addNewDocument"
+                        @newGroupDoc="addNewGroupDocument"
                     ></component>
                 </main>
             </div>
@@ -106,6 +107,15 @@
 
                 student.docs.push(newDoc);
                 changedGroup.students[studentIndex] = student;
+                this.$set( this.groupsData, changedGroup.name, changedGroup);
+            },
+            addNewGroupDocument(targetGroup, newDoc) {
+                let changedGroup = clone(targetGroup);
+                if (!changedGroup.docs) {
+                    changedGroup.docs = [];
+                }
+
+                changedGroup.docs.unshift(newDoc);
                 this.$set( this.groupsData, changedGroup.name, changedGroup);
             },
             updateActiveMenu(newMenuCode) {

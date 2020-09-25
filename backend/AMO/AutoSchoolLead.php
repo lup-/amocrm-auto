@@ -1,7 +1,8 @@
 <?php
-
 namespace AMO;
 
+use \DateTime;
+use \Exception;
 
 class AutoSchoolLead
 {
@@ -13,6 +14,11 @@ class AutoSchoolLead
     protected $sidePaymentFields = [587233, 561445];
 
     protected $docs = [];
+
+    /**
+     * @var AmoContact
+     */
+    protected $contactData;
 
     public static function createFromArray($rawData) {
         return new self($rawData);
@@ -111,9 +117,23 @@ class AutoSchoolLead
         return $value;
     }
 
+    /**
+     * @param mixed $contactData
+     */
+    public function setContactData($contactData) {
+        $this->contactData = $contactData;
+    }
+
+    public function fetchContactData() {
+        $contactData = AmoApi::getInstance()->getContact($this->contactId());
+        $this->setContactData( $contactData );
+        return $this;
+    }
+
     public function isEverythingPayed() {
         return $this->getCustomFieldValue(583197) === '1';
     }
+
     public function totalDebt() {
         $studyPrice = $this->studyPrice();
 
@@ -163,7 +183,11 @@ class AutoSchoolLead
         }
 
         if ( empty($phone) ) {
-            return false;
+            if (!$this->contactData) {
+                return false;
+            }
+
+            return $this->contactData->phone();
         }
 
         $phone = preg_replace('#\W#', '', $phone);
@@ -327,6 +351,135 @@ class AutoSchoolLead
         $this->docs = $docs;
     }
 
+    private function formatFullRussianDate($parsedDate) {
+        $enDate = $parsedDate->format('d F Y');
+        $monthNames = [
+            'January' => 'Января',
+            'February' => 'Февраля',
+            'March' => 'Марта',
+            'April' => 'Апреля',
+            'May' => 'Мая',
+            'June' => 'Июня',
+            'July' => 'Июля',
+            'August' => 'Августа',
+            'September' => 'Сентября',
+            'October' => 'Окрября',
+            'November' => 'Ноября',
+            'December' => 'Декабря',
+        ];
+
+        $ruDate = strtr($enDate, $monthNames);
+        return $ruDate;
+    }
+    private function normalizeFieldName($fieldName) {
+        $fieldName = preg_replace('#\W+#ui', '_', $fieldName);
+        $fieldName = mb_strtolower($fieldName);
+        $fieldName = trim($fieldName);
+        return $fieldName;
+    }
+    private function numberToText($number) {
+        $triplets = [
+            1 => ['тысяча', 'тысячи', 'тысяч'],
+            2 => ['миллион', 'миллиона', 'миллионов'],
+        ];
+
+        $digitNames = [
+            0 => [
+                1 => 'сто',
+                2 => 'двести',
+                3 => 'триста',
+                4 => 'четыреста',
+                5 => 'пятьсот',
+                6 => 'шестьсот',
+                7 => 'семьсот',
+                8 => 'восемьсот',
+                9 => 'девятьсот',
+            ],
+            1 => [
+                1 => 'десять',
+                2 => 'двадцать',
+                3 => 'тридцать',
+                4 => 'сорок',
+                5 => 'пятьдесят',
+                6 => 'шестьдесят',
+                7 => 'семьдесят',
+                8 => 'восемьдесят',
+                9 => 'девяносто',
+            ],
+            2 => [
+                1 => ['один', 'одна'],
+                2 => ['два', 'две'],
+                3 => 'три',
+                4 => 'четыре',
+                5 => 'пять',
+                6 => 'шесть',
+                7 => 'семь',
+                8 => 'восемь',
+                9 => 'девять',
+            ],
+        ];
+        $tenOnes = [
+            '10' => 'десять',
+            '11' => 'одинадцать',
+            '12' => 'двенадцать',
+            '13' => 'тринадцать',
+            '14' => 'четырнадцать',
+            '15' => 'пятнадцать',
+            '16' => 'шестнадцать',
+            '17' => 'семнадцать',
+            '18' => 'восемнадцать',
+            '19' => 'девятнадцать',
+        ];
+
+        $padLength = ceil( strlen($number)/3 ) * 3;
+        $paddedToFullTriplet = str_pad($number, $padLength, "0", STR_PAD_LEFT);
+        $splitByTriplets = str_split($paddedToFullTriplet, 3);
+
+        $text = "";
+        foreach ( array_reverse($splitByTriplets) as $tripletIndex => $tripletDigits ) {
+            $suffix = "";
+            $isThousand = $tripletIndex === 1;
+            $firstDigit = floor($tripletDigits / 100);
+            $lastTwoDigits = $tripletDigits % 100;
+            $lastTwoIsTenOnes = $lastTwoDigits >= 10 && $lastTwoDigits <= 19;
+            if ($lastTwoIsTenOnes) {
+                $splitDigits = [$firstDigit, $lastTwoDigits];
+            }
+            else {
+                $splitDigits = str_split($tripletDigits, 1);
+            }
+
+            if ($tripletIndex > 0) {
+                $suffix = declension($tripletDigits, $triplets[$tripletIndex]);
+            }
+
+            $thousandText = "";
+            foreach ( $splitDigits as $digitIndex => $digit ) {
+                $digitText = "";
+                if ($lastTwoIsTenOnes && $digitIndex === 1) {
+                    $digitText = $tenOnes[$digit];
+                }
+                else {
+                    if ($digit > 0) {
+                        $digitText = $digitNames[$digitIndex][$digit];
+                        if (is_array($digitText)) {
+                            $digitText = $isThousand ? $digitText[1] : $digitText[0];
+                        }
+                    }
+                }
+
+                $thousandText .= $digitText ? $digitText." " : "";
+            }
+
+            $thousandText .= $suffix ? $suffix." " : "";
+            $text = $thousandText.$text;
+        }
+
+        $text = trim($text);
+
+        return $text != "" ? $text : 'ноль';
+    }
+
     public function asStudentArray($foundEvent = false) {
         return [
             'id'             => $this->id(),
@@ -347,5 +500,90 @@ class AutoSchoolLead
             'instructor'     => $this->instructor(),
             'docs'           => $this->docs,
         ];
+    }
+    public function asReplacementPairs() {
+        $apiLeadData = $this->rawData;
+        $contactData = $this->contactData;
+
+        $replacementPairs = [
+            'Сделка.ID'               => $apiLeadData['id'],
+            'Имя'                     => $contactData->name(),
+            'Имя.Фамилия'             => $contactData->familyName(),
+            'Имя.Имя'                 => $contactData->firstName(),
+            'Имя.Отчество'            => $contactData->secondName(),
+            'Телефон'                 => '',
+            'Телефон.Рабочий'         => '',
+            'Контакт.Имя'             => $contactData->name(),
+            'Контакт.Имя.Фамилия'     => $contactData->familyName(),
+            'Контакт.Имя.Имя'         => $contactData->firstName(),
+            'Контакт.Имя.Отчество'    => $contactData->secondName(),
+            'Контакт.Телефон'         => '',
+            'Контакт.Телефон.Рабочий' => '',
+            'Сделка.Бюджет'           => $apiLeadData['sale'],
+            'Сделка.Бюджет.Прописью'  => is_numeric($apiLeadData['sale']) ? $this->numberToText($apiLeadData['sale']) : '',
+            'Сделка.Ответственный'    => '',
+        ];
+
+        foreach ($apiLeadData['custom_fields'] as $field) {
+            $name = $field['name'];
+            $value = $field['values'][0]['value'];
+            $replacementPairs[ $name ] = $value;
+
+            if (is_numeric($value)) {
+                $replacementPairs[ $name.'.Прописью' ] = $this->numberToText($value);
+            }
+        }
+
+        if ($contactData->customFields()) {
+            foreach ($contactData->customFields() as $field) {
+                $replacementPairs[$field['name']] = $field['values'][0]['value'];
+                $replacementPairs['Контакт.'.$field['name']] = $field['values'][0]['value'];
+
+                if ($field['name'] == 'Телефон') {
+                    $replacementPairs['Контакт.Телефон'] = $field['values'][0] ? $field['values'][0]['value'] : '';
+                    $replacementPairs['Контакт.Телефон.Рабочий'] = $field['values'][1] ? $field['values'][1]['value'] : '';
+                }
+            }
+        }
+
+        $dateTimeFields = [
+            'Дата заключения договора',
+            'Медкомиссия, когда выдано',
+            'Дата распределения инструктора',
+            'Дата начала обучения',
+            'Дата окончания обучения',
+            'Дата окончания  обучения',
+            'Дата выдачи свидетельства',
+            'Дата Экзамена в Гибдд',
+            'День рождения',
+            'Контакт.День рождения',
+            'Дата выдачи паспорта',
+            'Контакт.Дата выдачи паспорта'
+        ];
+
+        foreach ($dateTimeFields as $fieldName) {
+            try {
+                $dateAsString = $replacementPairs[$fieldName];
+
+                $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $dateAsString);
+
+                if (!$parsedDate) {
+                    $parsedDate = DateTime::createFromFormat('d.m.Y', $dateAsString);
+                }
+
+                if ($parsedDate) {
+                    $replacementPairs[$fieldName] = $parsedDate->format('d.m.Y');
+                    $replacementPairs[$fieldName . '.Полный'] = $this->formatFullRussianDate($parsedDate);
+                }
+            }
+            catch (Exception $e) {
+            }
+        }
+
+        foreach ($replacementPairs as $field => $value) {
+            $replacementPairs[ $this->normalizeFieldName($field) ] = $value;
+        }
+
+        return $replacementPairs;
     }
 }

@@ -123,6 +123,7 @@ class LeadsCollection
                 $groups[$groupName]["totalHours"] = 0;
                 $groups[$groupName]["salary"]     = 0;
                 $groups[$groupName]["leads"]      = [];
+                $groups[$groupName]["docs"]       = $this->docs->getDocsForGroup($groupName);
             }
 
             if ($groupName && $isCorrectGroupName) {

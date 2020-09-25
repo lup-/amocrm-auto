@@ -2,6 +2,7 @@
 
 namespace AMO;
 
+use Exception;
 use Google_Service;
 use Google_Service_Drive_DriveFile;
 use Google_Service_Drive_Permission;
@@ -12,10 +13,12 @@ class Document
     private $dbId;
     private $googleId;
     private $userId;
+    private $groupId;
     private $mimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     private $filename;
     private $googleTemplateId;
     private $templateData;
+    private $groupTemplateData;
     private $templateName;
 
     /**
@@ -24,6 +27,8 @@ class Document
     private $googleService;
     private $preparedTemplate;
     private $docContent;
+
+    private $groupFolderId;
 
     /**
      * @var Google_Service_Drive_DriveFile
@@ -35,6 +40,7 @@ class Document
     private $docDriveFile;
 
     private $uploadToFolderId = "1a8tASgfjbA_COgCyRZNvs5-IcCWOXkAH";
+    private $allGroupsFolderId = "1joxmSh0d_47gZ0EZVPxTZR3Y8c7KUHaB";
 
     /**
      * @return mixed
@@ -79,6 +85,20 @@ class Document
     }
 
     /**
+     * @return mixed
+     */
+    public function getGroupId() {
+        return $this->groupId;
+    }
+
+    /**
+     * @param mixed $groupId
+     */
+    public function setGroupId($groupId) {
+        $this->groupId = $groupId;
+    }
+
+    /**
      * @param Google_Service $googleService
      */
     public function setGoogleService($googleService) {
@@ -100,10 +120,25 @@ class Document
     }
 
     /**
+     * @return bool
+     */
+    public function isGroup() {
+        return !empty($this->groupId);
+    }
+
+    /**
      * @param mixed $templateData
      */
     public function setTemplateData($templateData) {
         $this->templateData = $templateData;
+    }
+
+    /**
+     * @param mixed $groupTemplateData
+     */
+    public function setGroupTemplateData($groupTemplateData) {
+        $this->groupTemplateData = $groupTemplateData;
+        $this->setGroupId( $groupTemplateData['name'] );
     }
 
     /**
@@ -184,6 +219,7 @@ class Document
             'mime'         => $this->getMimeType(),
             'userId'       => $this->getUserId(),
             'googleId'     => $this->getGoogleId(),
+            'groupId'      => $this->getGroupId(),
             'templateId'   => $this->getGoogleTemplateId(),
             'downloadUrl'  => $this->getDownloadUrl(),
             'editUrl'      => $this->getEditUrl(),
@@ -191,7 +227,22 @@ class Document
     }
 
     public function prepareTemplate() {
-        $response = $this->googleService->files->get($this->googleTemplateId, ['alt' => 'media']);
+        /**
+         * @var Google_Service_Drive_DriveFile $file
+         */
+        $file = $this->googleService->files->get($this->googleTemplateId);
+
+        if ($file->getMimeType() === 'application/vnd.google-apps.document') {
+            $response = $this->googleService->files->export(
+                $this->googleTemplateId,
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                ['alt' => 'media']
+            );
+        }
+        else {
+            $response = $this->googleService->files->get($this->googleTemplateId, ['alt' => 'media']);
+        }
+
         $this->preparedTemplate = $response->getBody()->getContents();
 
         return $this;
@@ -214,6 +265,83 @@ class Document
         }
 
         $tempResultFileName = tempnam(sys_get_temp_dir(), 'phpword_result_');
+        $phpword->saveAs($tempResultFileName);
+
+        $this->docContent = file_get_contents($tempResultFileName);
+
+        unlink($tempFileName);
+        unlink($tempResultFileName);
+
+        return $this;
+    }
+
+    private function makeGroupReplacementParis($groupData) {
+        $replacementPairs = [
+            'Группа'                   => $groupData['name'],
+            'Группа.Колво'             => $groupData['people'],
+            'Дата начала обучения'     => $groupData['start'],
+            'Дата окончания  обучения' => $groupData['end'],
+            'Дата Экзамена в Гибдд'    => $groupData['exam'],
+            'Адрес сдачи'              => $groupData['exam_address'],
+            'Категория'                => $groupData['category'],
+        ];
+
+        foreach ($replacementPairs as $field => $value) {
+            $replacementPairs[ normalizeFieldName($field) ] = $value;
+        }
+
+        return $replacementPairs;
+    }
+
+    public function fillGroupTemplate($group, $date) {
+        if (!$group) {
+            $group = $this->groupTemplateData;
+        }
+
+        $this->setGroupTemplateData($group);
+        $this->setMimeType( $this->getTemplateDriveFile()->getMimeType() );
+
+        $tempFileName = tempnam(sys_get_temp_dir(), 'phpword_template_');
+        file_put_contents($tempFileName, $this->preparedTemplate);
+
+        $phpword = new PercentedVariablesTemplateProcessor($tempFileName);
+        $groupPairs = $this->makeGroupReplacementParis($group);
+
+        foreach ($groupPairs as $from => $to) {
+            $phpword->setValue($from, $to);
+        }
+
+        $phpword->setValue('Дата', $date);
+        $phpword->setValue('дата', $date);
+
+        $replacePairs = [];
+        foreach ($group['leads'] as $apiLeadData) {
+            $lead = AutoSchoolLead::createFromArray($apiLeadData)->fetchContactData();
+            $leadPairs = $lead->asReplacementPairs();
+
+            for ($i = 1; $i < 10; $i++) {
+                $leadPairs["авторяд{$i}"] = '';
+            }
+
+            $replacePairs[] = $leadPairs;
+        }
+
+        $a = 1;
+
+        usort($replacePairs, function ($pairsA, $pairsB) {
+            return strcmp($pairsA["Имя"], $pairsB["Имя"]);
+        });
+
+        for ($i = 1; $i < 10; $i++) {
+            try {
+                $phpword->cloneRowAndSetValues("авторяд{$i}", $replacePairs);
+            }
+            catch (Exception $exception) {
+
+            }
+        }
+
+        $tempResultFileName = tempnam(sys_get_temp_dir(), 'phpword_template_');
         $phpword->saveAs($tempResultFileName);
 
         $this->docContent = file_get_contents($tempResultFileName);
@@ -255,7 +383,13 @@ class Document
             return false;
         }
 
-        return $this->getTemplateDriveFile()->getName();
+        $filename =  $this->getTemplateDriveFile()->getName();
+
+        if (strpos($filename, '.') === false) {
+            return $filename.".docx";
+        }
+
+        return $filename;
     }
 
     public function generateFileName() {
@@ -268,20 +402,55 @@ class Document
             ? $this->templateData['Контакт.Имя'].'_'.$this->templateData['Группа']
             : '';
 
+        if ($this->isGroup()) {
+            $fileNameSuffix = $this->groupId;
+        }
+
         $this->setFilename( str_replace('.', '_'.$fileNameSuffix.'.', $baseName) );
         return $this;
     }
 
+    private function getGroupFolderId() {
+        if ($this->groupFolderId) {
+            return $this->groupFolderId;
+        }
+
+        $driveQuery = "name = '{$this->getGroupId()}' and mimeType = 'application/vnd.google-apps.folder' and '{$this->allGroupsFolderId}' in parents";
+        $folders = $this->googleService->files->listFiles(['q' => $driveQuery]);
+        if ($folders->count() > 0) {
+            $folder = $folders[0];
+            $this->groupFolderId = $folder->getId();
+
+            return $this->groupFolderId;
+        }
+
+        $file = new \Google_Service_Drive_DriveFile();
+        $file->setName($this->getGroupId());
+        $file->setMimeType('application/vnd.google-apps.folder');
+        $file->setParents([$this->allGroupsFolderId]);
+
+        $folder = $this->googleService->files->create($file);
+        $this->groupFolderId = $folder->getId();
+
+        return $this->groupFolderId;
+    }
+    
     public function uploadToGoogleDrive() {
         $file = new Google_Service_Drive_DriveFile();
         $file->setName( $this->getFilename() );
         $file->setMimeType( $this->getMimeType() );
-        $file->setParents([$this->uploadToFolderId]);
 
-        $this->docDriveFile = $this->googleService->files->create($file, array(
+        if ($this->isGroup()) {
+            $file->setParents([$this->getGroupFolderId()]);
+        }
+        else {
+            $file->setParents([$this->uploadToFolderId]);
+        }
+
+        $this->docDriveFile = $this->googleService->files->create($file, [
             'data' => $this->docContent,
-            'uploadType' => 'multipart'
-        ));
+            'uploadType' => 'multipart',
+        ]);
 
         $this->setGoogleId( $this->docDriveFile->getId() );
 
@@ -303,7 +472,11 @@ class Document
         $doc = new Document();
         $doc->setGoogleService($service);
         $doc->setGoogleTemplateId($googleTemplateId);
-        $doc->setUserId($userId);
+
+        if ($userId) {
+            $doc->setUserId($userId);
+            $doc->setIsGroup(false);
+        }
 
         return $doc;
     }
@@ -329,6 +502,10 @@ class Document
 
         if (isset($props['userId'])) {
             $doc->setUserId($props['userId']);
+        }
+
+        if (isset($props['groupId'])) {
+            $doc->setGroupId($props['groupId']);
         }
 
         if (isset($props['mime'])) {

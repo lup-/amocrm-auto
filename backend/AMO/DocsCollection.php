@@ -28,6 +28,18 @@ class DocsCollection
         return array_values($docsAsArray);
     }
 
+    public function getDocsForGroup($groupId) {
+        $docsOfGroup = array_filter($this->docsModels, function ($docModel) use ($groupId) {
+            return $docModel->getGroupId() == $groupId;
+        });
+
+        $docsAsArray = array_map(function ($docModel) {
+            return $docModel->asArray();
+        }, $docsOfGroup);
+
+        return array_values($docsAsArray);
+    }
+
     public static function from(array $docsArray) {
         return new self($docsArray);
     }
