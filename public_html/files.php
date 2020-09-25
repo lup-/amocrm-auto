@@ -68,16 +68,12 @@ switch ($_REQUEST['action']) {
 
         $activeLeads = Database::getInstance()->loadActiveLeads();
 
-//        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-//        authAmoInterface($cookieFileName);
-//        authAmoApi($cookieFileName);
-//        $groups = loadGroups($cookieFileName);
         $groups = $activeLeads->getGroups(true);
         $group = $groups[$groupName];
 
         if ($selectedLeads) {
             $group['leads'] = array_values( array_filter($group['leads'], function ($lead) use ($selectedLeads) {
-                return array_search($lead['id'], $selectedLeads) !== false;
+                return array_search($lead->id(), $selectedLeads) !== false;
             }) );
         }
 
