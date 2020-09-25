@@ -315,8 +315,7 @@ class Document
         $phpword->setValue('дата', $date);
 
         $replacePairs = [];
-        foreach ($group['leads'] as $apiLeadData) {
-            $lead = AutoSchoolLead::createFromArray($apiLeadData)->fetchContactData();
+        foreach ($group['leads'] as $lead) {
             $leadPairs = $lead->asReplacementPairs();
 
             for ($i = 1; $i < 10; $i++) {
@@ -475,7 +474,7 @@ class Document
 
         if ($userId) {
             $doc->setUserId($userId);
-            $doc->setIsGroup(false);
+            $doc->setGroupId(null);
         }
 
         return $doc;

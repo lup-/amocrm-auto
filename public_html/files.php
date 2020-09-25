@@ -3,6 +3,7 @@
 use AMO\AmoApi;
 use AMO\Database;
 use AMO\Document;
+use AMO\LeadsCollection;
 
 require __DIR__ . '/../vendor/autoload.php';
 require_once 'google_functions.php';
@@ -65,10 +66,13 @@ switch ($_REQUEST['action']) {
 
         $date = (new DateTime())->format('d.m.Y');
 
-        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-        authAmoInterface($cookieFileName);
-        authAmoApi($cookieFileName);
-        $groups = loadGroups($cookieFileName);
+        $activeLeads = Database::getInstance()->loadActiveLeads();
+
+//        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
+//        authAmoInterface($cookieFileName);
+//        authAmoApi($cookieFileName);
+//        $groups = loadGroups($cookieFileName);
+        $groups = $activeLeads->getGroups(true);
         $group = $groups[$groupName];
 
         if ($selectedLeads) {

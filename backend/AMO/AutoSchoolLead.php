@@ -504,6 +504,10 @@ class AutoSchoolLead
     public function asReplacementPairs() {
         $apiLeadData = $this->rawData;
         $contactData = $this->contactData;
+        if (!$contactData) {
+            $this->fetchContactData();
+            $contactData = $this->contactData;
+        }
 
         $replacementPairs = [
             'Сделка.ID'               => $apiLeadData['id'],

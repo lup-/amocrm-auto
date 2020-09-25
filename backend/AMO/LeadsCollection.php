@@ -109,7 +109,7 @@ class LeadsCollection
         return $groupedLeads;
     }
 
-    public function getGroups() {
+    public function getGroups($withLeads = false) {
         $groups = [];
 
         foreach ($this->leads as $lead) {
@@ -123,7 +123,11 @@ class LeadsCollection
                 $groups[$groupName]["totalHours"] = 0;
                 $groups[$groupName]["salary"]     = 0;
                 $groups[$groupName]["leads"]      = [];
-                $groups[$groupName]["docs"]       = $this->docs->getDocsForGroup($groupName);
+                $groups[$groupName]["docs"]       = $this->docs ? $this->docs->getDocsForGroup($groupName) : [];
+
+                if ($withLeads) {
+                    $groups[$groupName]["leads"] = [];
+                }
             }
 
             if ($groupName && $isCorrectGroupName) {
@@ -132,6 +136,10 @@ class LeadsCollection
                 $groups[$groupName]['totalHours'] += $hours;
                 $groups[$groupName]['salary'] += $hours * HOUR_PRICE;
                 $groups[$groupName]['students'][] = $lead->asStudentArray();
+
+                if ($withLeads) {
+                    $groups[$groupName]['leads'][] = $lead;
+                }
             }
         }
 
