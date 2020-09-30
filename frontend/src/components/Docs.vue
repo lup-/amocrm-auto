@@ -85,6 +85,7 @@
                                                 <label>{{doc.filename}}</label>
                                                 <b-button variant="link" :href="doc.downloadUrl" class="mr-4" target="_blank"><b-icon-download></b-icon-download></b-button>
                                                 <b-button variant="link" :href="doc.editUrl" target="_blank"><b-icon-pencil-square></b-icon-pencil-square></b-button>
+                                                <b-button variant="link" @click="deleteDocument(doc)"><b-icon-trash-fill></b-icon-trash-fill></b-button>
                                             </b-list-group-item>
                                         </b-list-group>
                                     </b-collapse>
@@ -110,6 +111,7 @@
                     <label class="flex-fill pb-0 mb-0">{{doc.filename}}</label>
                     <b-button variant="link" :href="doc.downloadUrl" class="mr-4" target="_blank"><b-icon-download></b-icon-download></b-button>
                     <b-button variant="link" :href="doc.editUrl" target="_blank"><b-icon-pencil-square></b-icon-pencil-square></b-button>
+                    <b-button variant="link" @click="deleteGroupDocument(doc)"><b-icon-trash-fill></b-icon-trash-fill></b-button>
                 </b-list-group-item>
             </b-list-group>
 
@@ -200,6 +202,19 @@
                 processingIndex = this.processing.indexOf(studentId);
                 this.processing.splice(processingIndex, 1);
             },
+            async deleteDocument(studentId, doc) {
+                let docResult = await axios.get('/files.php', {
+                    params: {
+                        action: 'delete',
+                        googleId: doc.googleId,
+                    }
+                });
+
+                let deleted = docResult.data.deleted;
+                if (deleted) {
+                    this.$emit('deleteDoc', this.currentGroup, studentId, doc);
+                }
+            },
             async createSelectedGroupDocument(group) {
                 this.groupProcessing = true;
 
@@ -216,6 +231,19 @@
                 this.$emit('newGroupDoc', this.currentGroup, newDoc);
 
                 this.groupProcessing = false;
+            },
+            async deleteGroupDocument(doc) {
+                let docResult = await axios.get('/files.php', {
+                    params: {
+                        action: 'delete',
+                        googleId: doc.googleId,
+                    }
+                });
+
+                let deleted = docResult.data.deleted;
+                if (deleted) {
+                    this.$emit('deleteGroupDoc', this.currentGroup, doc);
+                }
             },
             downloadSelectedDocument(studentId) {
                 window.location.href = `/files.php?action=makedoc&templateId=${this.currentTemplateId}&leadId=${studentId}`;

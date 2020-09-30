@@ -49,6 +49,8 @@
                         :templates="templates"
                         @newDoc="addNewDocument"
                         @newGroupDoc="addNewGroupDocument"
+                        @deleteDoc="deleteDocument"
+                        @deleteGroupDoc="deleteGroupDocument"
                     ></component>
                 </main>
             </div>
@@ -109,6 +111,22 @@
                 changedGroup.students[studentIndex] = student;
                 this.$set( this.groupsData, changedGroup.name, changedGroup);
             },
+            deleteDocument(targetGroup, studentId, docToRemove) {
+                let changedGroup = clone(targetGroup);
+                let studentIndex = changedGroup.students.findIndex(student => student.id === studentId);
+                let student = changedGroup.students[studentIndex];
+
+                if (!student.docs) {
+                    return;
+                }
+
+                let docIndex = student.docs.findIndex(doc => doc.googleId === docToRemove.googleId);
+                if (docIndex !== -1) {
+                    student.docs.splice(docIndex, 1);
+                    changedGroup.students[studentIndex] = student;
+                    this.$set( this.groupsData, changedGroup.name, changedGroup);
+                }
+            },
             addNewGroupDocument(targetGroup, newDoc) {
                 let changedGroup = clone(targetGroup);
                 if (!changedGroup.docs) {
@@ -117,6 +135,18 @@
 
                 changedGroup.docs.unshift(newDoc);
                 this.$set( this.groupsData, changedGroup.name, changedGroup);
+            },
+            deleteGroupDocument(targetGroup, docToRemove) {
+                let changedGroup = clone(targetGroup);
+                if (!changedGroup.docs) {
+                    return;
+                }
+
+                let docIndex = changedGroup.docs.findIndex(doc => doc.googleId === docToRemove.googleId);
+                if (docIndex !== -1) {
+                    changedGroup.docs.splice(docIndex, 1);
+                    this.$set( this.groupsData, changedGroup.name, changedGroup);
+                }
             },
             updateActiveMenu(newMenuCode) {
                 this.currentTabComponent = newMenuCode;

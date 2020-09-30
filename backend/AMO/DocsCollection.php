@@ -40,6 +40,10 @@ class DocsCollection
         return array_values($docsAsArray);
     }
 
+    public function getDoc($index = false) {
+        return $index === false ? $this->docsModels : $this->docsModels[$index];
+    }
+
     public static function from(array $docsArray) {
         return new self($docsArray);
     }

@@ -95,4 +95,18 @@ switch ($_REQUEST['action']) {
             ]);
         }
     break;
+    case 'delete':
+        $googleId = $_REQUEST['googleId'];
+        $doc = Document::makeFromGoogleId($service, $googleId);
+        $deleted = false;
+        if ($doc) {
+            $doc->delete();
+            $deleted = true;
+        }
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode([
+            "deleted" => $deleted,
+        ]);
+    break;
 }

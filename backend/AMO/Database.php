@@ -116,15 +116,23 @@ class Database
         }, $cursor->toArray());
     }
 
-    public function loadAllDocs() {
+    public function loadDocs($filter) {
         $collectionName = $this->getFullCollectionName('documents');
-        $filter = [];
 
         $query = new Query($filter);
         $cursor = $this->mongo->executeQuery($collectionName, $query);
         $docs = $this->mongoToArray($cursor);
 
         return DocsCollection::from($docs);
+    }
+
+    public function loadAllDocs() {
+        return $this->loadDocs([]);
+    }
+
+    public function loadDocByGoogleId($googleId) {
+        $docs = $this->loadDocs(['googleId' => $googleId]);
+        return $docs->getDoc(0);
     }
 
     public function loadFields() {
@@ -169,4 +177,11 @@ class Database
         return LeadsCollection::fromDbResult($leads, $fields, $instructors);
     }
 
+    public function deleteDocByGoogleId($googleId) {
+        $collectionName = $this->getFullCollectionName('documents');
+
+        $docsBulk = new BulkWrite;
+        $docsBulk->delete(['googleId' => $googleId], ['limit' => 1]);
+        $this->mongo->executeBulkWrite($collectionName, $docsBulk);
+    }
 }

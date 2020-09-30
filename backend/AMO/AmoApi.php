@@ -2,6 +2,8 @@
 
 namespace AMO;
 
+use \League\OAuth2\Client\Token\AccessToken;
+
 class AmoApi
 {
     private static $instance;
@@ -9,10 +11,12 @@ class AmoApi
     private $cookieFileName;
     private $userName = 'mailjob@icloud.com';
     private $userHash = '142a2eebe3051c6b30a9d2cbe3c4cbdb';
+    private $token;
 
     private $authUrl = 'https://mailjob.amocrm.ru/private/api/auth.php';
     private $contactUrl = 'https://mailjob.amocrm.ru/api/v2/contacts';
     private $notesUrl = 'https://mailjob.amocrm.ru/api/v2/notes';
+    private $leadsUrl = 'https://mailjob.amocrm.ru/api/v2/leads';
 
     const ELEMENT_TYPE_LEAD = 2; //https://www.amocrm.com/developers/content/api/notes/#element_types
     const NOTE_TYPE_COMMON = 4;  //https://www.amocrm.com/developers/content/api/notes/#note_types
@@ -27,17 +31,21 @@ class AmoApi
     }
 
     public function auth() {
-        $requestHandle = curl_init();
-        curl_setopt($requestHandle, CURLOPT_COOKIEJAR, $this->cookieFileName);
-        curl_setopt($requestHandle, CURLOPT_URL, $this->authUrl);
-        curl_setopt($requestHandle, CURLOPT_POST, 1);
-        curl_setopt($requestHandle, CURLOPT_POSTFIELDS, "USER_LOGIN={$this->userName}&USER_HASH={$this->userHash}");
-        curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
-
-        curl_exec($requestHandle);
-        curl_close($requestHandle);
+        $this->token = $this->loadToken();
 
         return $this;
+    }
+
+    private function loadToken() {
+        $tokenPath = __DIR__ . "/../../" . $_ENV['AMO_TOKEN_FILE'];
+        $accessToken = json_decode(file_get_contents($tokenPath), true);
+
+        return new AccessToken([
+            'access_token'  => $accessToken['accessToken'],
+            'refresh_token' => $accessToken['refreshToken'],
+            'expires'       => $accessToken['expires'],
+            'baseDomain'    => $accessToken['baseDomain'],
+        ]);
     }
 
     public function addNoteToLead($leadId, $text) {
@@ -87,6 +95,40 @@ class AmoApi
         return $parsedResponse
             ? AmoContact::createFromArray($parsedResponse['_embedded']['items'][0])
             : false;
+    }
+
+    private function getLeadsPage($filter = [], $page = 1, $limit = 500) {
+        $limitOffset = ($page-1) * $limit;
+
+        $requestParams = [
+            'filter' => $filter,
+            'limit_rows' => $limit,
+            'limit_offset' => $limitOffset,
+        ];
+
+        $requestUrl = $this->leadsUrl."?".http_build_query($requestParams);
+
+        $requestHandle = curl_init();
+        curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
+        curl_setopt($requestHandle, CURLOPT_URL, $requestUrl);
+        curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($requestHandle);
+        curl_close($requestHandle);
+
+        $asArray = true;
+        $parsedResponse = json_decode($response, $asArray);
+
+        return $parsedResponse;
+    }
+
+    public function getLeads($filter = []) {
+        $apiResponse = $this->getLeadsPage($filter, 1);
+        return $apiResponse;
+    }
+
+    public function getActiveLeads() {
+        return $this->getLeads(['active' => 1]);
     }
 
     /**

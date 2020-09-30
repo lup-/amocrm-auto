@@ -28,6 +28,10 @@ services:
       - XDEBUG_CONFIG=remote_host=${HOST_IP}
       - MONGO_HOST=mongo
       - MONGO_DB=amoauto
+      - AMO_CLIENT_ID=${AMO_CLIENT_ID}
+      - AMO_CLIENT_SECRET=${AMO_CLIENT_SECRET}
+      - AMO_CLIENT_REDIRECT_URI=${AMO_CLIENT_REDIRECT_URI}
+      - AMO_TOKEN_FILE=${AMO_TOKEN_FILE}
     depends_on:
       - mongo
 

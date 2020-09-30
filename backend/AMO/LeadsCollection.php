@@ -33,6 +33,12 @@ class LeadsCollection
         return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
     }
 
+    public static function loadActiveFromApi($cookieFileName = false, $instructors = false) {
+
+
+        return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
+    }
+
     public static function loadCompletedFromInterface($cookieFileName = false, $instructors = false) {
         if (!$cookieFileName) {
             $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");

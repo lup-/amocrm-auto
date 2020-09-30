@@ -202,6 +202,16 @@ switch ($requestType) {
             echo json_encode($leadData);
         }
     break;
+    case 'test':
+        $leads = AmoApi::getInstance()
+              ->auth()
+              ->getActiveLeads();
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode([
+            "leads" => $leads,
+        ]);
+    break;
     case 'getVideo':
         header("Content-type: application/json; charset=utf-8");
         echo json_encode(getVideoLinks());

@@ -409,6 +409,20 @@ class Document
         return $this;
     }
 
+    private function setReadPermission($objectId) {
+        $newPermission = new Google_Service_Drive_Permission();
+        $newPermission->setType('anyone');
+        $newPermission->setRole('reader');
+        $this->googleService->permissions->create($objectId, $newPermission);
+    }
+
+    private function setWritePermission($objectId) {
+        $newPermission = new Google_Service_Drive_Permission();
+        $newPermission->setType('anyone');
+        $newPermission->setRole('writer');
+        $this->googleService->permissions->create($objectId, $newPermission);
+    }
+
     private function getGroupFolderId() {
         if ($this->groupFolderId) {
             return $this->groupFolderId;
@@ -431,7 +445,14 @@ class Document
         $folder = $this->googleService->files->create($file);
         $this->groupFolderId = $folder->getId();
 
+        $this->setWritePermission($this->groupFolderId);
+
         return $this->groupFolderId;
+    }
+
+    public function delete() {
+        Database::getInstance()->deleteDocByGoogleId($this->getGoogleId());
+        $this->googleService->files->delete($this->getGoogleId());
     }
     
     public function uploadToGoogleDrive() {
@@ -452,11 +473,7 @@ class Document
         ]);
 
         $this->setGoogleId( $this->docDriveFile->getId() );
-
-        $newPermission = new Google_Service_Drive_Permission();
-        $newPermission->setType('anyone');
-        $newPermission->setRole('reader');
-        $this->googleService->permissions->create($this->getGoogleId(), $newPermission);
+        $this->setWritePermission($this->getGoogleId());
 
         return $this;
     }
@@ -509,6 +526,15 @@ class Document
 
         if (isset($props['mime'])) {
             $doc->setMimeType($props['mime']);
+        }
+
+        return $doc;
+    }
+
+    public static function makeFromGoogleId($service, $googleId) {
+        $doc = Database::getInstance()->loadDocByGoogleId($googleId);
+        if ($doc) {
+            $doc->setGoogleService($service);
         }
 
         return $doc;
