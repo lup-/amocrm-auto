@@ -6,9 +6,10 @@ use AmoCRM\Client\AmoCRMApiClient;
 $clientId = $_ENV['AMO_CLIENT_ID'];
 $clientSecret = $_ENV['AMO_CLIENT_SECRET'];
 $redirectUri = $_ENV['AMO_CLIENT_REDIRECT_URI'];
-$tokenFile = $_ENV['AMO_TOKEN_FILE'];
+$tokenFile = '../'.$_ENV['AMO_TOKEN_FILE'];
 
 $apiClient = new AmoCRMApiClient($clientId, $clientSecret, $redirectUri);
+$apiClient->setAccountBaseDomain($_GET['referer']);
 
 try {
     $accessToken = $apiClient->getOAuthClient()->getAccessTokenByCode($_GET['code']);
