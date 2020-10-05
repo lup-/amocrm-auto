@@ -36,10 +36,13 @@
                                          <b-form-checkbox :checked="rowSelected" @change="(value) => toggleRow(value, index, selectRow, unselectRow)"></b-form-checkbox>
                                      </template>
                                      <template v-slot:cell(id)="data">
-                                         <b-button variant="link" :href="'https://mailjob.amocrm.ru/leads/detail/'+data.value" target="_blank">{{data.value}}</b-button>
+                                         <b-button variant="link" :href="'https://mailjob.amocrm.ru/leads/detail/'+data.value" target="_blank">{{data.value || 'Нет'}}</b-button>
                                      </template>
-                                     <template v-slot:cell(hours)="data">
-                                         <b-form-input size="sm" v-model="data.value" @change="updateHours(data.item, data.value)"></b-form-input>
+                                     <template v-slot:cell(id)="data">
+                                         <b-button variant="link" :href="'https://mailjob.amocrm.ru/leads/detail/'+data.value" target="_blank">{{data.value || 'Нет'}}</b-button>
+                                     </template>
+                                     <template v-slot:cell(dateFinished)="data">
+                                         <span>{{data.value || 'Нет'}}</span>
                                      </template>
                                  </b-table>
                                  <b-row>

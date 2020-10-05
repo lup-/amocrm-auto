@@ -6,6 +6,8 @@ use \Exception;
 
 class AutoSchoolLead
 {
+    use HasCustomFields;
+
     protected $rawData;
 
     protected $dateFormat = "d.m.Y";
@@ -28,104 +30,20 @@ class AutoSchoolLead
         $this->rawData = $rawData;
     }
 
-    public function findCustomField($fieldId) {
-        foreach ($this->rawData['custom_fields'] as $fieldData) {
-            if ($fieldData['id'] == $fieldId) {
-                return $fieldData;
-            }
-        }
-
-        if ($this->rawData['_extra']) {
-            foreach ($this->rawData['_extra']['custom_fields'] as $fieldData) {
-                if ($fieldData['id'] == $fieldId) {
-                    return $fieldData;
-                }
-            }
-        }
-
-        return null;
-    }
     public function fieldExists($fieldId) {
         $field = $this->findCustomField($fieldId);
         return !empty($field);
     }
-    public function getCustomFieldValue($fieldId) {
-        if (isset($this->rawData['cf' . $fieldId])) {
-            return $this->rawData['cf' . $fieldId];
-        }
-
-        $customField = $this->findCustomField($fieldId);
-        if (!$customField) {
-            return null;
-        }
-
-        $fieldValue = $customField['values'][0]['value'];
-
-        if ($fieldValue === "false") {
-            $fieldValue = false;
-        }
-
-        return $fieldValue;
-    }
-    public function getCustomFieldName($fieldId) {
-        $field = $this->findCustomField($fieldId);
-
-        if (!$field) {
-            return null;
-        }
-
-        return $field['name'];
-    }
-    public function getPaymentValue($fieldId) {
-        $fieldValue = $this->getCustomFieldValue($fieldId);
-
-        preg_match('#^[\d \.,]+#', $fieldValue, $matches);
-        if ($matches[0]) {
-            $preparedValue = preg_replace('#\W#', '', $matches[0]);
-            return intval($preparedValue);
-        }
-
-        return false;
-    }
-    public function getPaymentDate($fieldId) {
-        return $this->getDateFromValue( $this->getCustomFieldValue($fieldId) );
-    }
-
-    private function formatTimestamp($timestamp) {
-        $date = new \DateTime();
-        $date->setTimestamp($timestamp);
-        $date->setTimezone(new \DateTimeZone('Europe/Moscow'));
-        return $date->format($this->dateFormat);
-    }
-    public function getDateValue($fieldId) {
-        $timestamp = $this->getIntValue($fieldId);
-
-        if (!$timestamp) {
-            return false;
-        }
-
-        return $this->formatTimestamp($timestamp);
-    }
-    public function getIntValue($fieldId) {
-        try {
-            $value = intval($this->getCustomFieldValue($fieldId));
-        }
-        catch (Exception $e) {
-            $value = 0;
-        }
-
-        return $value;
-    }
 
     /**
-     * @param mixed $contactData
+     * @param AmoContact $contactData
      */
-    public function setContactData($contactData) {
+    public function setContactData(AmoContact $contactData) {
         $this->contactData = $contactData;
     }
 
     public function fetchContactData() {
-        $contactData = AmoApi::getInstance()->getContact($this->contactId());
+        $contactData = AmoApi::getInstance()->getSingleContact($this->contactId());
         $this->setContactData( $contactData );
         return $this;
     }
@@ -144,8 +62,15 @@ class AutoSchoolLead
         $debt = $studyPrice - $this->totalPaymentsMade();
         return $debt > 0 ? $debt : 0;
     }
+
+    public function price() {
+        return isset($this->rawData['sale'])
+            ? $this->rawData['sale']
+            : $this->rawData['price'];
+    }
+
     public function studyPrice() {
-        $payment = intval( $this->rawData['sale'] );
+        $payment = intval( $this->price() );
         if ($payment > 0) {
             return $payment;
         }
@@ -170,17 +95,23 @@ class AutoSchoolLead
         return $this->rawData['id'];
     }
     public function contactId() {
-        return $this->rawData['main_contact']['id'];
+        $contact = isset($this->rawData['contacts'])
+            ? $this->rawData['contacts'][0]
+            : $this->rawData['main_contact'];
+        return $contact['id'];
     }
     public function name() {
-        return $this->rawData['main_contact']['name'];
+        if ($this->contactData) {
+            return $this->contactData->name();
+        }
+
+        $contact = isset($this->rawData['contacts'])
+            ? $this->rawData['contacts'][0]
+            : $this->rawData['main_contact'];
+        return $contact['name'];
     }
     public function phone() {
-        $phone = $this->getCustomFieldValue(389479);
-
-        if ( is_array($phone) ) {
-            $phone = $phone[0];
-        }
+        $phone = $this->getPhoneField(389479);
 
         if ( empty($phone) ) {
             if (!$this->contactData) {
@@ -189,20 +120,9 @@ class AutoSchoolLead
 
             return $this->contactData->phone();
         }
-
-        $phone = preg_replace('#\W#', '', $phone);
-        if ($phone[0] === '8') {
-            $phone[0] = '7';
-        }
-
-        if ($phone[0] !== '7') {
-            $phone = '7'.$phone;
-        }
-
-        return '+'.$phone;
     }
     public function group() {
-        return $this->groupData()->name();
+        return $this->getCustomFieldValue(580073);
     }
     public function instructor() {
         return $this->getCustomFieldValue(398075);
@@ -501,54 +421,40 @@ class AutoSchoolLead
             'docs'           => $this->docs,
         ];
     }
+
+    private function getFieldName($field) {
+        return isset($field['name'])
+            ? $field['name']
+            : $field['field_name'];
+    }
+
+    private function getFieldValue($field) {
+        return $field['values'][0]['value'];
+    }
+
     public function asReplacementPairs() {
-        $apiLeadData = $this->rawData;
-        $contactData = $this->contactData;
-        if (!$contactData) {
+        if (!$this->contactData) {
             $this->fetchContactData();
-            $contactData = $this->contactData;
         }
 
         $replacementPairs = [
-            'Сделка.ID'               => $apiLeadData['id'],
-            'Имя'                     => $contactData->name(),
-            'Имя.Фамилия'             => $contactData->familyName(),
-            'Имя.Имя'                 => $contactData->firstName(),
-            'Имя.Отчество'            => $contactData->secondName(),
-            'Телефон'                 => '',
-            'Телефон.Рабочий'         => '',
-            'Контакт.Имя'             => $contactData->name(),
-            'Контакт.Имя.Фамилия'     => $contactData->familyName(),
-            'Контакт.Имя.Имя'         => $contactData->firstName(),
-            'Контакт.Имя.Отчество'    => $contactData->secondName(),
-            'Контакт.Телефон'         => '',
-            'Контакт.Телефон.Рабочий' => '',
-            'Сделка.Бюджет'           => $apiLeadData['sale'],
-            'Сделка.Бюджет.Прописью'  => is_numeric($apiLeadData['sale']) ? $this->numberToText($apiLeadData['sale']) : '',
-            'Сделка.Ответственный'    => '',
+            'Сделка.ID'                              => $this->rawData['id'],
+            'Имя'                                    => $this->contactData->name(),
+            'Имя.Фамилия'                            => $this->contactData->familyName(),
+            'Имя.Имя'                                => $this->contactData->firstName(),
+            'Имя.Отчество'                           => $this->contactData->secondName(),
+            'Телефон'                                => $this->phone(),
+            'Телефон.Рабочий'                        => $this->phone(),
+            'Контакт.Имя'                            => $this->contactData->name(),
+            'Контакт.Имя.Фамилия'                    => $this->contactData->familyName(),
+            'Контакт.Имя.Имя'                        => $this->contactData->firstName(),
+            'Контакт.Имя.Отчество'                   => $this->contactData->secondName(),
+            'Контакт.Телефон'                        => $this->phone(),
+            'Контакт.Телефон.Рабочий'                => $this->phone(),
+            'Сделка.Бюджет'                          => $this->price(),
+            'Сделка.Бюджет.Прописью'                 => is_numeric($this->price()) ? $this->numberToText($this->price()) : '',
+            'Сделка.Ответственный'                   => '',
         ];
-
-        foreach ($apiLeadData['custom_fields'] as $field) {
-            $name = $field['name'];
-            $value = $field['values'][0]['value'];
-            $replacementPairs[ $name ] = $value;
-
-            if (is_numeric($value)) {
-                $replacementPairs[ $name.'.Прописью' ] = $this->numberToText($value);
-            }
-        }
-
-        if ($contactData->customFields()) {
-            foreach ($contactData->customFields() as $field) {
-                $replacementPairs[$field['name']] = $field['values'][0]['value'];
-                $replacementPairs['Контакт.'.$field['name']] = $field['values'][0]['value'];
-
-                if ($field['name'] == 'Телефон') {
-                    $replacementPairs['Контакт.Телефон'] = $field['values'][0] ? $field['values'][0]['value'] : '';
-                    $replacementPairs['Контакт.Телефон.Рабочий'] = $field['values'][1] ? $field['values'][1]['value'] : '';
-                }
-            }
-        }
 
         $dateTimeFields = [
             'Дата заключения договора',
@@ -557,6 +463,7 @@ class AutoSchoolLead
             'Дата начала обучения',
             'Дата окончания обучения',
             'Дата окончания  обучения',
+            'Дата оплаты ГСМ',
             'Дата выдачи свидетельства',
             'Дата Экзамена в Гибдд',
             'День рождения',
@@ -565,14 +472,49 @@ class AutoSchoolLead
             'Контакт.Дата выдачи паспорта'
         ];
 
+        foreach ($this->customFields() as $field) {
+            $fieldName = $this->getFieldName($field);
+            $fieldValue = $this->getFieldValue($field);
+            $isDateField = in_array($fieldName, $dateTimeFields);
+            $addNumAsText = is_numeric($fieldValue) && !$isDateField;
+
+            $replacementPairs[$fieldName] = $fieldValue;
+
+            if ($addNumAsText) {
+                $replacementPairs[$fieldName . '.Прописью'] = $this->numberToText($fieldValue);
+            }
+        }
+
+        if ($this->contactData->customFields()) {
+            foreach ($this->contactData->customFields() as $field) {
+                $fieldName = $this->getFieldName($field);
+                $fieldValue = $this->getFieldValue($field);
+
+                $replacementPairs[$fieldName] = $fieldValue;
+                $replacementPairs['Контакт.'.$fieldName] = $fieldValue;
+
+                if (is_numeric($fieldValue)) {
+                    $replacementPairs[ 'Контакт.'.$fieldName.'.Прописью' ] = $this->numberToText($fieldValue);
+                }
+            }
+        }
+
         foreach ($dateTimeFields as $fieldName) {
             try {
-                $dateAsString = $replacementPairs[$fieldName];
+                $date = $replacementPairs[$fieldName];
 
-                $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $dateAsString);
+                if (is_numeric($date)) {
+                    $dateAsInt = $date;
+                    $parsedDate = new DateTime();
+                    $parsedDate->setTimestamp($dateAsInt);
+                }
+                else {
+                    $dateAsString = $replacementPairs[$fieldName];
+                    $parsedDate = DateTime::createFromFormat('Y-m-d H:i:s', $dateAsString);
 
-                if (!$parsedDate) {
-                    $parsedDate = DateTime::createFromFormat('d.m.Y', $dateAsString);
+                    if (!$parsedDate) {
+                        $parsedDate = DateTime::createFromFormat('d.m.Y', $dateAsString);
+                    }
                 }
 
                 if ($parsedDate) {

@@ -17,26 +17,29 @@ function saveConfig($filename, $config) {
 
 switch ($requestType) {
     case 'instructors':
-        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-        authAmoInterface($cookieFileName);
-
-        $instructors = loadInstructorIds($cookieFileName);
+        $instructors = AmoApi::getInstance()->getInstructorIds();
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode($instructors);
     break;
     case 'getAdminData':
-        $loadFromAMO = $_GET['loadFromAMO'] === '1';
+        //$loadFromAMO = $_GET['loadFromAMO'] === '1';
+        $loadFromAMO = true;
 
+        $instructors = AmoApi::getInstance()->getInstructorIds();
         if ($loadFromAMO) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoInterface($cookieFileName);
+            $contactsHash = AmoApi::getInstance()->getContactsHash();
 
-            $activeLeads = LeadsCollection::loadActiveFromInterface($cookieFileName);
-            $completeLeads = LeadsCollection::loadCompletedFromInterface($cookieFileName, $activeLeads->getRawInstructors());
+            $activeLeads = AmoApi::getInstance()->getActiveLeads();
+            $activeLeads->setContactsHash($contactsHash);
+            $activeLeads->setInstructors($instructors);
 
-            Database::getInstance()->updateLeads( $activeLeads );
-            Database::getInstance()->updateLeads( $completeLeads, true );
+            $completeLeads = AmoApi::getInstance()->getCompletedLeads();
+            $completeLeads->setContactsHash($contactsHash);
+            $completeLeads->setInstructors($instructors);
+
+            //Database::getInstance()->updateLeads( $activeLeads );
+            //Database::getInstance()->updateLeads( $completeLeads, true );
         }
         else {
             $activeLeads = Database::getInstance()->loadActiveLeads();
@@ -203,13 +206,12 @@ switch ($requestType) {
         }
     break;
     case 'test':
-        $leads = AmoApi::getInstance()
-              ->auth()
-              ->getActiveLeads();
+        //$activeLeads = AmoApi::getInstance()->getActiveLeads(null, true);
+        $instructors = AmoApi::getInstance()->getInstructorIds();
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode([
-            "leads" => $leads,
+            "groups"         => '',//$activeLeads->getGroups(),
         ]);
     break;
     case 'getVideo':

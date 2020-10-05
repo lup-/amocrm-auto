@@ -2,7 +2,15 @@
 
 namespace AMO;
 
+use AmoCRM\Exceptions\AmoCRMApiNoContentException;
+use AmoCRM\Filters\ContactsFilter;
+use AmoCRM\Filters\LeadsFilter;
+use AmoCRM\Helpers\EntityTypesInterface;
+use AmoCRM\Models\ContactModel;
+use AmoCRM\Models\LeadModel;
 use \League\OAuth2\Client\Token\AccessToken;
+use AmoCRM\Client\AmoCRMApiClient;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 
 class AmoApi
 {
@@ -11,16 +19,33 @@ class AmoApi
     private $cookieFileName;
     private $userName = 'mailjob@icloud.com';
     private $userHash = '142a2eebe3051c6b30a9d2cbe3c4cbdb';
-    private $token;
 
+    private $pipeline = ['1191751', '3469660'];
+
+    private $baseDomain = "mailjob.amocrm.ru";
     private $authUrl = 'https://mailjob.amocrm.ru/private/api/auth.php';
     private $contactUrl = 'https://mailjob.amocrm.ru/api/v2/contacts';
     private $notesUrl = 'https://mailjob.amocrm.ru/api/v2/notes';
     private $leadsUrl = 'https://mailjob.amocrm.ru/api/v2/leads';
 
+    /**
+     * @var AmoCRMApiClient
+     */
+    private $apiClient;
+    /**
+     * @var AccessTokenInterface
+     */
+    private $accessToken;
+
     const ELEMENT_TYPE_LEAD = 2; //https://www.amocrm.com/developers/content/api/notes/#element_types
     const NOTE_TYPE_COMMON = 4;  //https://www.amocrm.com/developers/content/api/notes/#note_types
     const NOTE_TYPE_SYSTEM = 25;
+
+    const STATUS_SUCCESS = 142;
+    const STATUS_CANCELED = 143;
+
+    const GROUP_FIELD_ID = 580073;
+    const INSTRUCTOR_FIELD_ID = 398075;
 
     public function __construct() {
         $this->cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
@@ -31,7 +56,8 @@ class AmoApi
     }
 
     public function auth() {
-        $this->token = $this->loadToken();
+        $this->accessToken = $this->loadToken();
+        $this->makeApiClient();
 
         return $this;
     }
@@ -46,6 +72,30 @@ class AmoApi
             'expires'       => $accessToken['expires'],
             'baseDomain'    => $accessToken['baseDomain'],
         ]);
+    }
+
+    private function makeApiClient() {
+        $tokenPath = __DIR__ . "/../../" . $_ENV['AMO_TOKEN_FILE'];
+
+        $clientId = $_ENV['AMO_CLIENT_ID'];
+        $clientSecret = $_ENV['AMO_CLIENT_SECRET'];
+        $redirectUri = $_ENV['AMO_CLIENT_REDIRECT_URI'];
+
+        $this->apiClient = new AmoCRMApiClient($clientId, $clientSecret, $redirectUri);
+        $this->apiClient->setAccountBaseDomain($this->baseDomain);
+        $this->apiClient->setAccessToken($this->accessToken);
+        $this->apiClient->onAccessTokenRefresh(
+              function (AccessTokenInterface $accessToken, string $baseDomain) use ($tokenPath) {
+                  $data = [
+                      'accessToken'  => $accessToken->getToken(),
+                      'expires'      => $accessToken->getExpires(),
+                      'refreshToken' => $accessToken->getRefreshToken(),
+                      'baseDomain'   => $baseDomain,
+                  ];
+
+                  file_put_contents($tokenPath, json_encode($data));
+              }
+        );
     }
 
     public function addNoteToLead($leadId, $text) {
@@ -97,38 +147,173 @@ class AmoApi
             : false;
     }
 
-    private function getLeadsPage($filter = [], $page = 1, $limit = 500) {
-        $limitOffset = ($page-1) * $limit;
+    public function getLeads(LeadsFilter $filter = null, $withContacts = false) {
+        if (is_null($filter)) {
+            $filter = new LeadsFilter();
+        }
 
-        $requestParams = [
-            'filter' => $filter,
-            'limit_rows' => $limit,
-            'limit_offset' => $limitOffset,
-        ];
+        $filter->setLimit(500);
+        $leadsService = $this->apiClient->leads();
+        $leadsCollection = $leadsService->get($filter, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
+        $allLeads = $leadsCollection;
 
-        $requestUrl = $this->leadsUrl."?".http_build_query($requestParams);
+        try {
+            while (!is_null($leadsCollection->getNextPageLink())) {
+                $leadsCollection = $leadsService->nextPage($leadsCollection);
+                foreach ($leadsCollection as $lead) {
+                    $allLeads->add($lead);
+                }
+            }
+        }
+        catch (AmoCRMApiNoContentException $e) {
+        }
 
-        $requestHandle = curl_init();
-        curl_setopt($requestHandle, CURLOPT_COOKIEFILE, $cookieFileName);
-        curl_setopt($requestHandle, CURLOPT_URL, $requestUrl);
-        curl_setopt($requestHandle, CURLOPT_RETURNTRANSFER, 1);
+        $leadsCollection = LeadsCollection::fromAmoCollection($allLeads);
 
-        $response = curl_exec($requestHandle);
-        curl_close($requestHandle);
+        if ($withContacts) {
+            $contacts = $this->getContacts();
+            $leadsCollection->setContacts($contacts);
+        }
 
-        $asArray = true;
-        $parsedResponse = json_decode($response, $asArray);
-
-        return $parsedResponse;
+        return $leadsCollection;
     }
 
-    public function getLeads($filter = []) {
-        $apiResponse = $this->getLeadsPage($filter, 1);
-        return $apiResponse;
+    public function getAllPipelines() {
+        $pipelineService = $this->apiClient->pipelines();
+        return $pipelineService->get();
     }
 
-    public function getActiveLeads() {
-        return $this->getLeads(['active' => 1]);
+    public function getAllStatuses() {
+        $allStatuses = [];
+
+        foreach ($this->pipeline as $pipelineId) {
+            $statusService = $this->apiClient->statuses($pipelineId);
+            $statusesCollection = $statusService->get();
+            $allStatuses[$pipelineId] = $statusesCollection;
+        }
+        return $allStatuses;
+    }
+
+    public function getActiveLeads($filter = null, $withContacts = false) {
+        if (is_null($filter)) {
+            $filter = new LeadsFilter();
+        }
+
+        $finishedStatuses = [self::STATUS_SUCCESS, self::STATUS_CANCELED];
+
+        $filterStatuses = [];
+        foreach ($this->getAllStatuses() as $pipelineId => $pipeStatuses) {
+            foreach ($pipeStatuses as $status) {
+                if (array_search($status->getId(), $finishedStatuses) !== false) {
+                    continue;
+                }
+
+                $filterStatuses[] = [
+                    'status_id'   => $status->getId(),
+                    'pipeline_id' => $status->getPipelineId(),
+                ];
+            }
+        }
+
+        $filter->setStatuses($filterStatuses);
+
+        return $this->getLeads($filter, $withContacts);
+    }
+
+    public function getCompletedLeads($filter = null, $withContacts = false) {
+        if (is_null($filter)) {
+            $filter = new LeadsFilter();
+        }
+
+        $finishedStatuses = [self::STATUS_SUCCESS, self::STATUS_CANCELED];
+
+        $filterStatuses = [];
+        foreach ($this->getAllStatuses() as $pipelineId => $pipeStatuses) {
+            foreach ($pipeStatuses as $status) {
+                if (array_search($status->getId(), $finishedStatuses) !== false) {
+                    $filterStatuses[] = [
+                        'status_id'   => $status->getId(),
+                        'pipeline_id' => $status->getPipelineId(),
+                    ];
+                }
+            }
+        }
+
+        $filter->setStatuses($filterStatuses);
+
+        return $this->getLeads($filter, $withContacts);
+    }
+
+    public function getSingleLead($id, $withContact = true) {
+        $leadsService = $this->apiClient->leads();
+        $lead = $leadsService->getOne($id, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
+        $schoolLead = AutoSchoolLead::createFromArray( $lead->toArray() );
+
+        if ($withContact) {
+            $schoolLead->setContactData( $this->getSingleContact( $schoolLead->contactId() ) );
+        }
+
+        return $schoolLead;
+    }
+
+    public function getSingleContact($id) {
+        $contactsService = $this->apiClient->contacts();
+        $contact = $contactsService->getOne($id);
+        return AmoContact::createFromArray($contact->toArray());
+    }
+
+    public function getContacts(ContactsFilter $filter = null) {
+        if (is_null($filter)) {
+            $filter = new ContactsFilter();
+        }
+
+        $filter->setLimit(500);
+        $contactsService = $this->apiClient->contacts();
+        $contactsCollection = $contactsService->get($filter);
+        $allContacts = $contactsCollection;
+
+        try {
+            while (!is_null($contactsCollection->getNextPageLink())) {
+                $contactsCollection = $contactsService->nextPage($contactsCollection);
+                foreach ($contactsCollection as $contact) {
+                    $allContacts->add($contact);
+                }
+            }
+        }
+        catch (AmoCRMApiNoContentException $e) {
+        }
+
+        return $allContacts;
+    }
+
+    public function getContactsHash(ContactsFilter $filter = null) {
+        $contacts = $this->getContacts($filter);
+
+        $contactHash = [];
+        foreach ($contacts as $contact) {
+            $contactHash[ $contact->getId() ] = $contact->toArray();
+        }
+
+        return $contactHash;
+    }
+
+    public function getInstructorIds() {
+        $fieldsService = $this->apiClient->customFields(EntityTypesInterface::LEADS);
+        $field = $fieldsService->getOne(self::INSTRUCTOR_FIELD_ID);
+
+        $instructors = [];
+        foreach ($field->getEnums() as $enum) {
+            $instructors[ $enum->getId() ] = $enum->getValue();
+        }
+
+        return $instructors;
+    }
+
+    public function getGroupActiveLeads($groupId) {
+        $filter = new LeadsFilter();
+        $filter->setCustomFieldsValues([(string) self::GROUP_FIELD_ID => $groupId]);
+
+        return $this->getActiveLeads($filter);
     }
 
     /**

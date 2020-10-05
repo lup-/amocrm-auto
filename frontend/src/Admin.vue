@@ -37,7 +37,7 @@
                             <b-dropdown-divider></b-dropdown-divider>
                         </ul>
 
-                        <b-button variant="primary" block @click="refreshData">Обновить данные</b-button>
+                        <b-button variant="primary" block disabled @click="refreshData">Обновить данные (не нужно)</b-button>
                         <b-button variant="primary" block class="mt-2" @click="syncInstructors">Обновить инструкторов</b-button>
                     </div>
                 </nav>

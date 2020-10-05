@@ -34,10 +34,8 @@ switch ($_REQUEST['action']) {
         $googleTemplateId = $_REQUEST['templateId'];
         $leadId = $_REQUEST['leadId'];
 
-        $cookieFileName = initAmoApi();
-        authAmoInterface($cookieFileName);
-
-        $leadPairs = loadLeadReplacementPairs($cookieFileName, $leadId);
+        $lead = AmoApi::getInstance()->getSingleLead($leadId);
+        $leadPairs = $lead->asReplacementPairs();
 
         $doc = Document::makeFromTemplate($service, $googleTemplateId, $leadId)
                 ->prepareTemplate()
@@ -66,7 +64,8 @@ switch ($_REQUEST['action']) {
 
         $date = (new DateTime())->format('d.m.Y');
 
-        $activeLeads = Database::getInstance()->loadActiveLeads();
+        //$activeLeads = Database::getInstance()->loadActiveLeads();
+        $activeLeads = AmoApi::getInstance()->getActiveLeads();
 
         $groups = $activeLeads->getGroups(true);
         $group = $groups[$groupName];

@@ -57,6 +57,7 @@
                             <div class="d-md-flex flex-row">
                                 <b-form-checkbox :value="student.id" class="mr-4 flex-fill align-items-center">
                                     <span>{{student.name}}</span>
+                                    <b-button variant="link" :href="getStudentLink(student)" target="_blank"><b-icon-box-arrow-up-right></b-icon-box-arrow-up-right></b-button>
                                 </b-form-checkbox>
 
                                 <div class="row-buttons text-right">
@@ -121,11 +122,13 @@
 
 <script>
     import {clone} from "../modules/objectsArrays";
+    import StudentMixin from "../mixins/StudentMixin";
     import axios from "axios";
 
     export default {
         name: "Docs",
         props: ['groups', 'templates', 'instructors'],
+        mixins: [StudentMixin],
         data() {
             return {
                 currentCity: 'Железнодорожный',

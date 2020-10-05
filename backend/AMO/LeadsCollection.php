@@ -2,6 +2,8 @@
 namespace AMO;
 
 
+use AmoCRM\Collections\ContactsCollection;
+
 class LeadsCollection
 {
     protected $rawLeads;
@@ -18,43 +20,25 @@ class LeadsCollection
      */
     protected $docs;
 
-    public static function loadActiveFromInterface($cookieFileName = false, $instructors = false) {
-        if (!$cookieFileName) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoInterface($cookieFileName);
-        }
-
-        if (!$instructors) {
-            $instructors = loadInstructorIds($cookieFileName);
-        }
-
-        $responseData = loadAllLeadsWithExtraData($cookieFileName);
-
-        return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
-    }
-
-    public static function loadActiveFromApi($cookieFileName = false, $instructors = false) {
-
-
-        return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
-    }
-
-    public static function loadCompletedFromInterface($cookieFileName = false, $instructors = false) {
-        if (!$cookieFileName) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoInterface($cookieFileName);
-        }
-
-        if (!$instructors) {
-            $instructors = loadInstructorIds($cookieFileName);
-        }
-
-        $responseData = loadCompletedLeadsWithExtraData($cookieFileName);
-
-        return new self($responseData['response']['items'], $responseData['response']['fields'], $instructors);
-    }
-
     public static function fromDbResult($leads, $fields, $instructors) {
+        return new self($leads, $fields, $instructors);
+    }
+
+    /**
+     * @param mixed $amoLeadsCollection
+     * @param ContactsCollection $contactsCollection
+     * @param array $fields
+     * @param array $instructors
+     * @return LeadsCollection
+     */
+    public static function fromAmoCollection($amoLeadsCollection, $contactsCollection = null, $fields = [], $instructors = []) {
+        $leads = [];
+        if ($amoLeadsCollection) {
+            foreach ($amoLeadsCollection as $amoLead) {
+                $leads[] = $amoLead->toArray();
+            }
+        }
+
         return new self($leads, $fields, $instructors);
     }
 
@@ -68,6 +52,29 @@ class LeadsCollection
             $leadDocs = $docs->getDocsForUser( $lead->id() );
             $lead->setDocs( $leadDocs );
         }
+    }
+
+    public function setContacts(ContactsCollection $contacts) {
+        $contactHash = [];
+        foreach ($contacts as $contact) {
+            $contactHash[ $contact->getId() ] = $contact->toArray();
+        }
+
+        $this->setContactsHash($contactHash);
+    }
+
+    public function setContactsHash(array $contactHash = []) {
+        foreach ($this->leads as $lead) {
+            if ($lead->contactId()) {
+                $contact = $contactHash[ $lead->contactId() ];
+                if ($contact) {
+                    $contactModel = AmoContact::createFromArray($contact);
+                    $lead->setContactData($contactModel);
+                }
+            }
+        }
+
+        return $this;
     }
 
     public function __construct($leads, $fields, $instructors) {
@@ -150,6 +157,11 @@ class LeadsCollection
         }
 
         return $groups;
+    }
+
+    public function setInstructors(array $instructors) {
+        $this->instructors = $instructors;
+        return $this;
     }
 
     public function getInstructors() {

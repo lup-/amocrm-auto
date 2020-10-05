@@ -11,3 +11,4 @@ token.json
 /.phpunit.result.cache
 /etc/database/mongo/
 !.gitkeep
+/amo_token.json
