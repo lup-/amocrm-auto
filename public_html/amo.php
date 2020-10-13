@@ -165,7 +165,7 @@ switch ($requestType) {
     break;
     case 'getPhone':
         $contactId = $_GET['contactId'];
-        $contact = AmoApi::getInstance()->getContact($contactId);
+        $contact = AmoApi::getInstance()->getSingleContact($contactId);
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode($contact->asArray());

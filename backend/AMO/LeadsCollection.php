@@ -122,6 +122,22 @@ class LeadsCollection
         return $groupedLeads;
     }
 
+    private function joinArrayData($dst, $src) {
+        $result = [];
+        $allKeys = array_unique( array_merge(array_keys($dst), array_keys($src)) );
+
+        foreach ($allKeys as $key) {
+            if (empty($dst[$key])) {
+                $result[$key] = $src[$key];
+            }
+            else {
+                $result[$key] = $dst[$key];
+            }
+        }
+
+        return $result;
+    }
+
     public function getGroups($withLeads = false) {
         $groups = [];
 
@@ -144,6 +160,8 @@ class LeadsCollection
             }
 
             if ($groupName && $isCorrectGroupName) {
+                $groups[$groupName] = $this->joinArrayData($groups[$groupName], $lead->groupData()->asArray());
+
                 $groups[$groupName]['people'] += 1;
                 $hours = $lead->hours();
                 $groups[$groupName]['totalHours'] += $hours;
