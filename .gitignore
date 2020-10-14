@@ -12,3 +12,4 @@ token.json
 /etc/database/mongo/
 !.gitkeep
 /amo_token.json
+cachegrind.*

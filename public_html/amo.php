@@ -216,7 +216,7 @@ switch ($requestType) {
     break;
     case 'getVideo':
         header("Content-type: application/json; charset=utf-8");
-        echo json_encode(getVideoLinks());
+        echo json_encode(["video" => getVideoLinks()]);
     break;
     case 'getTickets':
         header("Content-type: application/json; charset=utf-8");

@@ -201,7 +201,7 @@ class Document
             return false;
         }
 
-        return "https://drive.google.com/uc?export=download&id={$this->getGoogleId()}";
+        return "https://docs.google.com/document/export?format=docx&id={$this->getGoogleId()}";
     }
 
     public function getEditUrl() {
@@ -452,7 +452,12 @@ class Document
 
     public function delete() {
         Database::getInstance()->deleteDocByGoogleId($this->getGoogleId());
-        $this->googleService->files->delete($this->getGoogleId());
+        try {
+            $this->googleService->files->delete($this->getGoogleId());
+        }
+        catch (Exception $e) {
+
+        }
     }
     
     public function uploadToGoogleDrive() {
