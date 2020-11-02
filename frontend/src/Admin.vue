@@ -203,9 +203,15 @@
             },
             completeOrActiveGroups() {
                 let componentNeedsCompleteGroups = this.currentTabComponent === 'salary' || this.currentTabComponent === 'instructors';
-                return componentNeedsCompleteGroups
+                let groups = componentNeedsCompleteGroups
                     ? this.completeGroups
                     : this.groups;
+
+                if (this.currentTabComponent === 'docs') {
+                    groups = this.groups.concat(this.completeGroups);
+                }
+
+                return groups;
             }
         }
     }
