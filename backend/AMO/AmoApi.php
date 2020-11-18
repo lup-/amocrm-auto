@@ -36,6 +36,7 @@ class AmoApi
      * @var AccessTokenInterface
      */
     private $accessToken;
+    private $cache = [];
 
     const ELEMENT_TYPE_LEAD = 2; //https://www.amocrm.com/developers/content/api/notes/#element_types
     const NOTE_TYPE_COMMON = 4;  //https://www.amocrm.com/developers/content/api/notes/#note_types
@@ -184,6 +185,10 @@ class AmoApi
     }
 
     public function getAllStatuses() {
+        if ($this->cache['allStatuses']) {
+            return $this->cache['allStatuses'];
+        }
+
         $allStatuses = [];
 
         foreach ($this->pipeline as $pipelineId) {
@@ -191,7 +196,38 @@ class AmoApi
             $statusesCollection = $statusService->get();
             $allStatuses[$pipelineId] = $statusesCollection;
         }
+
+        $this->cache['allStatuses'] = $allStatuses;
         return $allStatuses;
+    }
+
+    public function getAllFields($entityType) {
+        if (!$entityType) {
+            $entityType = EntityTypesInterface::LEADS;
+        }
+
+        if ($this->cache['allFields'][$entityType]) {
+            return $this->cache['allFields'][$entityType];
+        }
+
+        $fieldsService = $this->apiClient->customFields($entityType);
+
+        $fieldsCollection = $fieldsService->get();
+        $allFields = $fieldsCollection;
+
+        try {
+            while (!is_null($fieldsCollection->getNextPageLink())) {
+                $fieldsCollection = $fieldsService->nextPage($fieldsCollection);
+                foreach ($fieldsCollection as $field) {
+                    $allFields->add($field);
+                }
+            }
+        }
+        catch (AmoCRMApiNoContentException $e) {
+        }
+
+        $this->cache['allFields'][$entityType] = $allFields->toArray();
+        return $this->cache['allFields'][$entityType];
     }
 
     public function getActiveLeads($filter = null, $withContacts = false) {

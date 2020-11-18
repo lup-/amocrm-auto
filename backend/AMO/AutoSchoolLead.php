@@ -451,6 +451,8 @@ class AutoSchoolLead
             'Контакт.Имя.Отчество'                   => $this->contactData->secondName(),
             'Контакт.Телефон'                        => $this->phone(),
             'Контакт.Телефон.Рабочий'                => $this->phone(),
+            'Бюджет'                                 => $this->price(),
+            'Бюджет.Прописью'                        => is_numeric($this->price()) ? $this->numberToText($this->price()) : '',
             'Сделка.Бюджет'                          => $this->price(),
             'Сделка.Бюджет.Прописью'                 => is_numeric($this->price()) ? $this->numberToText($this->price()) : '',
             'Сделка.Ответственный'                   => '',
@@ -490,7 +492,10 @@ class AutoSchoolLead
                 $fieldName = $this->getFieldName($field);
                 $fieldValue = $this->getFieldValue($field);
 
-                $replacementPairs[$fieldName] = $fieldValue;
+                $fieldIsEmpty = empty($replacementPairs[$fieldName]);
+                if ($fieldIsEmpty) {
+                    $replacementPairs[$fieldName] = $fieldValue;
+                }
                 $replacementPairs['Контакт.'.$fieldName] = $fieldValue;
 
                 if (is_numeric($fieldValue)) {

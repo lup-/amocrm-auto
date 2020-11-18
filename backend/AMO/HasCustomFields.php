@@ -4,6 +4,8 @@
 namespace AMO;
 
 
+use AmoCRM\Helpers\EntityTypesInterface;
+
 trait HasCustomFields
 {
     protected $parsedCustomFields = null;
@@ -37,19 +39,42 @@ trait HasCustomFields
     }
 
     public function customFields() {
-        $customFields = $this->rawData['custom_fields'];
-        if (empty($customFields)) {
-            $customFields = $this->rawData['custom_fields_values'];
+        $customFieldsValues = $this->rawData['custom_fields'];
+        if (empty($customFieldsValues)) {
+            $customFieldsValues = $this->rawData['custom_fields_values'];
         }
-        if (empty($customFields) && $this->rawData['_extra']) {
-            $customFields = $this->rawData['_extra']['custom_fields'];
+        if (empty($customFieldsValues) && $this->rawData['_extra']) {
+            $customFieldsValues = $this->rawData['_extra']['custom_fields'];
         }
 
-        if (empty($customFields)) {
+        if (empty($customFieldsValues)) {
             return [];
         }
 
-        return $customFields;
+        $entity = (self::class === AmoContact::class)
+                ? EntityTypesInterface::CONTACTS
+                : EntityTypesInterface::LEADS;
+
+        $allFields = AmoApi::getInstance()->getAllFields($entity);
+        $allFieldsWithValues = [];
+
+        foreach ($allFields as $emptyField) {
+            $foundValues = array_filter($customFieldsValues, function ($item) use ($emptyField) {
+                return $item['field_id'] === $emptyField['id'] || $item['id'] === $emptyField['id'];
+            });
+
+            if ($foundValues) {
+                $fieldWithValue = array_merge($emptyField, current($foundValues));
+            }
+            else {
+                $fieldWithValue = $emptyField;
+                $fieldWithValue['values'][0]['value'] = '';
+            }
+
+            $allFieldsWithValues[] = $fieldWithValue;
+        }
+
+        return $allFieldsWithValues;
     }
 
     private function parseCustomFields() {

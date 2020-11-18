@@ -70,6 +70,12 @@ switch ($_REQUEST['action']) {
         $groups = $activeLeads->getGroups(true);
         $group = $groups[$groupName];
 
+        if (!$group) {
+            $completeLeads = AmoApi::getInstance()->getCompletedLeads();
+            $completeGroups = $completeLeads->getGroups(true);
+            $group = $completeGroups[$groupName];
+        }
+
         if ($selectedLeads) {
             $group['leads'] = array_values( array_filter($group['leads'], function ($lead) use ($selectedLeads) {
                 return array_search($lead->id(), $selectedLeads) !== false;
