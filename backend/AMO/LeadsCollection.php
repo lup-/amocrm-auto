@@ -3,6 +3,7 @@ namespace AMO;
 
 
 use AmoCRM\Collections\ContactsCollection;
+use Google_Service_Calendar_Event;
 
 class LeadsCollection
 {
@@ -19,6 +20,8 @@ class LeadsCollection
      * @var DocsCollection
      */
     protected $docs;
+    protected $contacts;
+
 
     public static function fromDbResult($leads, $fields, $instructors) {
         return new self($leads, $fields, $instructors);
@@ -55,12 +58,14 @@ class LeadsCollection
     }
 
     public function setContacts(ContactsCollection $contacts) {
+        $this->contacts = $contacts;
+
         $contactHash = [];
         foreach ($contacts as $contact) {
             $contactHash[ $contact->getId() ] = $contact->toArray();
         }
 
-        $this->setContactsHash($contactHash);
+        return $this->setContactsHash($contactHash);
     }
 
     public function setContactsHash(array $contactHash = []) {
@@ -71,6 +76,31 @@ class LeadsCollection
                     $contactModel = AmoContact::createFromArray($contact);
                     $lead->setContactData($contactModel);
                 }
+            }
+        }
+
+        return $this;
+    }
+
+    public function setEvents($events = []) {
+        if (!$events) {
+            return false;
+        }
+
+        foreach ($this->leads as $lead) {
+            $name = $lead->name();
+            /**
+             * @var $foundEvent Google_Service_Calendar_Event
+             */
+            $foundEvent = false;
+            foreach ($events as $event) {
+                if ($name && $event->summary === $name) {
+                    $foundEvent = $event;
+                }
+            }
+
+            if ($foundEvent) {
+                $lead->setEvent($foundEvent);
             }
         }
 
@@ -208,6 +238,29 @@ class LeadsCollection
         return $instructorsData;
     }
 
+    public function getInstructorLeads($instructor) {
+        $filteredLeads = [];
+        foreach ($this->leads as $lead) {
+            $instructorField = $lead->findCustomField(398075);
+            $leadInstructor = $instructorField['values'][0]['value'];
+
+            if ($leadInstructor === $instructor) {
+                $filteredLeads[] = $lead->raw();
+            }
+        }
+
+        $resultCollection = new LeadsCollection($filteredLeads, $this->rawFields, $this->instructors);
+        if ($this->contacts) {
+            $resultCollection->setContacts($this->contacts);
+        }
+
+        if ($this->docs) {
+            $resultCollection->setDocs($this->docs);
+        }
+
+        return $resultCollection;
+    }
+
     public function getRawLeads() {
         return $this->rawLeads;
     }
@@ -218,5 +271,15 @@ class LeadsCollection
 
     public function getRawInstructors() {
         return $this->instructors;
+    }
+
+    public function asStudentArrays() {
+        $result = [];
+
+        foreach ($this->leads as $lead) {
+            $result[] = $lead->asStudentArray();
+        }
+
+        return $result;
     }
 }

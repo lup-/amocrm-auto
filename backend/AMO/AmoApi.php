@@ -256,6 +256,12 @@ class AmoApi
         return $this->getLeads($filter, $withContacts);
     }
 
+    function getActiveInstructorLeads($instructorId) {
+        $filter = new LeadsFilter();
+        $filter->setCustomFieldsValues([self::INSTRUCTOR_FIELD_ID => $instructorId]);
+        return $this->getActiveLeads($filter);
+    }
+
     public function getCompletedLeads($filter = null, $withContacts = false) {
         if (is_null($filter)) {
             $filter = new LeadsFilter();

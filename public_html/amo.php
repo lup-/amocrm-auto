@@ -135,16 +135,9 @@ switch ($requestType) {
         $instructorId = $_GET['instructorId'];
 
         if ($instructorId) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoInterface($cookieFileName);
-            authAmoApi($cookieFileName);
-
-            $allApiLeadsResponse = loadApiLeads($cookieFileName);
-            $allApiLeads = $allApiLeadsResponse['_embedded']['items'];
-
-            $instructors = loadInstructorIds($cookieFileName);
-            $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $instructorId);
-            $leads = joinLeads($leadsResponse['response']['items'], $allApiLeads);
+            $instructors = AmoApi::getInstance()->getInstructorIds();
+            $instructor = $instructors[$instructorId];
+            $leads = AmoApi::getInstance()->getActiveLeads(null, true)->getInstructorLeads($instructor);
 
             $client = getClient('../token.json');
             $service = new Google_Service_Calendar($client);
@@ -152,12 +145,13 @@ switch ($requestType) {
             $timestamp = (new DateTime())->getTimestamp();
             $events = getAllEvents($service, $calendarId, $timestamp);
 
-            $contactsAndHours = getContactsDataScheduleFromLeadsAndEvents($leads, $events);
-            $groups = getGroupsInfo($leads);
+            $leads->setEvents($events);
+            $contactsAndHours = $leads->asStudentArrays();
+            $groups = $leads->getGroups(true);
 
             header("Content-type: application/json; charset=utf-8");
             echo json_encode([
-                "instructor" => $instructors[$instructorId],
+                "instructor" => $instructor,
                 "leads"      => $contactsAndHours,
                 "groups"     => $groups,
             ]);

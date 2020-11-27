@@ -480,9 +480,11 @@ function loadLeadReplacementPairs($cookieFileName, $leadId) {
 function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
     $contactsAndHours = [];
     foreach ($leadsData as $leadData) {
-        $schoolLead = AMO\AutoSchoolLead::createFromArray($leadData);
+        $schoolLead = get_class($leadData) === AMO\AutoSchoolLead::class
+            ? $leadData
+            : AMO\AutoSchoolLead::createFromArray($leadData);
 
-        $name = $leadData['main_contact']['name'];
+        $name = $schoolLead->name();
         /**
          * @var $foundEvent Google_Service_Calendar_Event
          */
@@ -494,19 +496,6 @@ function getContactsDataScheduleFromLeadsAndEvents($leadsData, $eventsData) {
         }
 
         $contactsAndHours[ $leadData['id'] ] = $schoolLead->asStudentArray($foundEvent);
-        /*$contactsAndHours[ $leadData['id'] ] = [
-            'contact'     => $name,
-            'contactId'   => $schoolLead->contactId(),
-            'hours'       => $leadData['cf' . HOURS_FIELD_ID],
-            'neededHours' => $leadData['cf' . NEEDED_HOURS_FIELD_ID],
-            'debt'        => $schoolLead->totalDebt(),
-            'paymentOverdue' => $schoolLead->getPaymentOverdueDays($leadData),
-            'gsmPayment'  => $leadData['cf561445'],
-            'phone'       => $schoolLead->phone(),
-            'group'       => $schoolLead->group(),
-            'schedule'    => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
-            'instructor'  => $leadData['cf' . INSTRUCTOR_FIELD_ID],
-        ];*/
     }
 
     return $contactsAndHours;

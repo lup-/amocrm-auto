@@ -16,6 +16,7 @@ class AutoSchoolLead
     protected $sidePaymentFields = [587233, 561445];
 
     protected $docs = [];
+    protected $event = false;
 
     /**
      * @var AmoContact
@@ -40,6 +41,10 @@ class AutoSchoolLead
      */
     public function setContactData(AmoContact $contactData) {
         $this->contactData = $contactData;
+    }
+
+    public function setEvent($event) {
+        $this->event = $event;
     }
 
     public function fetchContactData() {
@@ -401,6 +406,8 @@ class AutoSchoolLead
     }
 
     public function asStudentArray($foundEvent = false) {
+        $event = $this->event ? $this->event : $foundEvent;
+
         return [
             'id'             => $this->id(),
             'name'           => $this->name(),
@@ -416,7 +423,7 @@ class AutoSchoolLead
             'gsmPayment'     => $this->getPaymentValue(561445),
             'phone'          => $this->phone(),
             'group'          => $this->group(),
-            'schedule'       => $foundEvent !== false ? $foundEvent->getStart()->getDateTime() : false,
+            'schedule'       => $event !== false ? $event->getStart()->getDateTime() : false,
             'instructor'     => $this->instructor(),
             'docs'           => $this->docs,
         ];
@@ -536,5 +543,9 @@ class AutoSchoolLead
         }
 
         return $replacementPairs;
+    }
+
+    public function raw() {
+        return $this->rawData;
     }
 }
