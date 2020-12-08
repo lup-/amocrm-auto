@@ -9,6 +9,7 @@ class AutoSchoolLead
     use HasCustomFields;
 
     protected $rawData;
+    const HOUR_PRICE = 275;
 
     protected $dateFormat = "d.m.Y";
     protected $paymentFields = [413511, 413515, 413517, 413519, 571769];
@@ -41,6 +42,13 @@ class AutoSchoolLead
      */
     public function setContactData(AmoContact $contactData) {
         $this->contactData = $contactData;
+    }
+
+    /**
+     * @return AmoContact
+     */
+    public function getContactData() {
+        return $this->contactData;
     }
 
     public function setEvent($event) {
@@ -101,9 +109,9 @@ class AutoSchoolLead
     }
     public function contactId() {
         $contact = isset($this->rawData['contacts'])
-            ? $this->rawData['contacts'][0]
-            : $this->rawData['main_contact'];
-        return $contact['id'];
+            ? @$this->rawData['contacts'][0]
+            : @$this->rawData['main_contact'];
+        return @$contact['id'];
     }
     public function name() {
         if ($this->contactData) {
@@ -111,9 +119,9 @@ class AutoSchoolLead
         }
 
         $contact = isset($this->rawData['contacts'])
-            ? $this->rawData['contacts'][0]
-            : $this->rawData['main_contact'];
-        return $contact['name'];
+            ? @$this->rawData['contacts'][0]
+            : @$this->rawData['main_contact'];
+        return @$contact['name'];
     }
     public function phone() {
         $phone = $this->getPhoneField(389479);
@@ -415,7 +423,7 @@ class AutoSchoolLead
             'contactId'      => $this->contactId(),
             'hours'          => $this->hours(),
             'neededHours'    => $this->neededHours(),
-            'salary'         => $this->hours() * HOUR_PRICE,
+            'salary'         => $this->hours() * self::HOUR_PRICE,
             'success'        => $this->isSuccessful(),
             'dateFinished'   => $this->finishedDate(),
             'debt'           => $this->totalDebt(),
@@ -427,6 +435,16 @@ class AutoSchoolLead
             'instructor'     => $this->instructor(),
             'docs'           => $this->docs,
         ];
+    }
+
+    public function asDatabaseArray() {
+        $result = $this->raw();
+        $contact = $this->getContactData();
+        $result['_parsed'] = $this->asStudentArray();
+        if ($contact) {
+            $result['_contact'] = $contact->raw();
+        }
+        return $result;
     }
 
     private function getFieldName($field) {

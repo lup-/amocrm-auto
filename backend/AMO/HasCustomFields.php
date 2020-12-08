@@ -39,7 +39,7 @@ trait HasCustomFields
     }
 
     public function customFields() {
-        $customFieldsValues = $this->rawData['custom_fields'];
+        $customFieldsValues = @$this->rawData['custom_fields'];
         if (empty($customFieldsValues)) {
             $customFieldsValues = $this->rawData['custom_fields_values'];
         }
@@ -60,7 +60,7 @@ trait HasCustomFields
 
         foreach ($allFields as $emptyField) {
             $foundValues = array_filter($customFieldsValues, function ($item) use ($emptyField) {
-                return $item['field_id'] === $emptyField['id'] || $item['id'] === $emptyField['id'];
+                return @$item['field_id'] === @$emptyField['id'] || @$item['id'] === @$emptyField['id'];
             });
 
             if ($foundValues) {
@@ -99,7 +99,7 @@ trait HasCustomFields
             $this->parseCustomFields();
         }
 
-        return $this->parsedCustomFields[$fieldId];
+        return @$this->parsedCustomFields[$fieldId];
     }
 
     public function getCustomFieldName($fieldId) {
@@ -131,7 +131,7 @@ trait HasCustomFields
         }
 
         preg_match('#^[\d \.,]+#', $fieldValue, $matches);
-        if ($matches[0]) {
+        if (@$matches[0]) {
             $preparedValue = preg_replace('#\W#', '', $matches[0]);
 
             $this->cachedFields['payment'][$fieldId] = intval($preparedValue);

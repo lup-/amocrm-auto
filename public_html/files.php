@@ -64,17 +64,9 @@ switch ($_REQUEST['action']) {
 
         $date = (new DateTime())->format('d.m.Y');
 
-        //$activeLeads = Database::getInstance()->loadActiveLeads();
-        $activeLeads = AmoApi::getInstance()->getActiveLeads();
-
-        $groups = $activeLeads->getGroups(true);
+        $groupLeads = Database::getInstance()->loadGroupLeads($groupName);
+        $groups = $groupLeads->getGroups(true);
         $group = $groups[$groupName];
-
-        if (!$group) {
-            $completeLeads = AmoApi::getInstance()->getCompletedLeads();
-            $completeGroups = $completeLeads->getGroups(true);
-            $group = $completeGroups[$groupName];
-        }
 
         if ($selectedLeads) {
             $group['leads'] = array_values( array_filter($group['leads'], function ($lead) use ($selectedLeads) {

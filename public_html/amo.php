@@ -23,28 +23,8 @@ switch ($requestType) {
         echo json_encode($instructors);
     break;
     case 'getAdminData':
-        //$loadFromAMO = $_GET['loadFromAMO'] === '1';
-        $loadFromAMO = true;
-
-        $instructors = AmoApi::getInstance()->getInstructorIds();
-        if ($loadFromAMO) {
-            $contactsHash = AmoApi::getInstance()->getContactsHash();
-
-            $activeLeads = AmoApi::getInstance()->getActiveLeads();
-            $activeLeads->setContactsHash($contactsHash);
-            $activeLeads->setInstructors($instructors);
-
-            $completeLeads = AmoApi::getInstance()->getCompletedLeads();
-            $completeLeads->setContactsHash($contactsHash);
-            $completeLeads->setInstructors($instructors);
-
-            //Database::getInstance()->updateLeads( $activeLeads );
-            //Database::getInstance()->updateLeads( $completeLeads, true );
-        }
-        else {
-            $activeLeads = Database::getInstance()->loadActiveLeads();
-            $completeLeads = Database::getInstance()->loadCompleteLeads();
-        }
+        $activeLeads = Database::getInstance()->loadActiveLeads();
+        $completeLeads = Database::getInstance()->loadCompleteLeads();
 
         $docs = Database::getInstance()->loadAllDocs();
         $activeLeads->setDocs($docs);
@@ -137,7 +117,7 @@ switch ($requestType) {
         if ($instructorId) {
             $instructors = AmoApi::getInstance()->getInstructorIds();
             $instructor = $instructors[$instructorId];
-            $leads = AmoApi::getInstance()->getActiveLeads(null, true)->getInstructorLeads($instructor);
+            $leads = Database::getInstance()->loadActiveInstructorLeads($instructor);
 
             $client = getClient('../token.json');
             $service = new Google_Service_Calendar($client);

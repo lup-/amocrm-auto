@@ -58,4 +58,8 @@ class AmoContact
             'phone'          => $this->phone(),
         ];
     }
+
+    public function raw() {
+        return $this->rawData;
+    }
 }

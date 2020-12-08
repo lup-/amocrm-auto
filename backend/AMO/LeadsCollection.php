@@ -71,7 +71,7 @@ class LeadsCollection
     public function setContactsHash(array $contactHash = []) {
         foreach ($this->leads as $lead) {
             if ($lead->contactId()) {
-                $contact = $contactHash[ $lead->contactId() ];
+                $contact = @$contactHash[ $lead->contactId() ];
                 if ($contact) {
                     $contactModel = AmoContact::createFromArray($contact);
                     $lead->setContactData($contactModel);
@@ -113,7 +113,24 @@ class LeadsCollection
         $this->instructors = $instructors;
 
         foreach ($this->rawLeads as $lead) {
-            $this->leads[] = new AutoSchoolLead($lead);
+            $contact = false;
+
+            if (isset($lead['_parsed'])) {
+                unset($lead['_parsed']);
+            }
+
+            if (isset($lead['_contact'])) {
+                $contact = $lead['_contact'];
+                unset($lead['_contact']);
+            }
+
+            $leadModel = new AutoSchoolLead($lead);
+            if ($contact) {
+                $contactModel = AmoContact::createFromArray($contact);
+                $leadModel->setContactData($contactModel);
+            }
+
+            $this->leads[] = $leadModel;
         }
     }
 
@@ -259,6 +276,10 @@ class LeadsCollection
         }
 
         return $resultCollection;
+    }
+
+    public function getLeads() {
+        return $this->leads;
     }
 
     public function getRawLeads() {

@@ -63,8 +63,29 @@ class AmoApi
         return $this;
     }
 
+    private function getEnvVar($varName, $default = false) {
+        if (isset($_SERVER[$varName])) {
+            return $_SERVER[$varName];
+        }
+
+        if (isset($_ENV[$varName])) {
+            return $_ENV[$varName];
+        }
+
+        return $default;
+    }
+
+    private function getTokenPath() {
+        $tokenPath = $this->getEnvVar('AMO_TOKEN_PATH');
+        if (!$tokenPath) {
+            $tokenPath = __DIR__ . "/../../" . $this->getEnvVar('AMO_TOKEN_FILE', 'amo_token.json');
+        }
+
+        return $tokenPath;
+    }
+
     private function loadToken() {
-        $tokenPath = __DIR__ . "/../../" . $_ENV['AMO_TOKEN_FILE'];
+        $tokenPath = $this->getTokenPath();
         $accessToken = json_decode(file_get_contents($tokenPath), true);
 
         return new AccessToken([
@@ -76,11 +97,11 @@ class AmoApi
     }
 
     private function makeApiClient() {
-        $tokenPath = __DIR__ . "/../../" . $_ENV['AMO_TOKEN_FILE'];
+        $tokenPath = $this->getTokenPath();;
 
-        $clientId = $_ENV['AMO_CLIENT_ID'];
-        $clientSecret = $_ENV['AMO_CLIENT_SECRET'];
-        $redirectUri = $_ENV['AMO_CLIENT_REDIRECT_URI'];
+        $clientId = $this->getEnvVar('AMO_CLIENT_ID');
+        $clientSecret = $this->getEnvVar('AMO_CLIENT_SECRET');
+        $redirectUri = $this->getEnvVar('AMO_CLIENT_REDIRECT_URI');
 
         $this->apiClient = new AmoCRMApiClient($clientId, $clientSecret, $redirectUri);
         $this->apiClient->setAccountBaseDomain($this->baseDomain);
@@ -179,13 +200,21 @@ class AmoApi
         return $leadsCollection;
     }
 
+    public function getLeadById($leadId) {
+        $leadsService = $this->apiClient->leads();
+        $amoLead = $leadsService->getOne($leadId, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
+        $lead = new AutoSchoolLead($amoLead->toArray());
+        $lead->fetchContactData();
+        return $lead;
+    }
+
     public function getAllPipelines() {
         $pipelineService = $this->apiClient->pipelines();
         return $pipelineService->get();
     }
 
     public function getAllStatuses() {
-        if ($this->cache['allStatuses']) {
+        if (@$this->cache['allStatuses']) {
             return $this->cache['allStatuses'];
         }
 
@@ -244,6 +273,24 @@ class AmoApi
                     continue;
                 }
 
+                $filterStatuses[] = [
+                    'status_id'   => $status->getId(),
+                    'pipeline_id' => $status->getPipelineId(),
+                ];
+            }
+        }
+
+        $filter->setStatuses($filterStatuses);
+
+        return $this->getLeads($filter, $withContacts);
+    }
+
+    public function getAllLeads($withContacts = false) {
+        $filter = new LeadsFilter();
+
+        $filterStatuses = [];
+        foreach ($this->getAllStatuses() as $pipelineId => $pipeStatuses) {
+            foreach ($pipeStatuses as $status) {
                 $filterStatuses[] = [
                     'status_id'   => $status->getId(),
                     'pipeline_id' => $status->getPipelineId(),

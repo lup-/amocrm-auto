@@ -7,6 +7,19 @@ use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 
+function getEnvVar($varName, $default = false) {
+    if (isset($_SERVER[$varName])) {
+        return $_SERVER[$varName];
+    }
+
+    if (isset($_ENV[$varName])) {
+        return $_ENV[$varName];
+    }
+
+    return $default;
+}
+
+
 class Database
 {
     /**
@@ -29,11 +42,12 @@ class Database
     }
 
     public function __construct() {
-        $mongoHost = getenv('MONGO_HOST');
-        $mongoDSN = "mongodb://${mongoHost}/";
+        $mongoHost = getEnvVar('MONGO_HOST');
+        $mongoPort = getEnvVar('MONGO_PORT', 27017);
+        $mongoDSN = "mongodb://${mongoHost}:${mongoPort}/";
 
         $this->mongo = new Manager($mongoDSN);
-        $this->dbName = getenv('MONGO_DB');
+        $this->dbName = getEnvVar('MONGO_DB');
     }
 
     private function getFullCollectionName($shortName) {
@@ -62,48 +76,67 @@ class Database
         return $doc;
     }
 
-    public function updateLeads(LeadsCollection $leads, $updateSuccessfulLeads = false) {
+    public function updateLeads(LeadsCollection $leads) {
         $leadsBulk = new BulkWrite;
         $fieldsBulk = new BulkWrite;
         $instructorsBulk = new BulkWrite;
+        $groupsBulk = new BulkWrite;
 
-        $leadsCollection = $this->getFullCollectionName($updateSuccessfulLeads ? 'amo_successful_leads' : 'amo_leads');
+        $leadsCollection = $this->getFullCollectionName('amo_leads');
 
         $leadsBulk->delete([]);
-        foreach ($leads->getRawLeads() as $lead) {
+        foreach ($leads->getLeads() as $lead) {
+            $leadData = $lead->asDatabaseArray();
             $newId = new ObjectID;
-            $lead['_id'] = $newId;
-            $leadsBulk->insert($lead);
+            $leadData['_id'] = $newId;
+            $leadsBulk->insert($leadData);
         }
 
         $this->mongo->executeBulkWrite($leadsCollection, $leadsBulk);
 
-        if (!$updateSuccessfulLeads) {
-            $fieldsCollection = $this->getFullCollectionName('amo_fields');
-            $instructorsCollection = $this->getFullCollectionName('amo_instructors');
+        $fieldsCollection = $this->getFullCollectionName('amo_fields');
+        $instructorsCollection = $this->getFullCollectionName('amo_instructors');
+        $groupsCollection = $this->getFullCollectionName('amo_groups');
 
-            $fieldsBulk->delete([]);
-            foreach ($leads->getRawFields() as $field) {
-                $newId = new ObjectID;
-                $field['_id'] = $newId;
-                $fieldsBulk->insert($field);
-            }
-
-            $instructorsBulk->delete([]);
-            foreach ($leads->getRawInstructors() as $instructorId => $instructorName) {
-                $newId = new ObjectID;
-                $instructor['_id'] = $newId;
-                $instructorsBulk->insert([
-                    "id"   => $instructorId,
-                    "name" => $instructorName
-                ]);
-            }
-
-            $this->mongo->executeBulkWrite($fieldsCollection, $fieldsBulk);
-            $this->mongo->executeBulkWrite($instructorsCollection, $instructorsBulk);
+        $fieldsBulk->delete([]);
+        foreach ($leads->getRawFields() as $field) {
+            $newId = new ObjectID;
+            $field['_id'] = $newId;
+            $fieldsBulk->insert($field);
         }
 
+        $instructorsBulk->delete([]);
+        foreach ($leads->getRawInstructors() as $instructorId => $instructorName) {
+            $newId = new ObjectID;
+            $instructor['_id'] = $newId;
+            $instructorsBulk->insert([
+                "id"   => $instructorId,
+                "name" => $instructorName
+            ]);
+        }
+
+        $groupsBulk->delete([]);
+        foreach ($leads->getGroups() as $group) {
+            $newId = new ObjectID;
+            $instructor['_id'] = $newId;
+            $groupsBulk->insert($group);
+        }
+
+        $this->mongo->executeBulkWrite($fieldsCollection, $fieldsBulk);
+        $this->mongo->executeBulkWrite($instructorsCollection, $instructorsBulk);
+        $this->mongo->executeBulkWrite($groupsCollection, $groupsBulk);
+
         return $this;
+    }
+
+    public function updateLead(AutoSchoolLead $lead) {
+        $operations = new BulkWrite;
+        $leads = $this->getFullCollectionName('amo_leads');
+
+        $filter = ["id" => $lead->id()];
+        $operations->update($filter, $lead->asDatabaseArray(), ["upsert" => true]);
+
+        $this->mongo->executeBulkWrite($leads, $operations);
     }
 
     private function mongoToArray($cursor) {
@@ -153,10 +186,14 @@ class Database
         return $instructors;
     }
 
-    public function loadActiveLeads() {
+    private function finishedStatuses() {
+        return [AmoApi::STATUS_SUCCESS, AmoApi::STATUS_CANCELED];
+    }
+
+    public function loadFilteredLeads($filter = []) {
         $leadsCollection = $this->getFullCollectionName('amo_leads');
 
-        $cursor = $this->mongo->executeQuery($leadsCollection, new Query([]));
+        $cursor = $this->mongo->executeQuery($leadsCollection, new Query($filter));
         $leads = $this->mongoToArray($cursor);
 
         $fields = $this->loadFields();
@@ -165,16 +202,37 @@ class Database
         return LeadsCollection::fromDbResult($leads, $fields, $instructors);
     }
 
+    public function loadActiveLeads() {
+        return $this->loadFilteredLeads([
+            'status_id' => ['$nin' => $this->finishedStatuses()]
+        ]);
+     }
+
     public function loadCompleteLeads() {
-        $leadsCollection = $this->getFullCollectionName('amo_successful_leads');
+        return $this->loadFilteredLeads([
+            'status_id' => ['$in' => $this->finishedStatuses()]
+        ]);
+    }
 
-        $cursor = $this->mongo->executeQuery($leadsCollection, new Query([]));
-        $leads = $this->mongoToArray($cursor);
+    public function loadActiveInstructorLeads($instructorFullName) {
+        return $this->loadFilteredLeads([
+            'status_id' => ['$nin' => $this->finishedStatuses()],
+            '_parsed.instructor' => $instructorFullName,
+        ]);
+    }
 
-        $fields = $this->loadFields();
-        $instructors = $this->loadInstructors();
+    public function loadGroupLeads($groupName) {
+        return $this->loadFilteredLeads([
+            '_parsed.group' => $groupName,
+        ]);
+    }
 
-        return LeadsCollection::fromDbResult($leads, $fields, $instructors);
+    public function loadLeadByContactId($contactId) {
+        $leads = $this->loadFilteredLeads([
+            '_parsed.contactId' => $contactId,
+        ])->getLeads();
+
+        return $leads && $leads[0] ? $leads[0] : false;
     }
 
     public function deleteDocByGoogleId($googleId) {
