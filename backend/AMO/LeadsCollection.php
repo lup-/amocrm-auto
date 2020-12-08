@@ -1,7 +1,6 @@
 <?php
 namespace AMO;
 
-
 use AmoCRM\Collections\ContactsCollection;
 use Google_Service_Calendar_Event;
 
@@ -212,7 +211,7 @@ class LeadsCollection
                 $groups[$groupName]['people'] += 1;
                 $hours = $lead->hours();
                 $groups[$groupName]['totalHours'] += $hours;
-                $groups[$groupName]['salary'] += $hours * HOUR_PRICE;
+                $groups[$groupName]['salary'] += $hours * AutoSchoolLead::HOUR_PRICE;
                 $groups[$groupName]['students'][] = $lead->asStudentArray();
 
                 if ($withLeads) {
