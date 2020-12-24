@@ -2,11 +2,19 @@
 
 namespace AMO;
 
+use AmoCRM\Collections\CustomFieldsValuesCollection;
 use AmoCRM\Exceptions\AmoCRMApiNoContentException;
 use AmoCRM\Filters\ContactsFilter;
 use AmoCRM\Filters\LeadsFilter;
 use AmoCRM\Helpers\EntityTypesInterface;
 use AmoCRM\Models\ContactModel;
+use AmoCRM\Models\CustomFields\NumericCustomFieldModel;
+use AmoCRM\Models\CustomFieldsValues\NumericCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\TextCustomFieldValuesModel;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\NullCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
 use AmoCRM\Models\LeadModel;
 use \League\OAuth2\Client\Token\AccessToken;
 use AmoCRM\Client\AmoCRMApiClient;
@@ -23,10 +31,8 @@ class AmoApi
     private $pipeline = ['1191751', '3469660'];
 
     private $baseDomain = "mailjob.amocrm.ru";
-    private $authUrl = 'https://mailjob.amocrm.ru/private/api/auth.php';
     private $contactUrl = 'https://mailjob.amocrm.ru/api/v2/contacts';
     private $notesUrl = 'https://mailjob.amocrm.ru/api/v2/notes';
-    private $leadsUrl = 'https://mailjob.amocrm.ru/api/v2/leads';
 
     /**
      * @var AmoCRMApiClient
@@ -47,6 +53,7 @@ class AmoApi
 
     const GROUP_FIELD_ID = 580073;
     const INSTRUCTOR_FIELD_ID = 398075;
+    const HOURS_FIELD_ID = 552963;
 
     public function __construct() {
         $this->cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
@@ -403,6 +410,36 @@ class AmoApi
         $filter->setCustomFieldsValues([(string) self::GROUP_FIELD_ID => $groupId]);
 
         return $this->getActiveLeads($filter);
+    }
+
+    public function setLeadHours($leadId, $newHours) {
+        $lead = $this->apiClient->leads()->getOne($leadId);
+
+        $customFields = $lead->getCustomFieldsValues();
+
+        if (empty($customFields)) {
+            $customFields = new CustomFieldsValuesCollection();
+        }
+
+        $hoursField = $customFields->getBy('fieldId', self::HOURS_FIELD_ID);
+        if (empty($hoursField)) {
+            $hoursField = (new NumericCustomFieldValuesModel())->setFieldId(self::HOURS_FIELD_ID);
+            $customFields->add($hoursField);
+        }
+
+        if (!empty($newHours)) {
+            $fieldValues = new NumericCustomFieldValueCollection();
+            $fieldValues->add((new NumericCustomFieldValueModel())->setValue($newHours));
+        }
+        else {
+            $fieldValues = new NullCustomFieldValueCollection();
+        }
+        $hoursField->setValues($fieldValues);
+
+        $lead->setCustomFieldsValues($customFields);
+        $this->apiClient->leads()->updateOne($lead);
+
+        return $this->getSingleLead($leadId, true);
     }
 
     /**

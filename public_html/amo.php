@@ -149,10 +149,8 @@ switch ($requestType) {
         $hours = $_GET['hours'];
 
         if ($leadId) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoApi($cookieFileName);
-
-            setLeadHours($leadId, $hours, $cookieFileName);
+            $lead = AmoApi::getInstance()->setLeadHours($leadId, $hours);
+            Database::getInstance()->updateLead($lead);
         }
     break;
     case 'addNote':
