@@ -447,6 +447,32 @@ class AutoSchoolLead
         return $result;
     }
 
+    public function asUserArray() {
+        $hours = $this->getCustomFieldValue(552963);
+        $exam = $this->getDateValue(540659);
+
+        return [
+            "ФИО"             => $this->name(),
+            "Категория"       => $this->getCustomFieldValue(405003),
+            "Группа"          => $this->group(),
+            "Коробка"         => $this->getCustomFieldValue(389859),
+            "Откат по часам"  => $hours ? $hours : 0,
+            "Стоимость"       => $this->studyPrice() ? $this->studyPrice() : 'не указана',
+            "Остаток"         => $this->paymentDetails(),
+            "Медкомиссия"   => [
+                "Серия, номер, лицензия" => $this->getCustomFieldValue(413345),
+                "Кем выдано"             => $this->getCustomFieldValue(413347),
+                "Когда выдано"           => $this->getCustomFieldValue(542317),
+            ],
+            "Сертификат" => [
+                "Серия, номер" => $this->getCustomFieldValue(413337),
+                "Кем выдано"   => $this->getCustomFieldValue(413343),
+                "Когда выдано" => $this->getCustomFieldValue(542325),
+            ],
+            "Экзамен в ГИБДД" => $exam ? $exam : '-',
+        ];
+    }
+
     private function getFieldName($field) {
         return isset($field['name'])
             ? $field['name']

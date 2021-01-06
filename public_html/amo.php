@@ -158,20 +158,17 @@ switch ($requestType) {
         $text = $_GET['text'];
 
         if ($leadId) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoApi($cookieFileName);
-
-            addNoteToLead($leadId, $text, $cookieFileName);
+            $notes = AmoApi::getInstance()->addLeadNote($leadId, $text);
+            header("Content-type: application/json; charset=utf-8");
+            echo json_encode($notes);
         }
     break;
     case 'getLead':
         $leadId = $_GET['leadId'];
 
         if ($leadId) {
-            $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-            authAmoApi($cookieFileName);
-
-            $leadData = loadLeadWithExtraDataAndFilterFields($cookieFileName, $leadId);
+            $lead = AmoApi::getInstance()->getSingleLead($leadId, true);
+            $leadData = $lead->asUserArray();
 
             header("Content-type: application/json; charset=utf-8");
             echo json_encode($leadData);

@@ -3,6 +3,7 @@
 namespace AMO;
 
 use AmoCRM\Collections\CustomFieldsValuesCollection;
+use AmoCRM\Collections\NotesCollection;
 use AmoCRM\Exceptions\AmoCRMApiNoContentException;
 use AmoCRM\Filters\ContactsFilter;
 use AmoCRM\Filters\LeadsFilter;
@@ -16,6 +17,7 @@ use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCol
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
 use AmoCRM\Models\LeadModel;
+use AmoCRM\Models\NoteType\CommonNote;
 use \League\OAuth2\Client\Token\AccessToken;
 use AmoCRM\Client\AmoCRMApiClient;
 use League\OAuth2\Client\Token\AccessTokenInterface;
@@ -440,6 +442,17 @@ class AmoApi
         $this->apiClient->leads()->updateOne($lead);
 
         return $this->getSingleLead($leadId, true);
+    }
+
+    public function addLeadNote($leadId, $text) {
+        $notes = $this->apiClient->notes(EntityTypesInterface::LEADS);
+        $note = new CommonNote();
+        $note->setEntityId($leadId)->setText($text);
+
+        $newNotes = new NotesCollection();
+        $newNotes->add($note);
+
+        return $notes->add($newNotes);
     }
 
     /**
