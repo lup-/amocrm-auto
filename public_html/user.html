@@ -92,7 +92,7 @@
                                 let paymentLeft = parseInt(fieldValue['Остаток']) > 0;
 
                                 if (paymentLeft) {
-                                    let paymentButtonHTML = `<a class="btn btn-success btn-block mt-2" href="https://voa-driving.ru/stranica-oplaty/" target="_blank">Оплатить</a>`;
+                                    let paymentButtonHTML = `<a class="btn btn-success btn-block mt-2" href="https://voa-driving.ru/stranica-oplaty/" target="_blank">Оплатить ВОА</a><a class="btn btn-success btn-block mt-2" href="https://kurs-drive.ru/oplata-onlajn/" target="_blank">Оплатить КУРС</a>`;
                                     $('#fieldsList [data-field="Остаток"]').append(paymentButtonHTML);
                                 }
                             }
