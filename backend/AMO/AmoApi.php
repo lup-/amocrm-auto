@@ -16,6 +16,7 @@ use AmoCRM\Models\CustomFieldsValues\ValueCollections\NullCustomFieldValueCollec
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\NumericCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueCollections\TextCustomFieldValueCollection;
 use AmoCRM\Models\CustomFieldsValues\ValueModels\NumericCustomFieldValueModel;
+use AmoCRM\Models\CustomFieldsValues\ValueModels\TextCustomFieldValueModel;
 use AmoCRM\Models\LeadModel;
 use AmoCRM\Models\NoteType\CommonNote;
 use \League\OAuth2\Client\Token\AccessToken;
@@ -56,6 +57,7 @@ class AmoApi
     const GROUP_FIELD_ID = 580073;
     const INSTRUCTOR_FIELD_ID = 398075;
     const HOURS_FIELD_ID = 552963;
+    const LINK_FIELD_ID = 559905;
 
     public function __construct() {
         $this->cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
@@ -432,6 +434,36 @@ class AmoApi
         if (!empty($newHours)) {
             $fieldValues = new NumericCustomFieldValueCollection();
             $fieldValues->add((new NumericCustomFieldValueModel())->setValue($newHours));
+        }
+        else {
+            $fieldValues = new NullCustomFieldValueCollection();
+        }
+        $hoursField->setValues($fieldValues);
+
+        $lead->setCustomFieldsValues($customFields);
+        $this->apiClient->leads()->updateOne($lead);
+
+        return $this->getSingleLead($leadId, true);
+    }
+    public function setLeadLink($leadId) {
+        $link = "http://amo-auto.humanistic.tech/user.html?id=".$leadId;
+        $lead = $this->apiClient->leads()->getOne($leadId);
+
+        $customFields = $lead->getCustomFieldsValues();
+
+        if (empty($customFields)) {
+            $customFields = new CustomFieldsValuesCollection();
+        }
+
+        $hoursField = $customFields->getBy('fieldId', self::LINK_FIELD_ID);
+        if (empty($hoursField)) {
+            $hoursField = (new TextCustomFieldValuesModel())->setFieldId(self::LINK_FIELD_ID);
+            $customFields->add($hoursField);
+        }
+
+        if (!empty($newHours)) {
+            $fieldValues = new TextCustomFieldValueCollection();
+            $fieldValues->add((new TextCustomFieldValueModel())->setValue($link));
         }
         else {
             $fieldValues = new NullCustomFieldValueCollection();

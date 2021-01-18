@@ -436,7 +436,6 @@ class AutoSchoolLead
             'docs'           => $this->docs,
         ];
     }
-
     public function asDatabaseArray() {
         $result = $this->raw();
         $contact = $this->getContactData();
@@ -446,7 +445,6 @@ class AutoSchoolLead
         }
         return $result;
     }
-
     public function asUserArray() {
         $hours = $this->getCustomFieldValue(552963);
         $exam = $this->getDateValue(540659);
@@ -478,11 +476,9 @@ class AutoSchoolLead
             ? $field['name']
             : $field['field_name'];
     }
-
     private function getFieldValue($field) {
         return $field['values'][0]['value'];
     }
-
     public function asReplacementPairs() {
         if (!$this->contactData) {
             $this->fetchContactData();
