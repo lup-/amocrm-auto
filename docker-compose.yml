@@ -22,6 +22,7 @@ services:
     - ".:/var/www"
     - "./public_html:/var/www/public"
     - "./etc/php/log-stdout.conf:/usr/local/etc/php-fpm.d/zz-log.conf"
+    - "./etc/php/fpmvars.conf:/usr/local/etc/php-fpm.d/zzz-fpmvars.conf"
     - "./etc/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini"
     - "./etc/php/options.ini:/usr/local/etc/php/conf.d/options.ini"
     environment:

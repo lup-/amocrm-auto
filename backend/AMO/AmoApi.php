@@ -455,25 +455,25 @@ class AmoApi
             $customFields = new CustomFieldsValuesCollection();
         }
 
-        $hoursField = $customFields->getBy('fieldId', self::LINK_FIELD_ID);
-        if (empty($hoursField)) {
-            $hoursField = (new TextCustomFieldValuesModel())->setFieldId(self::LINK_FIELD_ID);
-            $customFields->add($hoursField);
+        $linkField = $customFields->getBy('fieldId', self::LINK_FIELD_ID);
+        if (empty($linkField)) {
+            $linkField = (new TextCustomFieldValuesModel())->setFieldId(self::LINK_FIELD_ID);
+            $customFields->add($linkField);
         }
 
-        if (!empty($newHours)) {
+        if (!empty($link)) {
             $fieldValues = new TextCustomFieldValueCollection();
             $fieldValues->add((new TextCustomFieldValueModel())->setValue($link));
         }
         else {
             $fieldValues = new NullCustomFieldValueCollection();
         }
-        $hoursField->setValues($fieldValues);
+        $linkField->setValues($fieldValues);
 
         $lead->setCustomFieldsValues($customFields);
         $this->apiClient->leads()->updateOne($lead);
 
-        return $this->getSingleLead($leadId, true);
+        return $this->getSingleLead($leadId, false);
     }
 
     public function addLeadNote($leadId, $text) {
