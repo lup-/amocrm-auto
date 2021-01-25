@@ -460,12 +460,12 @@ class AutoSchoolLead
             "Медкомиссия"   => [
                 "Серия, номер, лицензия" => $this->getCustomFieldValue(413345),
                 "Кем выдано"             => $this->getCustomFieldValue(413347),
-                "Когда выдано"           => $this->getCustomFieldValue(542317),
+                "Когда выдано"           => $this->getDateValue(542317),
             ],
             "Сертификат" => [
                 "Серия, номер" => $this->getCustomFieldValue(413337),
                 "Кем выдано"   => $this->getCustomFieldValue(413343),
-                "Когда выдано" => $this->getCustomFieldValue(542325),
+                "Когда выдано" => $this->getDateValue(542325),
             ],
             "Экзамен в ГИБДД" => $exam ? $exam : '-',
         ];
