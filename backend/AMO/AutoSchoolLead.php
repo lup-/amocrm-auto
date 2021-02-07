@@ -468,6 +468,7 @@ class AutoSchoolLead
                 "Когда выдано" => $this->getDateValue(542325),
             ],
             "Экзамен в ГИБДД" => $exam ? $exam : '-',
+            "Организация"     => $this->getCustomFieldValue(590327)
         ];
     }
 
