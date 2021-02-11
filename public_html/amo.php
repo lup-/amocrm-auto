@@ -38,12 +38,10 @@ switch ($requestType) {
         ]);
     break;
     case 'syncInstructors':
-        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-        authAmoInterface($cookieFileName);
         $client = getClient('../token.json', '../credentials.json');
         $service = new Google_Service_Calendar($client);
 
-        $instructors = loadInstructorIdsFromFieldEnum($cookieFileName);
+        $instructors = AmoApi::getInstance()->getInstructorIds();;
         $calendarConfig = include('calendar_config.php');
 
         $allInstructorIds = array_keys($instructors);
@@ -90,19 +88,15 @@ switch ($requestType) {
         echo json_encode($result);
     break;
     case 'getAllInstructorsData':
-        $cookieFileName = tempnam(sys_get_temp_dir(), "AMO");
-        authAmoInterface($cookieFileName);
-
-        $instructors = loadInstructorIds($cookieFileName);
+        $instructors = $instructors = AmoApi::getInstance()->getInstructorIds();
         $instructorsData = [];
-        foreach ($instructors as $id => $name) {
-            $leadsResponse = loadInstructorLeadsWithExtraData($cookieFileName, $id);
-            $leads = $leadsResponse['response']['items'];
+        foreach ($instructors as $id => $instructor) {
+            $leads = Database::getInstance()->loadActiveInstructorLeads($instructor);
             $instructorsData[] = [
                 'id' => $id,
-                'name' => $name,
-                'groups' => getGroupsInfo($leads),
-                'students' => getStudents($leads),
+                'name' => $instructor,
+                'groups' => $leads->asStudentArrays(),
+                'students' => $leads->getGroups(true),
             ];
         }
 
