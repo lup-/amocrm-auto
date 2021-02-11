@@ -135,7 +135,24 @@ class AutoSchoolLead
         }
     }
     public function group() {
-        return $this->getCustomFieldValue(580073);
+        $similarLetters = [
+            "A" => "А",
+            "B" => "В",
+            "E" => "Е",
+            "K" => "К",
+            "M" => "М",
+            "H" => "Н",
+            "O" => "О",
+            "P" => "Р",
+            "T" => "Т",
+            "X" => "Х",
+        ];
+
+        $rawGroup = $this->getCustomFieldValue(580073);
+        $group = trim( strtr($rawGroup, $similarLetters) );
+        $group = mb_strtoupper($group);
+
+        return $group;
     }
     public function instructor() {
         return $this->getCustomFieldValue(398075);

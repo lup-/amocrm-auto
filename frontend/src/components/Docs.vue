@@ -11,9 +11,11 @@
             </b-dropdown>
 
             <b-dropdown v-if="currentCity" :text="currentGroup ? 'Группа ' + currentGroup.name : 'Выбор группы'" variant="primary" block class="mb-2">
-                <b-dropdown-item v-for="group in groups"
-                        @click="updateCurrentGroup(group)"
-                        :key="group.name"
+                <div class="pl-2 pr-4"><b-form-input v-model="groupSearch" placeholder="Поиск" class="m-2"></b-form-input></div>
+                <b-dropdown-divider></b-dropdown-divider>
+                <b-dropdown-item v-for="group in filteredGroups"
+                    @click="updateCurrentGroup(group)"
+                    :key="'grp'+group.name"
                 >{{group.name}}</b-dropdown-item>
             </b-dropdown>
 
@@ -138,6 +140,7 @@
                 processing: [],
                 groupProcessing: false,
                 multipleProcessing: false,
+                groupSearch: '',
             }
         },
         watch: {
@@ -257,6 +260,17 @@
             }
         },
         computed: {
+            filteredGroups() {
+                let maxGroups = 10;
+                if (!this.groupSearch) {
+                    return this.groups.slice().reverse().slice(0, maxGroups);
+                }
+                else {
+                    return this.groups
+                        .filter(group => group.name.toLowerCase().indexOf(this.groupSearch.toLowerCase()) !== -1)
+                        .reverse().slice(0, maxGroups);
+                }
+            },
             cities() {
                 return Object.keys(this.templates);
             },

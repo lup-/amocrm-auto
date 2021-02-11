@@ -208,7 +208,9 @@
                     : this.groups;
 
                 if (this.currentTabComponent === 'docs') {
-                    groups = this.groups.concat(this.completeGroups);
+                    groups = this.groups.concat(this.completeGroups).filter( (group, index, all) => {
+                        return all.findIndex(indexGroup => indexGroup.name === group.name) === index;
+                    });
                 }
 
                 return groups;

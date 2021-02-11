@@ -17,7 +17,7 @@ class Group
     }
 
     public function name() {
-        return $this->lead->getCustomFieldValue(580073);
+        return $this->lead->group();
     }
 
     public function startDate() {
