@@ -235,11 +235,68 @@ class Database
         return $leads && $leads[0] ? $leads[0] : false;
     }
 
+    public function loadLeadByLogin($login) {
+        $phone = AutoSchoolLead::normalizePhone($login);
+
+        $leads = $this->loadFilteredLeads([
+            '_parsed.phone' => ['$in' => [$phone, '+'.$phone]],
+        ])->getLeads();
+
+        return $leads && $leads[0] ? $leads[0] : false;
+    }
+
+    public function loadMetadata($leadId) {
+        $leadsCollection = $this->getFullCollectionName('leads_metadata');
+
+        $filter = ['leadId' => ['$in' => [$leadId, "$leadId"]]];
+        $cursor = $this->mongo->executeQuery($leadsCollection, new Query($filter));
+        $meta = $this->mongoToArray($cursor);
+        return $meta && $meta[0] ? $meta[0] : false;
+    }
+
+    public function updateMetadata($leadId, $fields) {
+        $operations = new BulkWrite;
+        $leads = $this->getFullCollectionName('leads_metadata');
+
+        $filter = ["leadId" => $leadId];
+        $operations->update($filter, ['$set' => $fields], ["upsert" => true]);
+
+        $result = $this->mongo->executeBulkWrite($leads, $operations);
+    }
+
+    public function updatePassword($leadId, $newPassword) {
+        return $this->updateMetadata($leadId, ['passwordHash' => password_hash($newPassword, PASSWORD_DEFAULT)]);
+    }
+
+    public function updateRole($leadId, $role) {
+        return $this->updateMetadata($leadId, ['role' => $role]);
+    }
+
     public function deleteDocByGoogleId($googleId) {
         $collectionName = $this->getFullCollectionName('documents');
 
         $docsBulk = new BulkWrite;
         $docsBulk->delete(['googleId' => $googleId], ['limit' => 1]);
         $this->mongo->executeBulkWrite($collectionName, $docsBulk);
+    }
+
+    public function checkUser($login, $password) {
+        $lead = $this->loadLeadByLogin($login);
+        if (!$lead) {
+            return false;
+        }
+
+        $meta = $this->loadMetadata($lead->id());
+        if (!$meta) {
+            return false;
+        }
+
+        $savedPasswordHash = $meta['passwordHash'];
+        $metaWithoutPassword = $meta;
+        unset($metaWithoutPassword['passwordHash']);
+
+        return password_verify($password, $savedPasswordHash)
+            ? $metaWithoutPassword
+            : false;
     }
 }

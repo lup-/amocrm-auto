@@ -185,7 +185,13 @@ trait HasCustomFields
         }
 
         $phone = $this->getCustomFieldValue($fieldId);
+        $phone = self::normalizePhone($phone);
 
+        $this->cachedFields['phone'][$fieldId] = '+'.$phone;
+        return $this->cachedFields['phone'][$fieldId];
+    }
+
+    public static function normalizePhone($phone) {
         if ( is_array($phone) ) {
             $phone = $phone[0];
         }
@@ -203,7 +209,6 @@ trait HasCustomFields
             $phone = '7'.$phone;
         }
 
-        $this->cachedFields['phone'][$fieldId] = '+'.$phone;
-        return $this->cachedFields['phone'][$fieldId];
+        return $phone;
     }
 }

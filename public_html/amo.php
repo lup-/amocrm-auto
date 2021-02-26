@@ -185,4 +185,31 @@ switch ($requestType) {
         header("Content-type: application/json; charset=utf-8");
         echo json_encode(getGibddTickets());
     break;
+    case 'login':
+        $login = $_REQUEST['login'];
+        $password = $_REQUEST['password'];
+        $inputValid = $login && $password;
+
+        if ($inputValid) {
+            $userMeta = Database::getInstance()->checkUser($login, $password);
+            $isSuccess = $userMeta !== false;
+        }
+        else {
+            $isSuccess = false;
+        }
+
+        $result = [
+            "success" => $isSuccess
+        ];
+
+        if ($isSuccess) {
+            $lead = Database::getInstance()->loadLeadByLogin($login);
+            $result['id'] = $userMeta['leadId'];
+            $result['meta'] = $userMeta;
+            $result['user'] = $lead->asStudentArray();
+        }
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode($result);
+    break;
 }
