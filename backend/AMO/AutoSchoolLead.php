@@ -575,8 +575,10 @@ class AutoSchoolLead
 
                 if (is_numeric($date)) {
                     $dateAsInt = $date;
-                    $parsedDate = new DateTime();
+
+                    $parsedDate = new \DateTime();
                     $parsedDate->setTimestamp($dateAsInt);
+                    $parsedDate->setTimezone(new \DateTimeZone('Europe/Moscow'));
                 }
                 else {
                     $dateAsString = $replacementPairs[$fieldName];
