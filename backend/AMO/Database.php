@@ -299,4 +299,37 @@ class Database
             ? $metaWithoutPassword
             : false;
     }
+
+    public function getExam($leadId) {
+        $collectionName = $this->getFullCollectionName('exams');
+
+        $query = new Query(["userId" => $leadId]);
+        $cursor = $this->mongo->executeQuery($collectionName, $query);
+        $exams = $this->mongoToArray($cursor);
+
+        return $exams && count($exams) > 0 ? $exams[0] : false;
+    }
+
+    public function checkExam($leadId) {
+        $exam = $this->getExam($leadId);
+
+        return $exam !== false;
+    }
+
+    public function saveExam($leadId, $examResult) {
+        $operations = new BulkWrite;
+        $collectionName = $this->getFullCollectionName('exams');
+
+        $operations->update(
+            ["userId" => $leadId, "examResult" => $examResult],
+            [
+                "\$set" => ["examResult" => $examResult, "updated" => time()],
+                "\$setOnInsert" => ["saved" => time()],
+            ],
+            ["upsert" => true]
+        );
+
+        $this->mongo->executeBulkWrite($collectionName, $operations);
+        return $this->getExam($leadId);
+    }
 }

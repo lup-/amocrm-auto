@@ -212,4 +212,22 @@ switch ($requestType) {
         header("Content-type: application/json; charset=utf-8");
         echo json_encode($result);
     break;
+    case 'checkExam':
+        $userId = intval($_REQUEST['userId']);
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode(["isActiveExam" => Database::getInstance()->checkExam($userId)]);
+    break;
+    case 'saveExam':
+        $postData = file_get_contents('php://input');
+        $savedExam = false;
+
+        $exam = json_decode($postData, true);
+        $userId = intval($exam['result']['userId']);
+        if ($userId) {
+            $savedExam = Database::getInstance()->saveExam($userId, $exam);
+        }
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode(["success" => $savedExam !== false, "exam" => $savedExam]);
+    break;
 }
