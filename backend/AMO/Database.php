@@ -300,33 +300,34 @@ class Database
             : false;
     }
 
-    public function getExam($leadId) {
+    public function getExams($leadId) {
         $collectionName = $this->getFullCollectionName('exams');
 
         $query = new Query(["userId" => $leadId]);
         $cursor = $this->mongo->executeQuery($collectionName, $query);
         $exams = $this->mongoToArray($cursor);
 
-        return $exams && count($exams) > 0 ? $exams[0] : false;
+        return $exams && count($exams) > 0 ? $exams : false;
     }
 
-    public function checkExam($leadId) {
-        $exam = $this->getExam($leadId);
+    public function canPassExam($leadId) {
+        $exams = $this->getExams($leadId);
+        $hasSavedExam = is_array($exams);
 
-        return $exam !== false;
+        return !$hasSavedExam;
     }
 
-    public function saveExam($leadId, $examResult) {
+    public function saveExam($leadId, $attempt, $examResult) {
         $operations = new BulkWrite;
         $collectionName = $this->getFullCollectionName('exams');
 
         $operations->update(
-            ["userId" => $leadId, "examResult" => $examResult],
+            [ "userId" => $leadId, "attempt" => $attempt ],
             [
                 "\$set" => ["examResult" => $examResult, "updated" => time()],
                 "\$setOnInsert" => ["saved" => time()],
             ],
-            ["upsert" => true]
+            [ "upsert" => true ]
         );
 
         $this->mongo->executeBulkWrite($collectionName, $operations);

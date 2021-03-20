@@ -215,7 +215,22 @@ switch ($requestType) {
     case 'checkExam':
         $userId = intval($_REQUEST['userId']);
         header("Content-type: application/json; charset=utf-8");
-        echo json_encode(["isActiveExam" => Database::getInstance()->checkExam($userId)]);
+        $canPassExam = Database::getInstance()->canPassExam($userId);
+        $exams =  Database::getInstance()->getExams($userId);
+        if (is_array($exams)) {
+            $success = array_map(function ($item) {
+                return $item['examResult']['isCorrect'];
+            }, $exams);
+            $attempts = array_merge([null, null, null], $success);
+        }
+        else {
+            $attempts = [null, null, null];
+        }
+
+        echo json_encode([
+            "isActiveExam" => $canPassExam,
+            "attempts" => $attempts
+        ]);
     break;
     case 'saveExam':
         $postData = file_get_contents('php://input');
@@ -223,8 +238,10 @@ switch ($requestType) {
 
         $exam = json_decode($postData, true);
         $userId = intval($exam['result']['userId']);
+        $attempt = intval($exam['result']['attempt']);
+
         if ($userId) {
-            $savedExam = Database::getInstance()->saveExam($userId, $exam);
+            $savedExam = Database::getInstance()->saveExam($userId, $attempt, $exam);
         }
 
         header("Content-type: application/json; charset=utf-8");
