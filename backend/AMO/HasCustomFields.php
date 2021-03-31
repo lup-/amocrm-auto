@@ -187,7 +187,7 @@ trait HasCustomFields
         $phone = $this->getCustomFieldValue($fieldId);
         $phone = self::normalizePhone($phone);
 
-        $this->cachedFields['phone'][$fieldId] = '+'.$phone;
+        $this->cachedFields['phone'][$fieldId] = $phone;
         return $this->cachedFields['phone'][$fieldId];
     }
 

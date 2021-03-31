@@ -40,6 +40,10 @@ class Group
         return $this->lead->getCustomFieldValue(405003);
     }
 
+    public function isSuccessful() {
+        return $this->lead->isSuccessful();
+    }
+
     public function asArray() {
         return [
             "name"         => $this->name(),
@@ -48,6 +52,7 @@ class Group
             "exam"         => $this->examDate(),
             "exam_address" => $this->examAddress(),
             "category"     => $this->category(),
+            "isSuccess"    => $this->isSuccessful()
         ];
     }
 }

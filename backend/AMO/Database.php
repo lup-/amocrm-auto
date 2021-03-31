@@ -6,6 +6,8 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
+use MongoDB\Driver\Command;
+use stdClass;
 
 function getEnvVar($varName, $default = false) {
     if (isset($_SERVER[$varName])) {
@@ -227,6 +229,24 @@ class Database
         ]);
     }
 
+    public function loadGroups($complete = false) {
+        $filter = ['isSuccess' => $complete];
+        $leadsCollection = $this->getFullCollectionName('amo_groups');
+
+        $cursor = $this->mongo->executeQuery($leadsCollection, new Query($filter));
+        $groups = $this->mongoToArray($cursor);
+
+        return $groups;
+    }
+
+    public function loadActiveGroups() {
+        return $this->loadGroups(false);
+    }
+
+    public function loadCompleteGroups() {
+        return $this->loadGroups(true);
+    }
+
     public function loadLeadByContactId($contactId) {
         $leads = $this->loadFilteredLeads([
             '_parsed.contactId' => $contactId,
@@ -245,6 +265,17 @@ class Database
         return $leads && $leads[0] ? $leads[0] : false;
     }
 
+    public function loadMetadataByLogin($login) {
+        $phone = $login;
+        $normalPhone = HasCustomFields::normalizePhone($phone);
+        $leadsCollection = $this->getFullCollectionName('leads_metadata');
+
+        $filter = ['phone' => $phone];
+        $cursor = $this->mongo->executeQuery($leadsCollection, new Query($filter));
+        $meta = $this->mongoToArray($cursor);
+        return $meta && $meta[0] ? $meta[0] : false;
+    }
+
     public function loadMetadata($leadId) {
         $leadsCollection = $this->getFullCollectionName('leads_metadata');
 
@@ -254,22 +285,24 @@ class Database
         return $meta && $meta[0] ? $meta[0] : false;
     }
 
-    public function updateMetadata($leadId, $fields) {
+    public function updateMetadata(AutoSchoolLead $lead, $fields) {
+        $leadId = $lead->id();
+        $phone = $lead->phone();
         $operations = new BulkWrite;
         $leads = $this->getFullCollectionName('leads_metadata');
 
         $filter = ["leadId" => $leadId];
-        $operations->update($filter, ['$set' => $fields], ["upsert" => true]);
+        $operations->update($filter, ['$set' => $fields, '$setOnInsert' => ["phone" => $phone]], ["upsert" => true]);
 
         $result = $this->mongo->executeBulkWrite($leads, $operations);
     }
 
-    public function updatePassword($leadId, $newPassword) {
-        return $this->updateMetadata($leadId, ['passwordHash' => password_hash($newPassword, PASSWORD_DEFAULT)]);
+    public function updatePassword($lead, $newPassword) {
+        return $this->updateMetadata($lead, ['passwordHash' => password_hash($newPassword, PASSWORD_DEFAULT)]);
     }
 
-    public function updateRole($leadId, $role) {
-        return $this->updateMetadata($leadId, ['role' => $role]);
+    public function updateRole($lead, $role) {
+        return $this->updateMetadata($lead, ['role' => $role]);
     }
 
     public function deleteDocByGoogleId($googleId) {
@@ -281,14 +314,17 @@ class Database
     }
 
     public function checkUser($login, $password) {
-        $lead = $this->loadLeadByLogin($login);
-        if (!$lead) {
-            return false;
-        }
-
-        $meta = $this->loadMetadata($lead->id());
+        $meta = $this->loadMetadataByLogin($login);
         if (!$meta) {
-            return false;
+            $lead = $this->loadLeadByLogin($login);
+            if (!$lead) {
+                return false;
+            }
+
+            $meta = $this->loadMetadata($lead->id());
+            if (!$meta) {
+                return false;
+            }
         }
 
         $savedPasswordHash = $meta['passwordHash'];
@@ -332,5 +368,38 @@ class Database
 
         $this->mongo->executeBulkWrite($collectionName, $operations);
         return $this->getExam($leadId);
+    }
+
+    public function getActiveInstructors($allInstructorIds) {
+        $pipeline = [
+            [ '$match' =>  ['status_id' => ['$nin' => [142, 143]], '_parsed.instructor' => ['$nin' => [null, false, '']]] ],
+            [ '$group' => [
+                    '_id' => "\$_parsed.instructor",
+                    "name" => ['$first' => "\$_parsed.instructor"],
+                    'groups' => ['$addToSet' => "\$_parsed.group"],
+                    'students' => ['$addToSet' => "\$_parsed"]
+                ]
+            ]
+        ];
+
+        $command = new Command([
+            'aggregate' => 'amo_leads',
+            'pipeline' => $pipeline,
+            'cursor' => new stdClass,
+        ]);
+        $cursor = $this->mongo->executeCommand($this->dbName, $command);
+        $instructorData = $this->mongoToArray($cursor);
+
+        $result = [];
+        foreach ($allInstructorIds as $id => $name) {
+            foreach ($instructorData as $data) {
+                if ($data['name'] === $name) {
+                    $data['id'] = $id;
+                    $result[] = $data;
+                }
+            }
+        }
+
+        return $result;
     }
 }

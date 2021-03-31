@@ -24,17 +24,22 @@ switch ($requestType) {
     break;
     case 'getAdminData':
         $activeLeads = Database::getInstance()->loadActiveLeads();
-        $completeLeads = Database::getInstance()->loadCompleteLeads();
 
         $docs = Database::getInstance()->loadAllDocs();
         $activeLeads->setDocs($docs);
-        $completeLeads->setDocs($docs);
+
+        $activeGroups = Database::getInstance()->loadActiveGroups();
+        $completeGroups = Database::getInstance()->loadCompleteGroups();
+
+        $allInstructorIds = AmoApi::getInstance()->getInstructorIds();
+        //$instructors = $activeLeads->getInstructors();
+        $instructors = Database::getInstance()->getActiveInstructors($allInstructorIds);
 
         header("Content-type: application/json; charset=utf-8");
         echo json_encode([
-            "instructors"    => $activeLeads->getInstructors(),
-            "groups"         => $activeLeads->getGroups(),
-            "completeGroups" => $completeLeads->getGroups(),
+            "instructors"    => $instructors,
+            "groups"         => $activeGroups,
+            "completeGroups" => $completeGroups,
         ]);
     break;
     case 'syncInstructors':

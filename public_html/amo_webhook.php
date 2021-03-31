@@ -17,6 +17,7 @@ function randomPassword($charsLen = 3, $numLen = 5) {
 
 $skipLeadUpdate = $_REQUEST['skipLeadUpdate'] === '1';
 $newPassword = $_REQUEST['password'] ? $_REQUEST['password'] : randomPassword();
+$forceUpdate = boolval($_REQUEST['password']);
 
 if (isset($_REQUEST['leads']['status'])) {
     $leadId = $_REQUEST['leads']['status'][0]['id'];
@@ -29,8 +30,12 @@ header("Content-type: application/json; charset=utf-8");
 
 if ($leadId) {
     try {
-        Database::getInstance()->updatePassword($leadId, $newPassword);
-        Database::getInstance()->updateRole($leadId, 'amoUser');
+        $lead = AmoApi::getInstance()->getSingleLead($leadId, true);
+        $noMetadata = Database::getInstance()->loadMetadata($leadId) === false;
+        if ($noMetadata || $forceUpdate) {
+            Database::getInstance()->updatePassword($lead, $newPassword);
+            Database::getInstance()->updateRole($lead, 'amoUser');
+        }
 
         if ($skipLeadUpdate) {
             echo json_encode(["success" => true, "lead" => null]);

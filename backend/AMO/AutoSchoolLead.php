@@ -165,10 +165,10 @@ class AutoSchoolLead
     }
 
     public function isSuccessful() {
-        return $this->rawData['status'] == 142;
+        return $this->rawData['status'] == 142 || $this->rawData['status_id'] == 142;
     }
     public function isCanceled() {
-        return $this->rawData['status'] == 143;
+        return $this->rawData['status'] == 143 || $this->rawData['status_id'] == 143;
     }
     public function lastChangedDate() {
         if ($this->rawData['last_event_at']) {
