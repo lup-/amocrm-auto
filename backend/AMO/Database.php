@@ -2,6 +2,7 @@
 
 namespace AMO;
 
+use Carbon\Carbon;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Manager;
@@ -341,16 +342,73 @@ class Database
 
         $query = new Query(["userId" => $leadId]);
         $cursor = $this->mongo->executeQuery($collectionName, $query);
+
         $exams = $this->mongoToArray($cursor);
 
         return $exams && count($exams) > 0 ? $exams : false;
     }
 
-    public function canPassExam($leadId) {
-        $exams = $this->getExams($leadId);
-        $hasSavedExam = is_array($exams);
+    public function getActiveExams($leadId) {
+        $allExams = $this->getExams($leadId);
+        if (!$allExams) {
+            return false;
+        }
 
-        return !$hasSavedExam;
+        $startOfDay = Carbon::now()->startOfDay()->unix();
+
+        $activeExams = [];
+        foreach ($allExams as $exam) {
+            if ($exam['saved'] >= $startOfDay) {
+                $activeExams[] = $exam;
+            }
+        }
+
+        return $activeExams;
+    }
+
+    public function hasPassedExam($leadId) {
+        $allExams = $this->getExams($leadId);
+        if (!$allExams) {
+            return false;
+        }
+
+        $passedByDates = [];
+        foreach ($allExams as $exam) {
+            $date = Carbon::createFromTimestamp($exam['saved'])->toDateString();
+            if (!array_key_exists($date, $passedByDates)) {
+                $passedByDates[$date] = 0;
+            }
+
+            $hasPassed = is_bool($exam['examResult']['result']['isCorrect'])
+                ? $exam['examResult']['result']['isCorrect']
+                : strtolower($exam['examResult']['result']['isCorrect']) === 'true';
+
+            if ($hasPassed) {
+                $passedByDates[$date]++;
+            }
+        }
+
+        $hasPassed = false;
+        foreach ($passedByDates as $countPassed) {
+            $dayPassed = $countPassed >= 2;
+            $hasPassed = $hasPassed || $dayPassed;
+        }
+
+        return $hasPassed;
+    }
+
+    public function canPassExam($leadId) {
+        if ($this->hasPassedExam($leadId)) {
+            return false;
+        }
+
+        $exams = $this->getActiveExams($leadId);
+        if (!$exams) {
+            return true;
+        }
+
+        $todayTries = count($exams);
+        return $todayTries < 3;
     }
 
     public function saveExam($leadId, $attempt, $examResult) {

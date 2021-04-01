@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9092009dfcb6e6f33ce12af25682b068",
+    "content-hash": "9980f5651a66443100daecce6609fab1",
     "packages": [
         {
             "name": "amocrm/amocrm-api-library",
-            "version": "0.3.22",
+            "version": "0.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/amocrm/amocrm-api-php.git",
-                "reference": "f9ddb574be7594f1c2ba403d623aa18a35abf5ae"
+                "reference": "c9a3ad2b3bbea4a25b883d83c534748e1079a6dd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/amocrm/amocrm-api-php/zipball/f9ddb574be7594f1c2ba403d623aa18a35abf5ae",
-                "reference": "f9ddb574be7594f1c2ba403d623aa18a35abf5ae",
+                "url": "https://api.github.com/repos/amocrm/amocrm-api-php/zipball/c9a3ad2b3bbea4a25b883d83c534748e1079a6dd",
+                "reference": "c9a3ad2b3bbea4a25b883d83c534748e1079a6dd",
                 "shasum": ""
             },
             "require": {
@@ -26,7 +26,7 @@
                 "fig/http-message-util": "1.*",
                 "guzzlehttp/guzzle": "6.* || 7.*",
                 "illuminate/support": "5.* || 6.* || 7.* || 8.*",
-                "lcobucci/jwt": "^3.3",
+                "lcobucci/jwt": "^3.4 || 4.*",
                 "php": ">=7.1",
                 "ramsey/uuid": "^3 || ^4",
                 "symfony/dotenv": "4.* || 5.*"
@@ -70,7 +70,7 @@
                 "client",
                 "oauth2"
             ],
-            "time": "2020-12-08T11:10:49+00:00"
+            "time": "2021-02-14T23:21:06+00:00"
         },
         {
             "name": "amocrm/oauth2-amocrm",
@@ -1103,16 +1103,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "2.43.0",
+            "version": "2.46.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/briannesbitt/Carbon.git",
-                "reference": "d32c57d8389113742f4a88725a170236470012e2"
+                "reference": "2fd2c4a77d58a4e95234c8a61c5df1f157a91bf4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/d32c57d8389113742f4a88725a170236470012e2",
-                "reference": "d32c57d8389113742f4a88725a170236470012e2",
+                "url": "https://api.github.com/repos/briannesbitt/Carbon/zipball/2fd2c4a77d58a4e95234c8a61c5df1f157a91bf4",
+                "reference": "2fd2c4a77d58a4e95234c8a61c5df1f157a91bf4",
                 "shasum": ""
             },
             "require": {
@@ -1128,7 +1128,7 @@
                 "phpmd/phpmd": "^2.9",
                 "phpstan/extension-installer": "^1.0",
                 "phpstan/phpstan": "^0.12.54",
-                "phpunit/phpunit": "^7.5 || ^8.0",
+                "phpunit/phpunit": "^7.5.20 || ^8.5.14",
                 "squizlabs/php_codesniffer": "^3.4"
             },
             "bin": [
@@ -1178,7 +1178,7 @@
                 "datetime",
                 "time"
             ],
-            "time": "2020-12-17T20:55:32+00:00"
+            "time": "2021-02-24T17:30:44+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -4071,12 +4071,12 @@
             "version": "1.9.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/webmozart/assert.git",
+                "url": "https://github.com/webmozarts/assert.git",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozart/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "reference": "bafc69caeb4d49c39fd0779086c03a3738cbb389",
                 "shasum": ""
             },

@@ -221,10 +221,12 @@ switch ($requestType) {
         $userId = intval($_REQUEST['userId']);
         header("Content-type: application/json; charset=utf-8");
         $canPassExam = Database::getInstance()->canPassExam($userId);
-        $exams =  Database::getInstance()->getExams($userId);
+        $exams =  Database::getInstance()->getActiveExams($userId);
         if (is_array($exams)) {
             $success = array_map(function ($item) {
-                return $item['examResult']['isCorrect'];
+                return is_bool($item['examResult']['result']['isCorrect'])
+                    ? $item['examResult']['result']['isCorrect']
+                    : strtolower($item['examResult']['result']['isCorrect']) === 'true';
             }, $exams);
             $attempts = array_merge([null, null, null], $success);
         }
