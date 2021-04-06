@@ -13,3 +13,4 @@ token.json
 !.gitkeep
 /amo_token.json
 cachegrind.*
+/vendor/

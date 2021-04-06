@@ -145,7 +145,7 @@ switch ($requestType) {
     break;
     case 'updateHours':
         $leadId = $_GET['leadId'];
-        $hours = $_GET['hours'];
+        $hours = intval($_GET['hours']);
 
         if ($leadId) {
             $lead = AmoApi::getInstance()->setLeadHours($leadId, $hours);

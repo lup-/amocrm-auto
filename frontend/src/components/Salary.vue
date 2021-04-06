@@ -96,7 +96,7 @@
             },
             async updateHours(student, hours) {
                 await loadApiData({
-                    action: 'updateHours',
+                    type: 'updateHours',
                     leadId: student.id,
                     hours
                 });
