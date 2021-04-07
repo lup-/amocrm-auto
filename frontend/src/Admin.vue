@@ -176,8 +176,14 @@
                 let responseData = await loadApiData(params);
 
                 this.instructorsData = responseData.instructors;
-                this.groupsData = responseData.groups;
-                this.completeGroupsData = responseData.completeGroups;
+                this.groupsData = responseData.groups.reduce((groupsObj, group) => {
+                    groupsObj[group.name] = group;
+                    return groupsObj;
+                }, {});
+                this.completeGroupsData = responseData.completeGroups.reduce((groupsObj, group) => {
+                    groupsObj[group.name] = group;
+                    return groupsObj;
+                }, {});
             },
             async loadDocumentTemplatesData() {
                 let responseData = await loadApiData({
