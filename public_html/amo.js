@@ -133,6 +133,10 @@ function getCardHTML(name, leadId, hours, neededHours, debt, phone, eventDate, i
                    ${paymentOverdue >= 10 ? '<p class="mb-0 text-danger">Просрочка оплаты: '+paymentOverdue+' дн.</p>' : ''}
                    <p class="mb-0">Нужное кол-во часов: ${neededHours}</p>
                    <p class="mb-0">Откатано часов: ${hours}</p>
+                   ${fullData.medCertificate
+                        ? `<p class="mb-0">Медкомиссия: ${fullData.medCertificate.date}, ${fullData.medCertificate.number} (${fullData.medCertificate.issuer})</p>`
+                        : `<p class="mb-0">Медкомиссия: нет</p>`
+                    }
                    ${phone
                         ? `<p class="">Телефон: <a href="tel:${phone}">${phone}</a></p>`
                         : `<p class=""><button class="btn btn-primary btn-sm loadPhone" data-contact-id="${fullData.contactId}">Загрузить телефон</button></p>`

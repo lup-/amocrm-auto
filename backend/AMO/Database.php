@@ -232,9 +232,29 @@ class Database
 
     public function loadGroups($complete = false) {
         $filter = ['isSuccess' => $complete];
-        $leadsCollection = $this->getFullCollectionName('amo_groups');
 
-        $cursor = $this->mongo->executeQuery($leadsCollection, new Query($filter));
+        $pipeline = [
+            [ '$match' =>  $filter ],
+            [ '$unwind' => '$students' ],
+            [ '$addFields' => ['studentId' => ['$convert' => ['input' => '$students.id', 'to' => 'string']]] ],
+            [ '$lookup' => [
+                    'from' => 'documents',
+                    'localField' => 'studentId',
+                    'foreignField' => 'userId',
+                    'as' => 'students.docs',
+            ] ],
+            [ '$group' => ["_id" => '$name', 'group' => [ '$first' => '$$ROOT' ], 'students' => ['$push' => '$students']] ],
+            [ '$addFields' => ['group.students' => '$students'] ],
+            [ '$replaceRoot' => ['newRoot' => '$group'] ],
+            [ '$unset' => 'studentId' ],
+        ];
+
+        $command = new Command([
+            'aggregate' => 'amo_groups',
+            'pipeline' => $pipeline,
+            'cursor' => new stdClass,
+        ]);
+        $cursor = $this->mongo->executeCommand($this->dbName, $command);
         $groups = $this->mongoToArray($cursor);
 
         return $groups;

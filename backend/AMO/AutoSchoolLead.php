@@ -164,6 +164,14 @@ class AutoSchoolLead
         return $this->getIntValue(414085);
     }
 
+    public function medicalCertificate() {
+        return [
+            'number' => $this->getCustomFieldValue(413345),
+            'issuer' => $this->getCustomFieldValue(413347),
+            'date' => $this->getDateValue(542317),
+        ];
+    }
+
     public function isSuccessful() {
         return $this->rawData['status'] == 142 || $this->rawData['status_id'] == 142;
     }
@@ -448,6 +456,7 @@ class AutoSchoolLead
             'gsmPayment'     => $this->getPaymentValue(561445),
             'phone'          => $this->phone(),
             'group'          => $this->group(),
+            'medCertificate' => $this->medicalCertificate(),
             'schedule'       => $event !== false ? $event->getStart()->getDateTime() : false,
             'instructor'     => $this->instructor(),
             'docs'           => $this->docs,
