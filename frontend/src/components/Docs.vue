@@ -88,7 +88,7 @@
                                                 <label>{{doc.filename}}</label>
                                                 <b-button variant="link" :href="doc.downloadUrl" class="mr-4" target="_blank"><b-icon-download></b-icon-download></b-button>
                                                 <b-button variant="link" :href="doc.editUrl" target="_blank"><b-icon-pencil-square></b-icon-pencil-square></b-button>
-                                                <b-button variant="link" @click="deleteDocument(doc)"><b-icon-trash-fill></b-icon-trash-fill></b-button>
+                                                <b-button variant="link" @click="deleteDocument(student.id, doc)"><b-icon-trash-fill></b-icon-trash-fill></b-button>
                                             </b-list-group-item>
                                         </b-list-group>
                                     </b-collapse>
