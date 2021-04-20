@@ -109,7 +109,7 @@ trait HasCustomFields
             return null;
         }
 
-        return $field['name'];
+        return $field['name'] ? $field['name'] : $field['field_name'];
     }
 
     private function formatTimestamp($timestamp) {
