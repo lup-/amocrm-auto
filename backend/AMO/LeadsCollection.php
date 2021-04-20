@@ -212,12 +212,16 @@ class LeadsCollection
                 $hours = $lead->hours();
                 $groups[$groupName]['totalHours'] += $hours;
                 $groups[$groupName]['salary'] += $hours * AutoSchoolLead::HOUR_PRICE;
-                $groups[$groupName]['students'][] = $lead->asStudentArray();
+                $groups[$groupName]['students'][$lead->id()] = $lead->asStudentArray();
 
                 if ($withLeads) {
                     $groups[$groupName]['leads'][] = $lead;
                 }
             }
+        }
+
+        foreach ($groups as $groupName => $group) {
+            $groups[$groupName]['students'] = array_values($group['students']);
         }
 
         return $groups;

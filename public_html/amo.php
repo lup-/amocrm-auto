@@ -228,7 +228,7 @@ switch ($requestType) {
                     ? $item['examResult']['result']['isCorrect']
                     : strtolower($item['examResult']['result']['isCorrect']) === 'true';
             }, $exams);
-            $attempts = array_merge([null, null, null], $success);
+            $attempts = array_replace([null, null, null], $success);
         }
         else {
             $attempts = [null, null, null];

@@ -445,7 +445,7 @@ class Database
         );
 
         $this->mongo->executeBulkWrite($collectionName, $operations);
-        return $this->getExam($leadId);
+        return $this->getExams($leadId);
     }
 
     public function getActiveInstructors($allInstructorIds) {

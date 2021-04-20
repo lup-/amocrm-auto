@@ -83,6 +83,11 @@ function getFullCalendarEvent($service, $calendarId, $startTimestamp, $endTimest
     else {
         $events = getAllEvents($service, $calendarId, $startTimestamp);
     }
+
+    if (!$events) {
+        $events = [];
+    }
+
     $fullCalendarEvents = [];
     foreach ($events as $event) {
         $start = new DateTime($event->start->dateTime);

@@ -213,10 +213,15 @@ class AmoApi
 
     public function getLeadById($leadId) {
         $leadsService = $this->apiClient->leads();
-        $amoLead = $leadsService->getOne($leadId, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
-        $lead = new AutoSchoolLead($amoLead->toArray());
-        $lead->fetchContactData();
-        return $lead;
+        try {
+            $amoLead = $leadsService->getOne($leadId, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
+            $lead = new AutoSchoolLead($amoLead->toArray());
+            $lead->fetchContactData();
+            return $lead;
+        }
+        catch (\Exception $e) {
+            return false;
+        }
     }
 
     public function getAllPipelines() {

@@ -9,22 +9,26 @@ function getLeadId() {
     $leadEvents = @$_REQUEST['leads'];
     $eventType = @current( array_keys($leadEvents) );
 
-    $leadId = @$_REQUEST['leads'][$eventType][0]['id'];
+    $leadId = @$_REQUEST['leads'][$eventType]['id']
+        ? $_REQUEST['leads'][$eventType]['id']
+        : $_REQUEST['leads'][$eventType][0]['id'];
 
-    return $leadId;
+    return [$leadId, $eventType];
 }
 function getContactId() {
     $contactEvents = @$_REQUEST['contacts'];
     $eventType = @current( array_keys($contactEvents) );
 
-    $contactId = @$_REQUEST['contacts'][$eventType][0]['id'];
+    $contactId = @$_REQUEST['contacts'][$eventType]['id']
+        ? $_REQUEST['contacts'][$eventType]['id']
+        : $_REQUEST['contacts'][$eventType][0]['id'];
 
-    return $contactId;
+    return [$contactId, $eventType];
 }
 
-$leadId = getLeadId();
+[$leadId, $eventType] = getLeadId();
 if (!$leadId) {
-    $contactId = getContactId();
+    [$contactId, $eventType] = getContactId();
     if ($contactId) {
         $lead = Database::getInstance()->loadLeadByContactId($contactId);
         if ($lead) {
@@ -35,6 +39,15 @@ if (!$leadId) {
 
 if ($leadId) {
     $lead = AmoApi::getInstance()->getLeadById($leadId);
-    Database::getInstance()->updateLead($lead);
-    echo "Обновлена сделка $leadId\n";
+    if ($lead) {
+        Database::getInstance()->updateLead($lead);
+        $message = "$eventType: Обновлена сделка $leadId\n";
+        echo $message;
+        error_log($message, 3, "lead_updates.log");
+    }
+    else {
+        $message = "$eventType: Загрузка данных по сделке $leadId не прошла\n";
+        echo $message;
+        error_log($message, 3, "lead_updates.log");
+    }
 }
