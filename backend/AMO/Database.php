@@ -246,7 +246,6 @@ class Database
             [ '$group' => ["_id" => '$name', 'group' => [ '$first' => '$$ROOT' ], 'students' => ['$push' => '$students']] ],
             [ '$addFields' => ['group.students' => '$students'] ],
             [ '$replaceRoot' => ['newRoot' => '$group'] ],
-            [ '$unset' => 'studentId' ],
         ];
 
         $command = new Command([

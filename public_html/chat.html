@@ -7,6 +7,7 @@
     <title>Чат с автошколой</title>
 </head>
 <body>
+    <div id="unread_message" style="display: none">пук</div>
     <script>
 	window.amoSocialButtonConfig = {
 	    onlinechat: {
@@ -19,10 +20,33 @@
     </script>
     <script>(function(a,m,o,c,r,m){a[m]={id:"45771",hash:"424291d0da87bd90653e82abb09d48577622d218bdcca4b3ce9f1cd5174cfe30",locale:"ru",inline:true,setMeta:function(p){this.params=(this.params||[]).concat([p])}};a[o]=a[o]||function(){(a[o].q=a[o].q||[]).push(arguments)};var d=a.document,s=d.createElement('script');s.async=true;s.id=m+'_script';s.src='https://gso.amocrm.ru/js/button.js?1616596115';d.head&&d.head.appendChild(s)}(window,0,'amoSocialButton',0,0,'amo_social_button'));</script>
     <script>
+	var urlParams = new URLSearchParams(window.location.search);
+	var openChat = urlParams.get('open_chat') === '1';
+
+	function readMessages() {
+	    amoSocialButton('runChatShow');
+	    setTimeout(function () {
+		amoSocialButton('runChatHide');
+	    }, 1000);
+	}
+
+	document.addEventListener("message", message => {
+	    if (message.data === 'readMessages') {
+    		readMessages();
+	    }
+	});
+
 	window.onmessage = function (message) {
+	    if (message.data === 'readMessages') {
+    		readMessages();
+	    }
+
 	    try {
 		var payload = JSON.parse(message.data);
-		if (payload && payload.method === 'greeting:init') {
+		if (window.ReactNativeWebView) {
+		    window.ReactNativeWebView.postMessage(message.data);
+		}
+		if (payload && payload.method === 'greeting:init' && openChat) {
 		    amoSocialButton('runChatShow');
 		}
 	    }
