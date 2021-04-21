@@ -221,7 +221,15 @@ switch ($requestType) {
         $userId = intval($_REQUEST['userId']);
         header("Content-type: application/json; charset=utf-8");
         $canPassExam = Database::getInstance()->canPassExam($userId);
-        $exams =  Database::getInstance()->getActiveExams($userId);
+        $hasPassedExam = Database::getInstance()->hasPassedExam($userId);
+        if ($hasPassedExam) {
+            $exams = Database::getInstance()->getExams($userId);
+        }
+        else {
+            $exams = Database::getInstance()->getActiveExams($userId);
+        }
+
+
         if (is_array($exams)) {
             $success = array_map(function ($item) {
                 return is_bool($item['examResult']['result']['isCorrect'])
@@ -236,6 +244,7 @@ switch ($requestType) {
 
         echo json_encode([
             "isActiveExam" => $canPassExam,
+            "isExamPassed" => $hasPassedExam,
             "attempts" => $attempts
         ]);
     break;
