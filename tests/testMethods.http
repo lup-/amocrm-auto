@@ -1,0 +1,4 @@
+GET http://localhost:8180/amo.php?type=getAdminData
+Accept: application/json
+
+###

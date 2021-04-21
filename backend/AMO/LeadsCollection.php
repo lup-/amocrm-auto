@@ -112,24 +112,7 @@ class LeadsCollection
         $this->instructors = $instructors;
 
         foreach ($this->rawLeads as $lead) {
-            $contact = false;
-
-            if (isset($lead['_parsed'])) {
-                unset($lead['_parsed']);
-            }
-
-            if (isset($lead['_contact'])) {
-                $contact = $lead['_contact'];
-                unset($lead['_contact']);
-            }
-
-            $leadModel = new AutoSchoolLead($lead);
-            if ($contact) {
-                $contactModel = AmoContact::createFromArray($contact);
-                $leadModel->setContactData($contactModel);
-            }
-
-            $this->leads[] = $leadModel;
+            $this->leads[] = AutoSchoolLead::createFromDbArray($lead);
         }
     }
 
@@ -184,6 +167,26 @@ class LeadsCollection
         return $result;
     }
 
+    private function joinLeadData($dst, $src) {
+        $merged = $this->joinArrayData($dst, $src);
+
+        $mergedFields = [];
+
+        foreach ($src['custom_fields_values'] as $srcField) {
+            $mergedFields[$srcField['field_id']] = $srcField;
+        }
+
+        foreach ($dst['custom_fields_values'] as $dstField) {
+            $mergedFields[$dstField['field_id']] = $dstField;
+        }
+
+        $merged['custom_fields_values'] = array_values($mergedFields);
+        $merged['contacts'] = array_unique( array_merge($src['contacts'], $dst['contacts']), SORT_REGULAR );
+
+        $mergedLead = AutoSchoolLead::createFromDbArray($merged);
+        return $mergedLead->asDatabaseArray();
+    }
+
     public function getGroups($withLeads = false) {
         $groups = [];
 
@@ -221,10 +224,92 @@ class LeadsCollection
         }
 
         foreach ($groups as $groupName => $group) {
-            $groups[$groupName]['students'] = array_values($group['students']);
+            $groups[$groupName]['students'] = $this->joinDuplicateStudents($group['students']);
+            if ($withLeads) {
+                $groups[$groupName]['leads'] = $this->joinDuplicateLeads($group['leads']);
+            }
         }
 
         return $groups;
+    }
+
+    public function joinDuplicateLeads($leads) {
+        if (empty($leads)) {
+            return [];
+        }
+
+        $uniqueLeads = [];
+        foreach ($leads as $lead) {
+            $uniqueId = $lead->contactId().':'.$lead->category();
+            if (isset($uniqueLeads[$uniqueId])) {
+                $leadA = $lead->raw();
+                $leadB = $uniqueLeads[$uniqueId]->raw();
+
+                $dateModifiedA = $leadA['updated_at'];
+                $dateModifiedB = $leadB['updated_at'];
+
+                if ($dateModifiedA > $dateModifiedB) {
+                    $old = $leadB;
+                    $new = $leadA;
+                }
+                else {
+                    $old = $leadA;
+                    $new = $leadB;
+                }
+
+                $merged = $this->joinLeadData($new, $old);
+                $merged['links'] = $merged['links'] ?? [];
+                $merged['links'][] = $old;
+                $merged['links'][] = $new;
+                $merged['links'] = array_unique($merged['links'], SORT_REGULAR);
+
+                $uniqueLeads[$uniqueId] = AutoSchoolLead::createFromDbArray($merged);
+            }
+            else {
+                $uniqueLeads[$uniqueId] = $lead;
+            }
+        }
+
+        return array_values($uniqueLeads);
+    }
+
+    public function joinDuplicateStudents($students) {
+        if (empty($students)) {
+            return [];
+        }
+
+        $uniqueStudents = [];
+
+        foreach ($students as $student) {
+            $uniqueId = $student['contactId'].':'.$student['category'];
+
+            if ( isset($uniqueStudents[$uniqueId]) ) {
+                $dateModifiedA = $uniqueStudents[$uniqueId]['lastModified'];
+                $dateModifiedB = $student['lastModified'];
+
+                if ($dateModifiedA > $dateModifiedB) {
+                    $old = $student;
+                    $new = $uniqueStudents[$uniqueId];
+                }
+                else {
+                    $new = $student;
+                    $old = $uniqueStudents[$uniqueId];
+                }
+
+                $merged = $this->joinArrayData($new, $old);
+                $merged['links'] = $merged['links'] ?? [];
+                $merged['links'][] = $old;
+                $merged['links'][] = $new;
+                $merged['links'] = array_unique($merged['links'], SORT_REGULAR);
+
+                $uniqueStudents[$uniqueId] = $merged;
+            }
+            else {
+                $uniqueStudents[$uniqueId] = $student;
+            }
+        }
+
+        return array_values($uniqueStudents);
     }
 
     public function setInstructors(array $instructors) {
@@ -279,6 +364,13 @@ class LeadsCollection
         }
 
         return $resultCollection;
+    }
+
+    public function getContactIds() {
+        $contactIds = [];
+        foreach ($this->leads as $lead) {
+
+        }
     }
 
     public function getLeads() {

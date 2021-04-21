@@ -34,8 +34,25 @@ switch ($_REQUEST['action']) {
         $googleTemplateId = $_REQUEST['templateId'];
         $leadId = $_REQUEST['leadId'];
 
-        $lead = AmoApi::getInstance()->getSingleLead($leadId);
+        if (is_array($leadId)) {
+            $leadsToMerge = [];
+            foreach ($leadId as $singleId) {
+                $leadsToMerge[] = AmoApi::getInstance()->getSingleLead($singleId);
+            }
+
+            $collection = new LeadsCollection([], [], []);
+            $mergedLeads = $collection->joinDuplicateLeads($leadsToMerge);
+            $lead = $mergedLeads[0];
+            if ($_REQUEST['baseId']) {
+                $leadId = $_REQUEST['baseId'];
+            }
+        }
+        else {
+            $lead = AmoApi::getInstance()->getSingleLead($leadId);
+        }
+
         $leadPairs = $lead->asReplacementPairs();
+        $leadId = intval($leadId);
 
         $doc = Document::makeFromTemplate($service, $googleTemplateId, $leadId)
                 ->prepareTemplate()

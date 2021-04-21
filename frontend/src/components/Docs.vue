@@ -58,8 +58,11 @@
                         <li class="list-group-item" v-for="student in currentGroup.students" :key="student.id">
                             <div class="d-md-flex flex-row">
                                 <b-form-checkbox :value="student.id" class="mr-4 flex-fill align-items-center">
-                                    <span>{{student.name}}</span>
-                                    <b-button variant="link" :href="getStudentLink(student)" target="_blank"><b-icon-box-arrow-up-right></b-icon-box-arrow-up-right></b-button>
+                                    <span>{{student.name}} (кат. {{student.category}})</span>
+                                    <span v-if="student.links">
+                                        <b-button variant="link" v-for="link in student.links" :key="link.id" :href="getStudentLink(link)" target="_blank"><b-icon-box-arrow-up-right></b-icon-box-arrow-up-right></b-button>
+                                    </span>
+                                    <b-button v-else variant="link" :href="getStudentLink(student)" target="_blank"><b-icon-box-arrow-up-right></b-icon-box-arrow-up-right></b-button>
                                 </b-form-checkbox>
 
                                 <div class="row-buttons text-right">
@@ -72,7 +75,7 @@
                                         <button class="btn btn-primary"
                                                 v-if="currentTemplate && isCurrentTemplatePersonal"
                                                 :disabled="isLoading(student.id)"
-                                                @click="createSelectedDocument(student.id)"
+                                                @click="createSelectedDocument(student.id, student.links)"
                                         >
                                             <b-icon-download></b-icon-download>
                                         </button>
@@ -188,10 +191,15 @@
 
                 this.multipleProcessing = false;
             },
-            async createSelectedDocument(studentId) {
-                let processingIndex = this.processing.indexOf(studentId);
+            async createSelectedDocument(studentId, links) {
+                let baseId = studentId;
+                let processingIndex = this.processing.indexOf(baseId);
                 if (processingIndex === -1) {
-                    this.processing.push(studentId);
+                    this.processing.push(baseId);
+                }
+
+                if (links && links.length > 0) {
+                    studentId = links.map(link => link.id);
                 }
 
                 let docResult = await axios.get('/files.php', {
@@ -199,13 +207,14 @@
                         action: 'makedocajax',
                         templateId: this.currentTemplateId,
                         leadId: studentId,
+                        baseId: baseId
                     }
                 });
 
                 let newDoc = docResult.data.doc;
-                this.$emit('newDoc', this.currentGroup, studentId, newDoc);
+                this.$emit('newDoc', this.currentGroup, baseId, newDoc);
 
-                processingIndex = this.processing.indexOf(studentId);
+                processingIndex = this.processing.indexOf(baseId);
                 this.processing.splice(processingIndex, 1);
             },
             async deleteDocument(studentId, doc) {

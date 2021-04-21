@@ -185,7 +185,7 @@ class AmoApi
             $filter = new LeadsFilter();
         }
 
-        $filter->setLimit(500);
+        $filter->setLimit(250);
         $leadsService = $this->apiClient->leads();
         $leadsCollection = $leadsService->get($filter, [LeadModel::CONTACTS, LeadModel::CATALOG_ELEMENTS, LeadModel::SOURCE_ID]);
         $allLeads = $leadsCollection;
@@ -372,7 +372,7 @@ class AmoApi
             $filter = new ContactsFilter();
         }
 
-        $filter->setLimit(500);
+        $filter->setLimit(250);
         $contactsService = $this->apiClient->contacts();
         $contactsCollection = $contactsService->get($filter);
         $allContacts = $contactsCollection;
@@ -389,6 +389,26 @@ class AmoApi
         }
 
         return $allContacts;
+    }
+
+    public function getLeadContactsHash(LeadsCollection $leads) {
+        $contactIds = [];
+        foreach ($leads->getLeads() as $lead) {
+            $contactIds[] = $lead->contactId();
+        }
+
+        $idsChunks = array_chunk($contactIds, 250);
+
+        $hash = [];
+        foreach ($idsChunks as $chunk) {
+            $filter = new ContactsFilter();
+            $filter->setIds($chunk);
+
+            $newHash = $this->getContactsHash($filter);
+            $hash = array_replace($hash, $newHash);
+        }
+
+        return $hash;
     }
 
     public function getContactsHash(ContactsFilter $filter = null) {
@@ -446,7 +466,13 @@ class AmoApi
         $hoursField->setValues($fieldValues);
 
         $lead->setCustomFieldsValues($customFields);
-        $this->apiClient->leads()->updateOne($lead);
+        try {
+            $this->apiClient->leads()->updateOne($lead);
+        }
+        catch (\Exception $e) {
+            $lead->setCreatedBy(null);
+            $this->apiClient->leads()->updateOne($lead);
+        }
 
         return $this->getSingleLead($leadId, true);
     }

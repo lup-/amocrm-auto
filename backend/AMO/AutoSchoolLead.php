@@ -28,6 +28,27 @@ class AutoSchoolLead
         return new self($rawData);
     }
 
+    public static function createFromDbArray($dbData) {
+        $contact = false;
+
+        if (isset($dbData['_parsed'])) {
+            unset($dbData['_parsed']);
+        }
+
+        if (isset($dbData['_contact'])) {
+            $contact = $dbData['_contact'];
+            unset($dbData['_contact']);
+        }
+
+        $leadModel = new self($dbData);
+        if ($contact) {
+            $contactModel = AmoContact::createFromArray($contact);
+            $leadModel->setContactData($contactModel);
+        }
+
+        return $leadModel;
+    }
+
     public function __construct($rawData) {
         $this->rawData = $rawData;
     }
@@ -115,7 +136,10 @@ class AutoSchoolLead
     }
     public function name() {
         if ($this->contactData) {
-            return $this->contactData->name();
+            $name = $this->contactData->name();
+            if (!empty($name)) {
+                return $name;
+            }
         }
 
         $contact = isset($this->rawData['contacts'])
@@ -153,6 +177,10 @@ class AutoSchoolLead
         $group = mb_strtoupper($group);
 
         return $group;
+    }
+
+    public function category() {
+        return mb_strtoupper( $this->getCustomFieldValue(405003) );
     }
     public function instructor() {
         return $this->getCustomFieldValue(398075);
@@ -446,6 +474,7 @@ class AutoSchoolLead
             'name'           => $this->name(),
             'contact'        => $this->name(),
             'contactId'      => $this->contactId(),
+            'category'       => $this->category(),
             'hours'          => $this->hours(),
             'neededHours'    => $this->neededHours(),
             'salary'         => $this->hours() * self::HOUR_PRICE,
@@ -460,6 +489,7 @@ class AutoSchoolLead
             'schedule'       => $event !== false ? $event->getStart()->getDateTime() : false,
             'instructor'     => $this->instructor(),
             'docs'           => $this->docs,
+            'lastModified'   => $this->rawData['updated_at'],
         ];
     }
     public function asDatabaseArray() {
