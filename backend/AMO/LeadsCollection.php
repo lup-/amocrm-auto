@@ -157,10 +157,10 @@ class LeadsCollection
 
         foreach ($allKeys as $key) {
             if (empty($dst[$key])) {
-                $result[$key] = $src[$key];
+                $result[$key] = @$src[$key];
             }
             else {
-                $result[$key] = $dst[$key];
+                $result[$key] = @$dst[$key];
             }
         }
 

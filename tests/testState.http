@@ -1,0 +1,42 @@
+GET http://localhost:8180/api/getState?deviceId=123-346
+Accept: application/json
+
+###
+GET http://localhost:8180/api/getState?userId=88024
+Accept: application/json
+
+###
+GET http://localhost:8180/api/getState?userId=88024&deviceId=123-346
+Accept: application/json
+
+###
+GET http://localhost:8180/api/getState?userId=&deviceId=123-345
+Accept: application/json
+
+###
+GET http://localhost:8180/api/getState?userId=80880&deviceId=123-345
+Accept: application/json
+
+###
+POST http://localhost:8180/api/saveState
+Content-Type: application/json
+
+{
+  "userId": null,
+  "deviceId": "123-345",
+  "state": {"a":  1, "b": 2}
+}
+
+###
+
+POST http://localhost:8180/api/saveState
+Content-Type: application/json
+
+{
+  "userId": 88024,
+  "deviceId": "123-346",
+  "state": {"a":  1, "b": 3}
+}
+
+###
+

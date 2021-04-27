@@ -263,4 +263,24 @@ switch ($requestType) {
         header("Content-type: application/json; charset=utf-8");
         echo json_encode(["success" => $savedExam !== false, "exam" => $savedExam]);
     break;
+    case 'saveState':
+        $postData = file_get_contents('php://input');
+        $stateData = json_decode($postData, true);
+        $state = $stateData['state'];
+        $userId = !empty($stateData['userId']) ? intval($stateData['userId']) : null;
+        $deviceId = $stateData['deviceId'];
+
+        $savedState = Database::getInstance()->saveState($userId, $deviceId, $state);
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode(["success" => $savedState !== false, "state" => $savedState]);
+    break;
+    case 'getState':
+        $userId = !empty($_REQUEST['userId']) ? intval($_REQUEST['userId']) : null;
+        $deviceId = !empty($_REQUEST['deviceId']) ? $_REQUEST['deviceId'] : null;
+        $state = Database::getInstance()->getState($userId, $deviceId);
+
+        header("Content-type: application/json; charset=utf-8");
+        echo json_encode(["state" => $state]);
+    break;
 }

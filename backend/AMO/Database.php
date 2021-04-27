@@ -433,9 +433,10 @@ class Database
     public function saveExam($leadId, $attempt, $examResult) {
         $operations = new BulkWrite;
         $collectionName = $this->getFullCollectionName('exams');
+        $startOfDay = Carbon::now()->startOfDay()->unix();
 
         $operations->update(
-            [ "userId" => $leadId, "attempt" => $attempt ],
+            [ "userId" => $leadId, "attempt" => $attempt, "day" => $startOfDay ],
             [
                 "\$set" => ["examResult" => $examResult, "updated" => time()],
                 "\$setOnInsert" => ["saved" => time()],
@@ -478,5 +479,48 @@ class Database
         }
 
         return $result;
+    }
+
+    public function saveState($leadId, $deviceId, $state) {
+        $operations = new BulkWrite;
+        $collectionName = $this->getFullCollectionName('app_state');
+
+        $operations->update(
+            [ "userId" => $leadId, "deviceId" => $deviceId ],
+            [
+                "\$set" => ["state" => $state, "updated" => time()],
+                "\$setOnInsert" => ["created" => time()],
+            ],
+            [ "upsert" => true ]
+        );
+
+        $this->mongo->executeBulkWrite($collectionName, $operations);
+        return $this->getState($leadId, $deviceId);
+    }
+
+    public function getState($leadId, $deviceId) {
+        $collectionName = $this->getFullCollectionName('app_state');
+
+        if (!empty($leadId)) {
+            $query = new Query(["userId" => $leadId]);
+            $cursor = $this->mongo->executeQuery($collectionName, $query);
+
+            $stateDoc = $this->mongoToArray($cursor);
+            if ($stateDoc && count($stateDoc) > 0) {
+                return $stateDoc[0]['state'];
+            }
+        }
+
+        if (empty($leadId) && !empty($deviceId)) {
+            $query = new Query(["userId" => ['$in'=>[null, false]], "deviceId" => $deviceId]);
+            $cursor = $this->mongo->executeQuery($collectionName, $query);
+
+            $stateDoc = $this->mongoToArray($cursor);
+            if ($stateDoc && count($stateDoc) > 0) {
+                return $stateDoc[0]['state'];
+            }
+        }
+
+        return [];
     }
 }
