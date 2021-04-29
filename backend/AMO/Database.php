@@ -485,14 +485,26 @@ class Database
         $operations = new BulkWrite;
         $collectionName = $this->getFullCollectionName('app_state');
 
-        $operations->update(
-            [ "userId" => $leadId, "deviceId" => $deviceId ],
-            [
-                "\$set" => ["state" => $state, "updated" => time()],
-                "\$setOnInsert" => ["created" => time()],
-            ],
-            [ "upsert" => true ]
-        );
+        if ($leadId) {
+            $operations->update(
+                ["userId" => $leadId],
+                [
+                    "\$set"         => ["state" => $state, "updated" => time(), "deviceId" => $deviceId],
+                    "\$setOnInsert" => ["created" => time()],
+                ],
+                ["upsert" => true]
+            );
+        }
+        else {
+            $operations->update(
+                ["deviceId" => $deviceId],
+                [
+                    "\$set"         => ["state" => $state, "updated" => time()],
+                    "\$setOnInsert" => ["created" => time()],
+                ],
+                ["upsert" => true]
+            );
+        }
 
         $this->mongo->executeBulkWrite($collectionName, $operations);
         return $this->getState($leadId, $deviceId);
